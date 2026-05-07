@@ -12,6 +12,8 @@ class LoanCategory extends Model
     protected $fillable = [
         'name',
         'description',
+        'long_description',
+        'image',
         'is_active',
     ];
 
