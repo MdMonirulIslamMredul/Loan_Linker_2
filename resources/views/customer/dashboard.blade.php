@@ -5,6 +5,10 @@
         <div class="card-body">
             <h3>Welcome, {{ $user->name }}</h3>
 
+            <div class="mb-4">
+                <a href="{{ route('customer.new_application.create') }}" class="btn btn-primary">Create New Loan Application</a>
+            </div>
+
             <p class="text-muted">This is your customer dashboard. From here you can view your profile and loan applications.
             </p>
 

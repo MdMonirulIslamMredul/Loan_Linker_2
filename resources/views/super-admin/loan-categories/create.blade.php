@@ -8,7 +8,7 @@
         <div class="card-body">
             <h2 class="mb-4 fw-bold">Create New Loan Category</h2>
 
-            <form method="POST" action="{{ route('super-admin.loan-categories.store') }}">
+            <form method="POST" action="{{ route('super-admin.loan-categories.store') }}" enctype="multipart/form-data">
                 @csrf
 
                 <div class="mb-3">
@@ -21,9 +21,26 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="description" class="form-label fw-semibold">Description</label>
+                    <label for="description" class="form-label fw-semibold">Short Description</label>
                     <textarea name="description" id="description" rows="4" class="form-control">{{ old('description') }}</textarea>
                     @error('description')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label for="long_description_editor" class="form-label fw-semibold">Long Description</label>
+                    <div id="long_description_editor" class="form-control" style="min-height: 220px;">{!! old('long_description') !!}</div>
+                    <textarea name="long_description" id="long_description" class="d-none">{{ old('long_description') }}</textarea>
+                    @error('long_description')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label for="image" class="form-label fw-semibold">Image</label>
+                    <input type="file" name="image" id="image" class="form-control">
+                    @error('image')
                         <div class="text-danger small mt-1">{{ $message }}</div>
                     @enderror
                 </div>
@@ -51,3 +68,38 @@
         </div>
     </div>
 @endsection
+
+@push('styles')
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+@endpush
+
+@push('scripts')
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const editorContainer = document.querySelector('#long_description_editor');
+            const hiddenInput = document.querySelector('#long_description');
+            if (editorContainer && hiddenInput) {
+                const quill = new Quill(editorContainer, {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            ['bold', 'italic', 'underline', 'strike'],
+                            [{ header: [1, 2, 3, false] }],
+                            [{ list: 'ordered' }, { list: 'bullet' }],
+                            ['link'],
+                            ['clean']
+                        ]
+                    }
+                });
+
+                const form = hiddenInput.closest('form');
+                if (form) {
+                    form.addEventListener('submit', function () {
+                        hiddenInput.value = quill.root.innerHTML;
+                    });
+                }
+            }
+        });
+    </script>
+@endpush

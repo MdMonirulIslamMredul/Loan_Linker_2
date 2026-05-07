@@ -257,6 +257,12 @@ Route::middleware(['auth', 'branch.admin'])->prefix('branch-admin')->group(funct
     Route::get('/applications', [LoanApplicationController::class, 'branchApplications'])->name('branch-admin.applications.index');
     Route::get('/applications/{application}', [LoanApplicationController::class, 'branch_show'])->name('branch-admin.applications.show');
     Route::post('/applications/{application}/status', [LoanApplicationController::class, 'updateStatus'])->name('branch-admin.applications.updateStatus');
+
+    // New Loan Requests Management
+    Route::get('/new-applications', [LoanApplicationController::class, 'branchNewApplications'])->name('branch-admin.new-applications.index');
+    Route::get('/new-applications/{newApplication}', [LoanApplicationController::class, 'branchNewApplicationShow'])->name('branch-admin.new-applications.show');
+    Route::post('/new-applications/{newApplication}/status', [LoanApplicationController::class, 'updateNewLoanApplicationStatus'])->name('branch-admin.new-applications.updateStatus');
+
     // Branch admin profile & password
     Route::get('/profile', [App\Http\Controllers\BranchAdminController::class, 'profile'])->name('branch-admin.profile');
     Route::get('/profile/edit', [App\Http\Controllers\BranchAdminController::class, 'editProfile'])->name('branch-admin.profile.edit');
