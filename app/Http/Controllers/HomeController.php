@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bank;
+use App\Models\HomepageCarousel;
+use App\Models\ImageAdvertisement;
 use App\Models\Loan;
+use App\Models\LoanCategory;
 use App\Models\Testimonial;
 use Illuminate\Http\Request;
 
@@ -28,13 +31,22 @@ class HomeController extends Controller
             ->take(6)
             ->get();
 
-        // Get all active loans for banners
-        $bannerLoans = Loan::where('is_active', true)
-            ->whereNotNull('banner')
-            ->with(['branch.bank', 'category'])
-            ->latest()
-            ->take(5)
-            ->get();
+        // Get homepage carousel slides
+        $carouselSlides = HomepageCarousel::where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('created_at', 'desc')
+            ->get(['image', 'title', 'short_description', 'button_name', 'button_url']);
+
+        // Get Loan Categories only
+        $loanCategories = \App\Models\LoanCategory::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'description', 'long_description', 'image']);
+
+        // Get active image advertisements
+        $advertisements = ImageAdvertisement::where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('created_at', 'desc')
+            ->get(['image', 'link_url', 'title']);
 
         // Get active testimonials
         $testimonials = Testimonial::where('is_active', true)
@@ -42,7 +54,7 @@ class HomeController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('home', compact('banks', 'featuredLoans', 'bannerLoans', 'testimonials'));
+        return view('home', compact('banks', 'featuredLoans', 'carouselSlides', 'loanCategories', 'advertisements', 'testimonials'));
     }
 
     /**
@@ -132,6 +144,28 @@ class HomeController extends Controller
     }
 
     /**
+     * Display loans for a specific category.
+     */
+    public function category(\App\Models\LoanCategory $category)
+    {
+        $loans = Loan::where('is_active', true)
+            ->where('category_id', $category->id)
+            ->with(['branch.bank', 'category'])
+            ->latest()
+            ->paginate(12);
+
+        return view('loan-category', compact('category', 'loans'));
+    }
+
+    /**
+     * Display loan category details without loans.
+     */
+    public function loanCategoryDetails(LoanCategory $loanCategory)
+    {
+        return view('loan-category-details', compact('loanCategory'));
+    }
+
+    /**
      * Display loan details.
      */
     public function show(Loan $loan)
@@ -140,5 +174,17 @@ class HomeController extends Controller
         $loan->load(['branch.bank', 'category']);
 
         return view('loan-details', compact('loan'));
+    }
+
+    /**
+     * Display the loan category listing page.
+     */
+    public function loanCategories()
+    {
+        $loanCategories = LoanCategory::where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        return view('loan-categories', compact('loanCategories'));
     }
 }

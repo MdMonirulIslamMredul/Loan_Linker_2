@@ -15,12 +15,18 @@ use App\Http\Controllers\LeadPackageController;
 use App\Http\Controllers\PackageOrderController;
 use App\Http\Controllers\OfficerPurchaseController;
 use App\Http\Controllers\LeadAccessController;
+use App\Http\Controllers\HomepageCarouselController;
+use App\Http\Controllers\ImageAdvertisementController;
+use App\Http\Controllers\Auth\BankOfficerRegisterController;
 use App\Http\Controllers\Auth\CustomerRegisterController;
 
 // Public Routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/search', [HomeController::class, 'search'])->name('search');
 Route::get('/all-loans', [HomeController::class, 'allLoans'])->name('loans.all');
+Route::get('/loan-categories', [HomeController::class, 'loanCategories'])->name('loan-categories.index');
+Route::get('/loan-categories/{loanCategory}', [HomeController::class, 'loanCategoryDetails'])->name('loan-categories.show');
+Route::get('/loans/category/{loanCategory}', [HomeController::class, 'category'])->name('loans.category');
 Route::get('/all-banks', [HomeController::class, 'allBanks'])->name('banks.all');
 Route::get('/loans/{loan}', [HomeController::class, 'show'])->name('loans.show');
 Route::get('/about-us', [AboutSettingController::class, 'show'])->name('about');
@@ -46,6 +52,10 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Customer Registration (simple)
 Route::get('/register-customer', [CustomerRegisterController::class, 'showRegistrationForm'])->name('register.customer');
 Route::post('/register-customer', [CustomerRegisterController::class, 'register'])->name('register.customer.submit');
+
+// Bank Officer Registration
+Route::get('/register-bank-officer', [BankOfficerRegisterController::class, 'showRegistrationForm'])->name('register.bank_officer');
+Route::post('/register-bank-officer', [BankOfficerRegisterController::class, 'register'])->name('register.bank_officer.submit');
 
 // Super Admin Routes
 Route::middleware(['auth', 'super.admin'])->prefix('super-admin')->group(function () {
@@ -104,6 +114,22 @@ Route::middleware(['auth', 'super.admin'])->prefix('super-admin')->group(functio
     Route::get('/testimonials/{testimonial}/edit', [TestimonialController::class, 'edit'])->name('super-admin.testimonials.edit');
     Route::put('/testimonials/{testimonial}', [TestimonialController::class, 'update'])->name('super-admin.testimonials.update');
     Route::delete('/testimonials/{testimonial}', [TestimonialController::class, 'destroy'])->name('super-admin.testimonials.destroy');
+
+    // Homepage Carousel Management
+    Route::get('/homepage-carousels', [HomepageCarouselController::class, 'index'])->name('super-admin.homepage-carousels.index');
+    Route::get('/homepage-carousels/create', [HomepageCarouselController::class, 'create'])->name('super-admin.homepage-carousels.create');
+    Route::post('/homepage-carousels', [HomepageCarouselController::class, 'store'])->name('super-admin.homepage-carousels.store');
+    Route::get('/homepage-carousels/{homepageCarousel}/edit', [HomepageCarouselController::class, 'edit'])->name('super-admin.homepage-carousels.edit');
+    Route::put('/homepage-carousels/{homepageCarousel}', [HomepageCarouselController::class, 'update'])->name('super-admin.homepage-carousels.update');
+    Route::delete('/homepage-carousels/{homepageCarousel}', [HomepageCarouselController::class, 'destroy'])->name('super-admin.homepage-carousels.destroy');
+
+    // Image Advertisements Management
+    Route::get('/image-advertisements', [ImageAdvertisementController::class, 'index'])->name('super-admin.image-advertisements.index');
+    Route::get('/image-advertisements/create', [ImageAdvertisementController::class, 'create'])->name('super-admin.image-advertisements.create');
+    Route::post('/image-advertisements', [ImageAdvertisementController::class, 'store'])->name('super-admin.image-advertisements.store');
+    Route::get('/image-advertisements/{imageAdvertisement}/edit', [ImageAdvertisementController::class, 'edit'])->name('super-admin.image-advertisements.edit');
+    Route::put('/image-advertisements/{imageAdvertisement}', [ImageAdvertisementController::class, 'update'])->name('super-admin.image-advertisements.update');
+    Route::delete('/image-advertisements/{imageAdvertisement}', [ImageAdvertisementController::class, 'destroy'])->name('super-admin.image-advertisements.destroy');
 
     // Lead Packages Management
     Route::get('/lead-packages', [LeadPackageController::class, 'index'])->name('super-admin.lead-packages.index');
@@ -237,6 +263,10 @@ Route::middleware(['auth', 'branch.admin'])->prefix('branch-admin')->group(funct
     Route::put('/profile', [App\Http\Controllers\BranchAdminController::class, 'updateProfile'])->name('branch-admin.profile.update');
     Route::get('/profile/password', [App\Http\Controllers\BranchAdminController::class, 'editPassword'])->name('branch-admin.profile.password.edit');
     Route::put('/profile/password', [App\Http\Controllers\BranchAdminController::class, 'updatePassword'])->name('branch-admin.profile.password');
+    Route::get('/bank-official', [App\Http\Controllers\BranchAdminController::class, 'bankOfficial'])->name('branch-admin.bank-official');
+    Route::post('/bank-official', [App\Http\Controllers\BranchAdminController::class, 'storeBankOfficial'])->name('branch-admin.bank-official.store');
+    Route::get('/officer-document', [App\Http\Controllers\BranchAdminController::class, 'officerDocument'])->name('branch-admin.officer-document');
+    Route::post('/officer-document', [App\Http\Controllers\BranchAdminController::class, 'storeOfficerDocument'])->name('branch-admin.officer-document.store');
 });
 
 // Customer Routes
@@ -247,6 +277,12 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->group(function () {
     Route::get('/profile/password', [App\Http\Controllers\Customer\CustomerController::class, 'editPassword'])->name('customer.profile.password.edit');
     Route::put('/profile', [App\Http\Controllers\Customer\CustomerController::class, 'updateProfile'])->name('customer.profile.update');
     Route::put('/profile/password', [App\Http\Controllers\Customer\CustomerController::class, 'updatePassword'])->name('customer.profile.password');
+    Route::get('/documents', [App\Http\Controllers\Customer\CustomerController::class, 'documents'])->name('customer.documents');
+    Route::post('/documents', [App\Http\Controllers\Customer\CustomerController::class, 'storeDocuments'])->name('customer.documents.store');
+    Route::get('/financial', [App\Http\Controllers\Customer\CustomerController::class, 'financial'])->name('customer.financial');
+    Route::post('/financial', [App\Http\Controllers\Customer\CustomerController::class, 'storeFinancial'])->name('customer.financial.store');
     Route::get('/applications', [App\Http\Controllers\Customer\CustomerController::class, 'applications'])->name('customer.applications');
+    Route::get('/applications/create', [App\Http\Controllers\Customer\CustomerController::class, 'createNewApplication'])->name('customer.new_application.create');
+    Route::post('/applications', [App\Http\Controllers\Customer\CustomerController::class, 'storeNewApplication'])->name('customer.new_application.store');
     // additional customer panel routes can be added here under App\Http\Controllers\Customer namespace
 });
