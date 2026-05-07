@@ -25,7 +25,21 @@ class User extends Authenticatable
         'bank_id',
         'branch_id',
         'phone',
+        'nid_number',
+        'dob',
+        'contact_address',
+        'permanent_address',
+        'education',
+        'profession',
+        'organization_name',
+        'designation',
+        'date_of_joining',
+        'total_working_experience',
         'lead_balance',
+        'customer_document_id',
+        'customer_financial_id',
+        'bank_official_id',
+        'officer_document_id',
         'is_active',
     ];
 
@@ -46,6 +60,8 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'dob' => 'date',
+        'date_of_joining' => 'date',
         'password' => 'hashed',
         'is_active' => 'boolean',
     ];
@@ -106,5 +122,25 @@ class User extends Authenticatable
     public function packageOrders()
     {
         return $this->hasMany(PackageOrder::class);
+    }
+
+    public function customerDocument()
+    {
+        return $this->belongsTo(CustomerDocument::class, 'customer_document_id');
+    }
+
+    public function customerFinancial()
+    {
+        return $this->belongsTo(CustomerFinancial::class, 'customer_financial_id');
+    }
+
+    public function bankOfficial()
+    {
+        return $this->belongsTo(BankOfficial::class, 'bank_official_id');
+    }
+
+    public function officerDocument()
+    {
+        return $this->belongsTo(OfficerDocument::class, 'officer_document_id');
     }
 }
