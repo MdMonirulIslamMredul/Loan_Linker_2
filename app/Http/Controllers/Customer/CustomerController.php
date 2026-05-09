@@ -5,8 +5,13 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use App\Models\Bank;
+use App\Models\CustomerDocument;
+use App\Models\CustomerFinancial;
 use App\Models\LoanApplication;
+use App\Models\NewLoanApplication;
 use App\Models\User;
 
 class CustomerController extends Controller
@@ -44,6 +49,19 @@ class CustomerController extends Controller
             'pendingApplications',
             'recentApplications'
         ));
+    }
+
+    public function createNewApplication()
+    {
+        $user = auth()->user();
+
+        if (!$user || ($user->role ?? '') !== 'customer') {
+            abort(403, 'Unauthorized.');
+        }
+
+        $banks = Bank::orderBy('name')->get();
+
+        return view('customer.new-application', compact('banks'));
     }
 
     /**
@@ -107,6 +125,32 @@ class CustomerController extends Controller
         return view('customer.applications', compact('applications'));
     }
 
+    public function storeNewApplication(Request $request)
+    {
+        $user = auth()->user();
+
+        if (!$user || ($user->role ?? '') !== 'customer') {
+            abort(403, 'Unauthorized.');
+        }
+
+        $data = $request->validate([
+            'expected_amount' => ['required', 'numeric', 'min:0'],
+            'tenure_months' => ['required', 'integer', 'min:1'],
+            'service_category' => ['required', 'in:credit_card,loan'],
+            'service_type' => ['required', 'in:visa_credit_card,personal_loan'],
+            'bank_ids' => ['required', 'array', 'max:5'],
+            'bank_ids.*' => ['required', 'exists:banks,id'],
+            'additional_notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $data['customer_id'] = $user->id;
+        $data['status'] = 'pending';
+
+        NewLoanApplication::create($data);
+
+        return redirect()->route('customer.dashboard')->with('success', 'Your loan request has been submitted successfully.');
+    }
+
     /**
      * Update customer profile (name, email, phone).
      */
@@ -154,5 +198,106 @@ class CustomerController extends Controller
         $user->save();
 
         return redirect()->route('customer.profile')->with('success', 'Password changed successfully.');
+    }
+
+    public function documents()
+    {
+        $user = auth()->user();
+
+        if (!$user || ($user->role ?? '') !== 'customer') {
+            abort(403, 'Unauthorized.');
+        }
+
+        $customerDocument = $user->customerDocument;
+
+        return view('customer.documents', compact('customerDocument'));
+    }
+
+    public function storeDocuments(Request $request)
+    {
+        $user = auth()->user();
+
+        if (!$user || ($user->role ?? '') !== 'customer') {
+            abort(403, 'Unauthorized.');
+        }
+
+        $data = $request->validate([
+            'picture' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
+            'nid' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
+            'office_id' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
+            'visiting_card' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
+            'pay_slip' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
+            'bank_statements' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
+            'trade_license' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
+            'lend_document' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
+            'other_document' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
+        ]);
+
+        $customerDocument = $user->customerDocument ?? new CustomerDocument();
+
+        foreach ([
+            'picture',
+            'nid',
+            'office_id',
+            'visiting_card',
+            'pay_slip',
+            'bank_statements',
+            'trade_license',
+            'lend_document',
+            'other_document',
+        ] as $field) {
+            if ($request->hasFile($field)) {
+                if ($customerDocument->$field) {
+                    Storage::disk('public')->delete($customerDocument->$field);
+                }
+
+                $customerDocument->$field = $request->file($field)->store('customer_documents', 'public');
+            }
+        }
+
+        $customerDocument->save();
+
+        $user->customer_document_id = $customerDocument->id;
+        $user->save();
+
+        return redirect()->route('customer.profile')->with('success', 'Documents uploaded successfully.');
+    }
+
+    public function financial()
+    {
+        $user = auth()->user();
+
+        if (!$user || ($user->role ?? '') !== 'customer') {
+            abort(403, 'Unauthorized.');
+        }
+
+        $customerFinancial = $user->customerFinancial;
+
+        return view('customer.financial', compact('customerFinancial'));
+    }
+
+    public function storeFinancial(Request $request)
+    {
+        $user = auth()->user();
+
+        if (!$user || ($user->role ?? '') !== 'customer') {
+            abort(403, 'Unauthorized.');
+        }
+
+        $data = $request->validate([
+            'salary_by_bank' => ['nullable', 'numeric'],
+            'salary_by_hand' => ['nullable', 'numeric'],
+            'monthly_bank_transaction' => ['nullable', 'numeric'],
+            'existing_loans_credit_cards' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $customerFinancial = $user->customerFinancial ?? new CustomerFinancial();
+        $customerFinancial->fill($data);
+        $customerFinancial->save();
+
+        $user->customer_financial_id = $customerFinancial->id;
+        $user->save();
+
+        return redirect()->route('customer.profile')->with('success', 'Financial information saved successfully.');
     }
 }

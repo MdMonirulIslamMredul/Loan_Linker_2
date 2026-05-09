@@ -355,6 +355,16 @@
                 <i class="bi bi-info-circle"></i>
                 <span>About Settings</span>
             </a>
+            <a href="{{ route('super-admin.homepage-carousels.index') }}"
+                class="menu-item {{ request()->routeIs('super-admin.homepage-carousels.*') ? 'active' : '' }}">
+                <i class="bi bi-images"></i>
+                <span>Homepage Carousel</span>
+            </a>
+            <a href="{{ route('super-admin.image-advertisements.index') }}"
+                class="menu-item {{ request()->routeIs('super-admin.image-advertisements.*') ? 'active' : '' }}">
+                <i class="bi bi-megaphone"></i>
+                <span>Image Advertisements</span>
+            </a>
             <a href="{{ route('super-admin.testimonials.index') }}"
                 class="menu-item {{ request()->routeIs('super-admin.testimonials.*') ? 'active' : '' }}">
                 <i class="bi bi-chat-quote"></i>
