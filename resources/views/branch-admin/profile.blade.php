@@ -10,7 +10,9 @@
         @endif
 
         <a href="{{ route('branch-admin.profile.edit') }}" class="btn btn-primary me-2">Edit Profile</a>
-        <a href="{{ route('branch-admin.profile.password.edit') }}" class="btn btn-warning">Change Password</a>
+        <a href="{{ route('branch-admin.profile.password.edit') }}" class="btn btn-warning me-2">Change Password</a>
+        <a href="{{ route('branch-admin.bank-official') }}" class="btn btn-info me-2">Bank Official Info</a>
+        <a href="{{ route('branch-admin.officer-document') }}" class="btn btn-success">Officer Documents</a>
     </div>
 
 

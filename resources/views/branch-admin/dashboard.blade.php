@@ -79,6 +79,7 @@
                         ->count();
                 }
                 $lockedCount = max(0, $totalApplications - $unlockedCount);
+                $newRequestsCount = \App\Models\NewLoanApplication::count();
             @endphp
 
             <div class="row g-3">
@@ -126,6 +127,20 @@
                     </a>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-3">
+            <a href="{{ route('branch-admin.new-applications.index') }}" class="text-decoration-none">
+                <div class="card h-100 bg-info text-white border-0">
+                    <div class="card-body text-center p-3">
+                        <div class="text-muted small">New Loan Requests</div>
+                        <div class="fw-bold fs-5">{{ $newRequestsCount }}</div>
+                        <div class="small mt-2 text-white-75">View and manage new customer requests</div>
+                    </div>
+                </div>
+            </a>
         </div>
     </div>
 

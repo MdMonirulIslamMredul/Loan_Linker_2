@@ -8,38 +8,25 @@
         style="background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);">
         <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-25" style="pointer-events: none;"></div>
 
-        @if ($bannerLoans->count() > 0)
-            <!-- Banner Slider -->
+        @if ($carouselSlides->count() > 0)
+            <!-- Hero Slider -->
             <div class="position-relative">
                 <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" style="height: 550px;">
                     <div class="carousel-inner h-100">
-                        @foreach ($bannerLoans as $index => $loan)
+                        @foreach ($carouselSlides as $index => $slide)
                             <div class="carousel-item h-100 {{ $index === 0 ? 'active' : '' }}"
-                                style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.4)), url('{{ asset($loan->banner) }}'); background-size: cover; background-position: center;">
+                                style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.4)){{ $slide->image ? ", url('" . asset('storage/' . $slide->image) . "')" : '' }}; background-size: cover; background-position: center;">
                                 <div class="container h-100">
                                     <div class="row h-100 align-items-center">
                                         <div class="col-lg-8">
-                                            <span class="badge bg-info mb-3">{{ $loan->branch->bank->name }}</span>
-                                            <small class="text-white-50 d-block mb-2">{{ $loan->branch->name }}
-                                                Branch</small>
-                                            <h1 class="display-3 fw-bold mb-4">{{ $loan->name }}</h1>
-                                            <p class="lead mb-4">{{ Str::limit($loan->description, 100) }}</p>
-                                            <div class="d-flex flex-wrap gap-3 mb-4">
-                                                <div class="bg-white bg-opacity-25 backdrop-blur p-3 rounded">
-                                                    <small class="d-block text-white-50">Interest Rate</small>
-                                                    <h4 class="fw-bold mb-0">{{ $loan->interest_rate }}%</h4>
-                                                </div>
-                                                @if ($loan->min_amount && $loan->max_amount)
-                                                    <div class="bg-white bg-opacity-25 backdrop-blur p-3 rounded">
-                                                        <small class="d-block text-white-50">Amount Range</small>
-                                                        <h6 class="fw-bold mb-0">৳{{ number_format($loan->min_amount) }} -
-                                                            ৳{{ number_format($loan->max_amount) }}</h6>
-                                                    </div>
-                                                @endif
-                                            </div>
-                                            <a href="{{ route('loans.show', $loan) }}"
-                                                class="btn btn-light btn-lg shadow position-relative"
-                                                style="z-index: 10;">Learn More</a>
+                                            <h1 class="display-3 fw-bold mb-4">{{ $slide->title ?? 'Loan Linker' }}</h1>
+                                            <p class="lead mb-4">{{ Str::limit($slide->short_description, 120) }}</p>
+
+                                            @if ($slide->button_name && $slide->button_url)
+                                                <a href="{{ $slide->button_url }}"
+                                                    class="btn btn-light btn-lg shadow position-relative"
+                                                    style="z-index: 10;" target="_blank" rel="noopener">{{ $slide->button_name }}</a>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -47,7 +34,7 @@
                         @endforeach
                     </div>
 
-                    @if ($bannerLoans->count() > 1)
+                    @if ($carouselSlides->count() > 1)
                         <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel"
                             data-bs-slide="prev">
                             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -58,7 +45,7 @@
                         </button>
 
                         <div class="carousel-indicators">
-                            @foreach ($bannerLoans as $index => $loan)
+                            @foreach ($carouselSlides as $index => $slide)
                                 <button type="button" data-bs-target="#heroCarousel"
                                     data-bs-slide-to="{{ $index }}"
                                     class="{{ $index === 0 ? 'active' : '' }}"></button>
@@ -114,19 +101,52 @@
 
     <!-- CTA Buttons -->
     <div class="container text-center my-4">
-        <div class="d-flex justify-content-center gap-3">
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
             <a href="{{ route('register.customer') }}" class="btn btn-primary btn-lg">
                 <i class="bi bi-person-plus-fill me-2"></i>Register as a Customer
+            </a>
+            <a href="{{ route('register.bank_officer') }}" class="btn btn-success btn-lg">
+                <i class="bi bi-person-badge-fill me-2"></i>Register as a Bank Officer
             </a>
         </div>
     </div>
 
+  <!--Image Advertising with Link-->
 
+    @if ($advertisements->count() > 0)
+        <section class="py-5 bg-white">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="display-5 fw-bold mb-3">Featured Advertisements</h2>
+                    <p class="lead text-muted mb-0">Click to explore partner promotions and special offers.</p>
+                </div>
 
-
+                <div class="row g-4">
+                    @foreach ($advertisements as $advertisement)
+                        <div class="col-md-6">
+                            <a href="{{ $advertisement->link_url ?? '#' }}"
+                                @if ($advertisement->link_url) target="_blank" rel="noopener" @endif
+                                class="d-block overflow-hidden rounded-3 shadow-sm h-100">
+                                @if ($advertisement->image)
+                                    <img src="{{ asset('storage/' . $advertisement->image) }}"
+                                        alt="{{ $advertisement->title ?? 'Advertisement' }}"
+                                        class="img-fluid w-100" style="min-height: 260px; max-height: 260px; object-fit: cover;">
+                                @else
+                                    <div class="bg-secondary bg-opacity-10 d-flex align-items-center justify-content-center"
+                                        style="min-height: 260px;">
+                                        <span class="text-muted">Advertisement image not available</span>
+                                    </div>
+                                @endif
+                            </a>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
 
     <!-- Featured Loans Section -->
-    @if ($featuredLoans->count() > 0)
+    {{-- @if ($featuredLoans->count() > 0)
         <section id="loans" class="py-5 bg-light">
             <div class="container">
                 <div class="text-center mb-5">
@@ -321,7 +341,129 @@
                 </div>
             </div>
         </section>
+    @endif --}}
+
+
+    <!-- All Loan categories Section -->
+
+    @if ($loanCategories->count() > 0)
+        <section id="categories" class="py-5 bg-white">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2 class="display-5 fw-bold mb-3">Explore Loan Categories</h2>
+                    <p class="lead text-muted">Find the right type of loan for your needs</p>
+                </div>
+
+                <!-- Desktop Carousel (3 cards per slide) -->
+                <div id="categoryCarouselDesktop" class="carousel slide d-none d-lg-block" data-bs-ride="carousel" data-bs-interval="3000">
+                    <div class="carousel-inner">
+                        @foreach ($loanCategories->chunk(3) as $chunkIndex => $categoryChunk)
+                            <div class="carousel-item {{ $chunkIndex === 0 ? 'active' : '' }}">
+                                <div class="row g-4 justify-content-center">
+                                    @foreach ($categoryChunk as $category)
+                                        <div class="col-lg-4">
+                                            <a href="{{ route('loan-categories.show', $category) }}"
+                                                class="card h-100 border shadow-sm hover-lift text-decoration-none text-dark">
+                                                @if($category->image)
+                                                    <div class="position-relative" style="height: 220px; overflow: hidden;">
+                                                        <img src="{{ asset('storage/' . $category->image) }}" class="w-100 h-100 object-fit-cover" alt="{{ $category->name }}">
+                                                    </div>
+                                                @else
+                                                    <div class="card-body text-center py-5">
+                                                        <i class="{{ $category->icon_class ?? 'bi bi-card-list' }} display-4 mb-3 text-primary"></i>
+                                                    </div>
+                                                @endif
+                                                <div class="card-body text-center">
+                                                    <h5 class="card-title fw-bold">{{ $category->name }}</h5>
+                                                    <p class="card-text text-muted small" style="min-height: 80px;">{{ Str::limit($category->description, 100) }}</p>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    @if ($loanCategories->count() > 3)
+                        <button class="carousel-control-prev" type="button" data-bs-target="#categoryCarouselDesktop"
+                            data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#categoryCarouselDesktop"
+                            data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        </button>
+
+                        <div class="carousel-indicators mt-4">
+                            @foreach ($loanCategories->chunk(3) as $indicatorIndex => $chunk)
+                                <button type="button" data-bs-target="#categoryCarouselDesktop"
+                                    data-bs-slide-to="{{ $indicatorIndex }}"
+                                    class="{{ $indicatorIndex === 0 ? 'active' : '' }}"></button>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Mobile Carousel (1 card per slide) -->
+                <div id="categoryCarouselMobile" class="carousel slide d-lg-none" data-bs-ride="carousel" data-bs-interval="3000">
+                    <div class="carousel-inner">
+                        @foreach ($loanCategories as $index => $category)
+                            <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
+                                <div class="mx-auto" style="max-width: 500px;">
+                                    <a href="{{ route('loans.category', $category) }}"
+                                        class="card h-100 border shadow-sm hover-lift text-decoration-none text-dark">
+                                        @if($category->image)
+                                            <div class="position-relative" style="height: 260px; overflow: hidden;">
+                                                <img src="{{ asset('storage/' . $category->image) }}" class="w-100 h-100 object-fit-cover" alt="{{ $category->name }}">
+                                            </div>
+                                        @else
+                                            <div class="card-body text-center py-5">
+                                                <i class="{{ $category->icon_class ?? 'bi bi-card-list' }} display-4 mb-3 text-primary"></i>
+                                            </div>
+                                        @endif
+                                        <div class="card-body text-center">
+                                            <h5 class="card-title fw-bold">{{ $category->name }}</h5>
+                                            <p class="card-text text-muted small" style="min-height: 80px;">{{ Str::limit($category->description, 100) }}</p>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    @if ($loanCategories->count() > 1)
+                        <button class="carousel-control-prev" type="button" data-bs-target="#categoryCarouselMobile"
+                            data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#categoryCarouselMobile"
+                            data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        </button>
+
+                        <div class="carousel-indicators mt-4">
+                            @foreach ($loanCategories as $index => $category)
+                                <button type="button" data-bs-target="#categoryCarouselMobile"
+                                    data-bs-slide-to="{{ $index }}"
+                                    class="{{ $index === 0 ? 'active' : '' }}"></button>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+
+                
+                <!-- View All Loan Categories Button -->
+                <div class="text-center mt-5">
+                    <a href="{{ route('loan-categories.index') }}" class="btn btn-primary btn-lg px-5">
+                        <i class="bi bi-list me-2"></i>View All Loan Categories
+                    </a>
+                </div>
+
+            </div>
+        </section>
     @endif
+
 
     <!-- All Banks Slider Section -->
     @if ($banks->count() > 0)
@@ -364,7 +506,7 @@
                                                     <p class="card-text text-muted small" style="min-height: 40px;">
                                                         {{ Str::limit($bank->description, 80) }}</p>
 
-                                                    @php
+                                                    {{-- @php
                                                         $loanCount = $bank->branches->sum(function ($branch) {
                                                             return $branch->loans->where('is_active', true)->count();
                                                         });
@@ -381,10 +523,10 @@
                                                             </div>
                                                             <div class="text-muted">Loan Offers</div>
                                                         </div>
-                                                    </div>
+                                                    </div> --}}
 
-                                                    <a href="{{ route('search') }}?q={{ urlencode($bank->name) }}"
-                                                        class="btn btn-primary">View Loans</a>
+                                                    {{-- <a href="{{ route('search') }}?q={{ urlencode($bank->name) }}"
+                                                        class="btn btn-primary">View Loans</a> --}}
                                                 </div>
                                             </div>
                                         </div>

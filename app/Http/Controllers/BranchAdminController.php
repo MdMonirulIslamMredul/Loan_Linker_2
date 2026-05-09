@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BankOfficial;
 use App\Models\Loan;
 use App\Models\LoanCategory;
+use App\Models\OfficerDocument;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class BranchAdminController extends Controller
 {
@@ -99,6 +102,91 @@ class BranchAdminController extends Controller
         $user->save();
 
         return redirect()->route('branch-admin.dashboard')->with('success', 'Password updated successfully.');
+    }
+
+    /**
+     * Show the bank official information form.
+     */
+    public function bankOfficial()
+    {
+        $user = Auth::user();
+        $bankOfficial = $user->bankOfficial;
+
+        return view('branch-admin.bank-official', compact('bankOfficial'));
+    }
+
+    /**
+     * Store bank official information.
+     */
+    public function storeBankOfficial(Request $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'bank_name' => 'required|string|max:255',
+            'branch_name' => 'required|string|max:255',
+            'designation' => 'required|string|max:255',
+            'department' => 'required|string|max:255',
+            'office_id_number' => 'required|string|max:255',
+            'date_of_joining' => 'required|date',
+            'official_mobile_number' => 'required|string|max:50',
+            'official_email' => 'required|email|max:255',
+            'working_area' => 'required|string|max:255',
+        ]);
+
+        $bankOfficial = $user->bankOfficial ?? new BankOfficial();
+        $bankOfficial->fill($validated);
+        $bankOfficial->save();
+
+        $user->bank_official_id = $bankOfficial->id;
+        $user->save();
+
+        return redirect()->route('branch-admin.profile')->with('success', 'Bank official information saved successfully.');
+    }
+
+    /**
+     * Show the officer document upload form.
+     */
+    public function officerDocument()
+    {
+        $user = Auth::user();
+        $officerDocument = $user->officerDocument;
+
+        return view('branch-admin.officer-document', compact('officerDocument'));
+    }
+
+    /**
+     * Store officer document uploads.
+     */
+    public function storeOfficerDocument(Request $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'picture' => 'nullable|file|mimes:jpeg,jpg,png,gif,svg,pdf|max:5120',
+            'nid' => 'nullable|file|mimes:jpeg,jpg,png,gif,svg,pdf|max:5120',
+            'office_id' => 'nullable|file|mimes:jpeg,jpg,png,gif,svg,pdf|max:5120',
+            'visiting_card' => 'nullable|file|mimes:jpeg,jpg,png,gif,svg,pdf|max:5120',
+        ]);
+
+        $officerDocument = $user->officerDocument ?? new OfficerDocument();
+
+        foreach (['picture', 'nid', 'office_id', 'visiting_card'] as $field) {
+            if ($request->hasFile($field)) {
+                if ($officerDocument->{$field}) {
+                    Storage::disk('public')->delete($officerDocument->{$field});
+                }
+
+                $officerDocument->{$field} = $request->file($field)->store('officer_documents', 'public');
+            }
+        }
+
+        $officerDocument->save();
+
+        $user->officer_document_id = $officerDocument->id;
+        $user->save();
+
+        return redirect()->route('branch-admin.profile')->with('success', 'Officer documents saved successfully.');
     }
 
     /**

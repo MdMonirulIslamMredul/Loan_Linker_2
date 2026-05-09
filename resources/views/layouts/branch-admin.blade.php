@@ -125,7 +125,7 @@
                 <span>Dashboard</span>
             </a>
 
-            <div class="menu-section-title">Loans Management</div>
+            {{-- <div class="menu-section-title">Loans Management</div>
             <a href="{{ route('branch-admin.loans.index') }}"
                 class="menu-item {{ request()->routeIs('branch-admin.loans.index') ? 'active' : '' }}">
                 <i class="bi bi-list-ul"></i>
@@ -135,7 +135,7 @@
                 class="menu-item {{ request()->routeIs('branch-admin.loans.create') ? 'active' : '' }}">
                 <i class="bi bi-plus-circle"></i>
                 <span>Add New Loan</span>
-            </a>
+            </a> --}}
 
             <div class="menu-section-title">Applications</div>
 
@@ -144,7 +144,11 @@
                 <i class="bi bi-file-text"></i>
                 <span>All Loan Applications</span>
             </a>
-
+            <a href="{{ route('branch-admin.new-applications.index') }}"
+                class="menu-item {{ request()->routeIs('branch-admin.new-applications.*') ? 'active' : '' }}">
+                <i class="bi bi-file-earmark-plus"></i>
+                <span>New Loan Requests</span>
+            </a>
 
             <div class="menu-section-title">Packages</div>
             <a href="{{ route('branch-admin.packages.gallery') }}"
