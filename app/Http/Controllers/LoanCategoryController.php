@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\LoanCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class LoanCategoryController extends Controller
 {
@@ -32,8 +33,16 @@ class LoanCategoryController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:loan_categories',
             'description' => 'nullable|string',
+            'long_description' => 'nullable|string',
+            'image' => 'nullable|image|max:2048',
             'is_active' => 'boolean',
         ]);
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('loan_category_images', 'public');
+        }
+
+        $validated['is_active'] = $request->has('is_active');
 
         LoanCategory::create($validated);
 
@@ -57,8 +66,21 @@ class LoanCategoryController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:loan_categories,name,' . $loanCategory->id,
             'description' => 'nullable|string',
+            'long_description' => 'nullable|string',
+            'image' => 'nullable|image|max:2048',
             'is_active' => 'boolean',
         ]);
+
+        if ($request->hasFile('image')) {
+            if ($loanCategory->image && Storage::disk('public')->exists($loanCategory->image)) {
+                Storage::disk('public')->delete($loanCategory->image);
+            }
+            $validated['image'] = $request->file('image')->store('loan_category_images', 'public');
+        } else {
+            unset($validated['image']);
+        }
+
+        $validated['is_active'] = $request->has('is_active');
 
         $loanCategory->update($validated);
 
