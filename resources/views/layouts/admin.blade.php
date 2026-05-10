@@ -305,7 +305,10 @@
                 </a>
             </div>
 
-            @php $pendingOrders = \App\Models\PackageOrder::where('status', 'pending')->count(); @endphp
+            @php
+                $pendingOrders = \App\Models\PackageOrder::where('status', 'pending')->count();
+                $pendingNewRequests = \App\Models\NewLoanApplication::where('status', 'pending')->count();
+            @endphp
             <a href="{{ route('super-admin.package-orders.index') }}"
                 class="menu-item {{ request()->routeIs('super-admin.package-orders.index') ? 'active' : '' }}">
                 <i class="bi bi-card-checklist"></i>
@@ -329,6 +332,17 @@
                 class="menu-item {{ request()->routeIs('super-admin.applications.index') ? 'active' : '' }}">
                 <i class="bi bi-file-text"></i>
                 <span>Loan Applications</span>
+            </a>
+
+            <a href="{{ route('super-admin.new-applications.index') }}"
+                class="menu-item {{ request()->routeIs('super-admin.new-applications.*') ? 'active' : '' }}">
+                <i class="bi bi-envelope-exclamation"></i>
+                <span>
+                    New Loan Requests
+                    @if ($pendingNewRequests)
+                        <span class="badge bg-danger ms-2">{{ $pendingNewRequests }}</span>
+                    @endif
+                </span>
             </a>
 
             @php $unreadMessages = \App\Models\CustomerMessage::where('is_read', 0)->count(); @endphp

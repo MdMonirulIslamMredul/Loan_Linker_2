@@ -125,6 +125,13 @@
                 <span>Dashboard</span>
             </a>
 
+            <a href="/branch-admin/profile" class="menu-item {{ request()->routeIs('branch-admin.profile') ? 'active' : '' }}">
+                <i class="bi bi-person"></i>
+                <span>Profile</span>
+            </a>
+
+                
+
             {{-- <div class="menu-section-title">Loans Management</div>
             <a href="{{ route('branch-admin.loans.index') }}"
                 class="menu-item {{ request()->routeIs('branch-admin.loans.index') ? 'active' : '' }}">

@@ -193,6 +193,7 @@
             $officersCount = \App\Models\User::where('role', 'branch_admin')->count();
             $loansCount = \App\Models\Loan::count();
             $applicationsCount = \App\Models\LoanApplication::count();
+            $newLoanRequestsCount = \App\Models\NewLoanApplication::where('status', 'pending')->count();
             $packagesCount = \App\Models\LeadPackage::count();
             $pendingOrdersCount = \App\Models\PackageOrder::where('status', 'pending')->count();
             $customersCount = \App\Models\User::where('role', 'customer')->count();
@@ -295,6 +296,16 @@
                     <div class="text-muted small">Applications</div>
                 </div>
             </a>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="card border-0 shadow-sm text-center p-3 dashboard-count-card">
+                <div class="d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-envelope-exclamation text-warning count-icon"></i>
+                    <div class="fs-4 fw-bold">{{ $newLoanRequestsCount }}</div>
+                </div>
+                <div class="text-muted small">New Loan Requests</div>
+            </div>
         </div>
 
     </div>

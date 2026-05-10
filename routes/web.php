@@ -164,6 +164,11 @@ Route::middleware(['auth', 'super.admin'])->prefix('super-admin')->group(functio
     Route::get('/applications', [LoanApplicationController::class, 'index'])->name('super-admin.applications.index');
     Route::get('/applications/{application}', [LoanApplicationController::class, 'show'])->name('super-admin.applications.show');
     Route::post('/applications/{application}/status', [LoanApplicationController::class, 'updateStatus'])->name('super-admin.applications.updateStatus');
+
+    // New Loan Applications Management
+    Route::get('/new-applications', [LoanApplicationController::class, 'newApplications'])->name('super-admin.new-applications.index');
+    Route::get('/new-applications/{newApplication}', [LoanApplicationController::class, 'newApplicationShow'])->name('super-admin.new-applications.show');
+    Route::post('/new-applications/{newApplication}/status', [LoanApplicationController::class, 'updateNewLoanApplicationStatus'])->name('super-admin.new-applications.updateStatus');
     // Customers Management
     Route::get('/customers', [SuperAdminController::class, 'listCustomers'])->name('super-admin.customers.index');
     Route::post('/customers/{user}/reset-password', [SuperAdminController::class, 'resetCustomerPassword'])->name('super-admin.customers.reset-password');

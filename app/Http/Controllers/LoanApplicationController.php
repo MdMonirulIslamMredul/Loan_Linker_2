@@ -241,6 +241,42 @@ class LoanApplicationController extends Controller
         return view('branch-admin.new-applications.index', compact('applications', 'banks'));
     }
 
+    public function newApplications(Request $request)
+    {
+        $query = NewLoanApplication::with('customer')->latest();
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('service_category')) {
+            $query->where('service_category', $request->service_category);
+        }
+
+        if ($request->filled('service_type')) {
+            $query->where('service_type', $request->service_type);
+        }
+
+        if ($request->filled('bank_id')) {
+            $bankId = (int) $request->bank_id;
+            $query->whereJsonContains('bank_ids', $bankId);
+        }
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->to_date);
+        }
+
+        $applications = $query->paginate(15);
+
+        $banks = Bank::orderBy('name')->get();
+
+        return view('super-admin.new-applications.index', compact('applications', 'banks'));
+    }
+
     public function branchNewApplicationShow(NewLoanApplication $newApplication)
     {
         $newApplication->load('customer');
@@ -248,6 +284,15 @@ class LoanApplicationController extends Controller
         $banks = Bank::orderBy('name')->get();
 
         return view('branch-admin.new-applications.show', compact('newApplication', 'banks'));
+    }
+
+    public function newApplicationShow(NewLoanApplication $newApplication)
+    {
+        $newApplication->load('customer');
+
+        $banks = Bank::orderBy('name')->get();
+
+        return view('super-admin.new-applications.show', compact('newApplication', 'banks'));
     }
 
     public function updateNewLoanApplicationStatus(Request $request, NewLoanApplication $newApplication)
