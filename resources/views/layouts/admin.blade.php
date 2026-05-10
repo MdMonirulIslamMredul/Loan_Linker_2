@@ -187,12 +187,12 @@
                 <a href="{{ route('super-admin.bank-admins.create') }}"
                     class="menu-item {{ request()->routeIs('super-admin.bank-admins.create') ? 'active' : '' }}">
                     <i class="bi bi-person-badge"></i>
-                    <span>Create Bank Admin</span>
+                    <span>Create Bank Officer</span>
                 </a>
                 <a href="{{ route('super-admin.bank-admins.index') }}"
                     class="menu-item {{ request()->routeIs('super-admin.bank-admins.index') ? 'active' : '' }}">
                     <i class="bi bi-people"></i>
-                    <span>View Bank Admins</span>
+                    <span>View Bank Officers</span>
                 </a>
             </div>
 
@@ -201,7 +201,9 @@
                     request()->routeIs('super-admin.branches.*') || request()->routeIs('super-admin.branch-admins.*');
             @endphp
             {{-- <div class="menu-section-title">Branches Management</div> --}}
-            <a href="#branchesMenu" class="menu-item d-flex align-items-center {{ $branchesActive ? 'active' : '' }}"
+
+
+            {{-- <a href="#branchesMenu" class="menu-item d-flex align-items-center {{ $branchesActive ? 'active' : '' }}"
                 data-bs-toggle="collapse" role="button" aria-expanded="{{ $branchesActive ? 'true' : 'false' }}"
                 aria-controls="branchesMenu">
                 <span>
@@ -232,7 +234,7 @@
                     <i class="bi bi-people-fill"></i>
                     <span>View Branch Officers</span>
                 </a>
-            </div>
+            </div> --}}
 
             @php
                 $loansActive =
@@ -250,7 +252,7 @@
             </a>
 
             <div class="collapse submenu {{ $loansActive ? 'show' : '' }}" id="loansMenu">
-                <a href="{{ route('super-admin.loans.create') }}"
+                {{-- <a href="{{ route('super-admin.loans.create') }}"
                     class="menu-item {{ request()->routeIs('super-admin.loans.create') ? 'active' : '' }}">
                     <i class="bi bi-cash-coin"></i>
                     <span>Create Loan</span>
@@ -259,7 +261,7 @@
                     class="menu-item {{ request()->routeIs('super-admin.loans.index') ? 'active' : '' }}">
                     <i class="bi bi-list-ul"></i>
                     <span>View All Loans</span>
-                </a>
+                </a> --}}
                 <a href="{{ route('super-admin.loan-categories.index') }}"
                     class="menu-item {{ request()->routeIs('super-admin.loan-categories.*') ? 'active' : '' }}">
                     <i class="bi bi-tags"></i>

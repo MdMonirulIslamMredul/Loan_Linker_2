@@ -301,7 +301,7 @@
 
 
 
-    <div class="card border-0 shadow-sm">
+    {{-- <div class="card border-0 shadow-sm">
         <div class="card-header bg-white border-bottom">
             <h4 class="mb-0"><i class="bi bi-bank me-2"></i>Banks Overview</h4>
         </div>
@@ -355,7 +355,7 @@
                 </div>
             @endif
         </div>
-    </div>
+    </div> --}}
 
     <!-- Package Orders by Officers Overview -->
     <div class="card border-0 shadow-sm mt-4">

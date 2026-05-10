@@ -108,7 +108,7 @@
                                     <th class="py-3">Name</th>
                                     <th class="py-3">Email</th>
                                     <th class="py-3">Phone</th>
-                                    <th class="py-3">Branch</th>
+                                    {{-- <th class="py-3">Branch</th> --}}
                                     <th class="py-3">Bank</th>
                                     <th class="py-3">Status</th>
                                     <th class="py-3">Created Date</th>
@@ -145,12 +145,12 @@
                                             </span>
                                         </td>
 
-                                        <td>
+                                        {{-- <td>
                                             <small class="text-muted">
                                                 <i
                                                     class="bi bi-building me-1"></i>{{ $admin->branch->bank->name ?? 'N/A' }}
                                             </small>
-                                        </td>
+                                        </td> --}}
                                         <td>
                                             @if ($admin->is_active)
                                                 <span class="badge bg-success">

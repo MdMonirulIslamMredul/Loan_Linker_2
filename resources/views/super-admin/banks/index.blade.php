@@ -25,8 +25,8 @@
                             <th>Bank Name</th>
 
                             <th>Code</th>
-                            <th>Branches</th>
-                            <th>Users</th>
+                            {{-- <th>Branches</th> --}}
+                            <th>Bank Officer</th>
                             <th>Status</th>
                             <th>Created</th>
                             <th>Actions</th>
@@ -45,7 +45,7 @@
                                 </td>
                                 <td class="fw-semibold">{{ $bank->name }}</td>
                                 <td>{{ $bank->code }}</td>
-                                <td>{{ $bank->branches_count }}</td>
+                                {{-- <td>{{ $bank->branches_count }}</td> --}}
                                 <td>{{ $bank->users_count }}</td>
                                 <td>
                                     <span class="badge {{ $bank->is_active ? 'bg-success' : 'bg-danger' }}">

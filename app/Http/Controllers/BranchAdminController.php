@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Bank;
 use App\Models\BankOfficial;
 use App\Models\Loan;
 use App\Models\LoanCategory;
@@ -111,8 +112,9 @@ class BranchAdminController extends Controller
     {
         $user = Auth::user();
         $bankOfficial = $user->bankOfficial;
+        $banks = Bank::orderBy('name')->get();
 
-        return view('branch-admin.bank-official', compact('bankOfficial'));
+        return view('branch-admin.bank-official', compact('bankOfficial', 'banks'));
     }
 
     /**
@@ -123,7 +125,7 @@ class BranchAdminController extends Controller
         $user = Auth::user();
 
         $validated = $request->validate([
-            'bank_name' => 'required|string|max:255',
+            'bank_name' => 'required|string|max:255|exists:banks,name',
             'branch_name' => 'required|string|max:255',
             'designation' => 'required|string|max:255',
             'department' => 'required|string|max:255',
@@ -137,6 +139,11 @@ class BranchAdminController extends Controller
         $bankOfficial = $user->bankOfficial ?? new BankOfficial();
         $bankOfficial->fill($validated);
         $bankOfficial->save();
+
+        $bank = Bank::where('name', $validated['bank_name'])->first();
+        if ($bank) {
+            $user->bank_id = $bank->id;
+        }
 
         $user->bank_official_id = $bankOfficial->id;
         $user->save();

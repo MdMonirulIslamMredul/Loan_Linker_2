@@ -139,11 +139,11 @@
 
             <div class="menu-section-title">Applications</div>
 
-            <a href="{{ route('branch-admin.applications.index') }}"
+            {{-- <a href="{{ route('branch-admin.applications.index') }}"
                 class="menu-item {{ request()->routeIs('branch-admin.applications.index') ? 'active' : '' }}">
                 <i class="bi bi-file-text"></i>
                 <span>All Loan Applications</span>
-            </a>
+            </a> --}}
             <a href="{{ route('branch-admin.new-applications.index') }}"
                 class="menu-item {{ request()->routeIs('branch-admin.new-applications.*') ? 'active' : '' }}">
                 <i class="bi bi-file-earmark-plus"></i>

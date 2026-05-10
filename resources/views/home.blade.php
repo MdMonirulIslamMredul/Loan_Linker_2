@@ -23,7 +23,7 @@
         @if ($carouselSlides->count() > 0)
             <!-- Hero Slider -->
             <div class="position-relative">
-                <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" style="height: 650px;">
+                <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" style="height: 662px;">
                     <div class="carousel-inner h-100">
                         @foreach ($carouselSlides as $index => $slide)
                             <div class="carousel-item h-100 {{ $index === 0 ? 'active' : '' }}"
@@ -31,7 +31,7 @@
                                 <div class="container h-100">
                                     <div class="row h-100 align-items-center">
                                         <div class="col-lg-8">
-                                            <h1 class="display-3 fw-bold mb-4">{{ $slide->title ?? 'Loan Linker' }}</h1>
+                                            <h1 class="display-3 fw-bold mb-4">{{ $slide->title }}</h1>
                                             <p class="lead mb-4">{{ Str::limit($slide->short_description, 120) }}</p>
 
                                             @if ($slide->button_name && $slide->button_url)

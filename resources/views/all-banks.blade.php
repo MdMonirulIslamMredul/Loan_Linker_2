@@ -51,7 +51,7 @@
                         <p class="card-text text-muted small" style="min-height: 60px;">-</p>
                         @endif
 
-                        @php
+                        {{-- @php
                             $loanCount = $bank->branches->sum(function($branch) {
                                 return $branch->loans->where('is_active', true)->count();
                             });
@@ -66,12 +66,12 @@
                                 <div class="fs-4 fw-bold text-primary">{{ $loanCount }}</div>
                                 <div class="text-muted">Loan Offers</div>
                             </div>
-                        </div>
+                        </div> --}}
 
                         <div class="d-flex gap-2">
-                            <a href="{{ route('loans.all') }}?bank={{ $bank->id }}" class="btn btn-primary flex-fill">
+                            {{-- <a href="{{ route('loans.all') }}?bank={{ $bank->id }}" class="btn btn-primary flex-fill">
                                 <i class="bi bi-cash-stack me-1"></i>View Loans
-                            </a>
+                            </a> --}}
                             @if($bank->website)
                             <a href="{{ $bank->website }}" target="_blank" class="btn btn-outline-secondary" title="Visit Website">
                                 <i class="bi bi-globe"></i>
