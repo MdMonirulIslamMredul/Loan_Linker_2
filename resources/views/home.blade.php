@@ -3,6 +3,18 @@
 @section('title', 'Loan Linker - Find the Best Loan Offers in Bangladesh')
 
 @section('content')
+
+<style>
+
+.carousel-control-next {
+    right: -40px;
+}
+
+.carousel-control-prev {
+    left: -40px;
+}
+
+</style>
     <!-- Hero Section with Banner Slider -->
     <section class="position-relative bg-primary text-white overflow-hidden"
         style="background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);">
@@ -11,11 +23,11 @@
         @if ($carouselSlides->count() > 0)
             <!-- Hero Slider -->
             <div class="position-relative">
-                <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" style="height: 550px;">
+                <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" style="height: 650px;">
                     <div class="carousel-inner h-100">
                         @foreach ($carouselSlides as $index => $slide)
                             <div class="carousel-item h-100 {{ $index === 0 ? 'active' : '' }}"
-                                style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.4)){{ $slide->image ? ", url('" . asset('storage/' . $slide->image) . "')" : '' }}; background-size: cover; background-position: center;">
+                                style="background: linear-gradient(rgba(0, 0, 0, 0.327), rgba(0, 0, 0, 0.242)){{ $slide->image ? ", url('" . asset('storage/' . $slide->image) . "')" : '' }}; background-size: cover; background-position: center;">
                                 <div class="container h-100">
                                     <div class="row h-100 align-items-center">
                                         <div class="col-lg-8">
@@ -37,11 +49,11 @@
                     @if ($carouselSlides->count() > 1)
                         <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel"
                             data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="carousel-control-prev-icon bg-dark rounded-circle p-3"aria-hidden="true"></span>
                         </button>
                         <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel"
                             data-bs-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="carousel-control-next-icon bg-dark rounded-circle p-3" aria-hidden="true"></span>
                         </button>
 
                         <div class="carousel-indicators">
@@ -65,7 +77,7 @@
     </section>
 
     <!-- Search Section -->
-    <section class="bg-white py-4 shadow position-relative" style="margin-top: -50px; z-index: 100;">
+    {{-- <section class="bg-white py-4 shadow position-relative" style="margin-top: -50px; z-index: 100;">
         <div class="container">
             <form action="{{ route('search') }}" method="GET" class="mx-auto" style="max-width: 800px;">
                 <div class="row g-3">
@@ -81,7 +93,7 @@
                 </div>
             </form>
         </div>
-    </section>
+    </section> --}}
 
     <!-- Introduction Section -->
     <section class="py-5 bg-white">
@@ -388,11 +400,11 @@
                     @if ($loanCategories->count() > 3)
                         <button class="carousel-control-prev" type="button" data-bs-target="#categoryCarouselDesktop"
                             data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="carousel-control-prev-icon bg-dark rounded-circle p-3"aria-hidden="true"></span>
                         </button>
                         <button class="carousel-control-next" type="button" data-bs-target="#categoryCarouselDesktop"
                             data-bs-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="carousel-control-next-icon bg-dark rounded-circle p-3" aria-hidden="true"></span>
                         </button>
 
                         <div class="carousel-indicators mt-4">
@@ -435,11 +447,11 @@
                     @if ($loanCategories->count() > 1)
                         <button class="carousel-control-prev" type="button" data-bs-target="#categoryCarouselMobile"
                             data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="carousel-control-prev-icon bg-dark rounded-circle p-3"aria-hidden="true"></span>
                         </button>
                         <button class="carousel-control-next" type="button" data-bs-target="#categoryCarouselMobile"
                             data-bs-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="carousel-control-next-icon bg-dark rounded-circle p-3" aria-hidden="true"></span>
                         </button>
 
                         <div class="carousel-indicators mt-4">
