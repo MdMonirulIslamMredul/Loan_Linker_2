@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\LeadAccess;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
@@ -27,5 +28,10 @@ class NewLoanApplication extends Model
     public function customer()
     {
         return $this->belongsTo(User::class, 'customer_id');
+    }
+
+    public function leadAccesses()
+    {
+        return $this->hasMany(LeadAccess::class, 'newloan_id');
     }
 }

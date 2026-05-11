@@ -46,6 +46,19 @@
                                 <p><strong>Additional Notes:</strong></p>
                                 <p>{{ $app->additional_notes ?: 'No additional notes provided.' }}</p>
                             </div>
+
+                            <div class="mt-3">
+                                @if ($app->leadAccesses->isNotEmpty())
+                                    <p><strong>Unlocked by:</strong>
+                                        {{ $app->leadAccesses->map(function ($access) {
+                                            return optional($access->officer)->name;
+                                        })->filter()->join(', ') ?: 'Unknown officer' }}
+                                    </p>
+                                    <a href="{{ route('customer.new_application.officer_details', $app) }}" class="btn btn-sm btn-outline-primary">View officer details</a>
+                                @else
+                                    <p><strong>Unlocked by:</strong> <span class="text-muted">Not unlocked yet</span></p>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 @endforeach

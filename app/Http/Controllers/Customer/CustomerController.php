@@ -61,7 +61,7 @@ class CustomerController extends Controller
 
         $banks = Bank::orderBy('name')->get();
 
-        return view('customer.new-application', compact('banks'));
+        return view('customer.new-application.create', compact('banks'));
     }
 
     /**
@@ -107,7 +107,7 @@ class CustomerController extends Controller
     }
 
     /**
-     * List customer's loan applications.
+     * List customer's new loan requests.
      */
     public function applications(Request $request)
     {
@@ -117,12 +117,30 @@ class CustomerController extends Controller
             abort(403, 'Unauthorized.');
         }
 
-        $applications = LoanApplication::with(['loan.branch.bank'])
+        $applications = NewLoanApplication::with(['customer', 'leadAccesses.officer'])
             ->where('customer_id', $user->id)
             ->latest()
             ->paginate(15);
 
-        return view('customer.applications', compact('applications'));
+        return view('customer.new-application.index', compact('applications'));
+    }
+
+    public function newApplicationOfficerDetails(NewLoanApplication $newApplication)
+    {
+        $user = auth()->user();
+
+        if (!$user || ($user->role ?? '') !== 'customer' || $newApplication->customer_id !== $user->id) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $unlocks = $newApplication->leadAccesses()->with('officer')->get();
+
+        if ($unlocks->isEmpty()) {
+            return redirect()->route('customer.applications')
+                ->with('error', 'This request has not been unlocked by any officer yet.');
+        }
+
+        return view('customer.new-application.officer_details', compact('newApplication', 'unlocks'));
     }
 
     public function storeNewApplication(Request $request)
