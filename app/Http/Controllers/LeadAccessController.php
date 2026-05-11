@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\LeadAccess;
 use App\Models\LoanApplication;
+use App\Models\NewLoanApplication;
 use Illuminate\Http\Request;
 
 class LeadAccessController extends Controller
@@ -38,6 +39,38 @@ class LeadAccessController extends Controller
         LeadAccess::create([
             'officer_id' => $user->id,
             'application_id' => $application->id,
+            'purchased_at' => now(),
+        ]);
+
+        return redirect()->back()->with('success', 'Lead unlocked and deducted from your balance.');
+    }
+
+    public function unlockNewApplication(NewLoanApplication $newApplication)
+    {
+        $user = auth()->user();
+
+        if ($user->isSuperAdmin() || $user->isBankAdmin()) {
+            return redirect()->back();
+        }
+
+        $exists = LeadAccess::where('officer_id', $user->id)
+            ->where('newloan_id', $newApplication->id)
+            ->exists();
+
+        if ($exists) {
+            return redirect()->back()->with('success', 'Lead already unlocked.');
+        }
+
+        if (($user->lead_balance ?? 0) <= 0) {
+            return redirect()->back()->with('error', 'Insufficient lead balance. Please purchase a package.');
+        }
+
+        $user->lead_balance = $user->lead_balance - 1;
+        $user->save();
+
+        LeadAccess::create([
+            'officer_id' => $user->id,
+            'newloan_id' => $newApplication->id,
             'purchased_at' => now(),
         ]);
 

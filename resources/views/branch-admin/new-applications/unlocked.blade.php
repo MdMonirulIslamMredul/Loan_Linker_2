@@ -1,46 +1,19 @@
 @extends('layouts.branch-admin')
 
+@section('title', 'Unlocked New Loan Requests')
+
 @section('content')
     <div class="container-fluid py-4">
         <div class="row mb-4">
             <div class="col-md-6">
-                <h2><i class="bi bi-file-earmark-plus me-2"></i>New Loan Requests</h2>
-                <p class="text-muted">Manage, filter and review incoming customer loan requests.</p>
+                <h2><i class="bi bi-unlock me-2"></i>Unlocked New Loan Requests</h2>
+                <p class="text-muted">Review the new loan requests you have unlocked.</p>
             </div>
         </div>
 
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
-        @php
-            $user = auth()->user();
-            $hasAnyLeads = false;
-
-            if ($user->isSuperAdmin() || $user->isBankAdmin() || $user->isBranchAdmin()) {
-                $hasAnyLeads = true;
-            } else {
-                $hasAnyLeads =
-                    (int) ($user->lead_balance ?? 0) > 0 ||
-                    \App\Models\LeadAccess::where('officer_id', $user->id)
-                        ->whereNotNull('newloan_id')
-                        ->exists();
-            }
-        @endphp
-
-        @unless ($hasAnyLeads)
-            <div class="alert alert-info">
-                You don't have any purchased leads. <a href="{{ route('branch-admin.packages.gallery') }}"
-                    class="alert-link">Purchase a package</a> to unlock new loan requests.
-            </div>
-        @endunless
-
         <div class="card mb-4 border-0 shadow-sm">
             <div class="card-body">
-                <form method="GET" action="{{ route('branch-admin.new-applications.index') }}" class="row g-3">
+                <form method="GET" action="{{ route('branch-admin.new-applications.unlocked') }}" class="row g-3">
                     <div class="col-md-3">
                         <label for="status" class="form-label">Status</label>
                         <select name="status" id="status" class="form-select">
@@ -53,30 +26,11 @@
                     </div>
 
                     <div class="col-md-3">
-                        <label for="service_category" class="form-label">Service Category</label>
-                        <select name="service_category" id="service_category" class="form-select">
-                            <option value="">Any Category</option>
-                            <option value="credit_card" {{ request('service_category') == 'credit_card' ? 'selected' : '' }}>Credit Card</option>
-                            <option value="loan" {{ request('service_category') == 'loan' ? 'selected' : '' }}>Loan</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-3">
-                        <label for="service_type" class="form-label">Service Type</label>
+                        <label for="service_type" class="form-label">Loan Type</label>
                         <select name="service_type" id="service_type" class="form-select">
-                            <option value="">Any Type</option>
+                            <option value="">All Types</option>
                             <option value="visa_credit_card" {{ request('service_type') == 'visa_credit_card' ? 'selected' : '' }}>Visa Credit Card</option>
                             <option value="personal_loan" {{ request('service_type') == 'personal_loan' ? 'selected' : '' }}>Personal Loan</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-3">
-                        <label for="bank_id" class="form-label">Bank</label>
-                        <select name="bank_id" id="bank_id" class="form-select">
-                            <option value="">Any Bank</option>
-                            @foreach ($banks as $bank)
-                                <option value="{{ $bank->id }}" {{ request('bank_id') == $bank->id ? 'selected' : '' }}>{{ $bank->name }}</option>
-                            @endforeach
                         </select>
                     </div>
 
@@ -94,7 +48,7 @@
                         <button type="submit" class="btn btn-primary me-2">
                             <i class="bi bi-filter me-2"></i>Filter
                         </button>
-                        <a href="{{ route('branch-admin.new-applications.index') }}" class="btn btn-secondary">
+                        <a href="{{ route('branch-admin.new-applications.unlocked') }}" class="btn btn-secondary">
                             <i class="bi bi-x-circle me-2"></i>Clear
                         </a>
                     </div>
@@ -126,18 +80,8 @@
                                 @foreach ($applications as $application)
                                     <tr>
                                         <td><strong>#{{ $application->id }}</strong></td>
-                                        @php
-                                            $canView = false;
-                                            if ($user->isSuperAdmin() || $user->isBankAdmin()) {
-                                                $canView = true;
-                                            } else {
-                                                $canView = \App\Models\LeadAccess::where('officer_id', $user->id)
-                                                    ->where('newloan_id', $application->id)
-                                                    ->exists();
-                                            }
-                                        @endphp
                                         <td>{{ optional($application->customer)->name ?? 'Guest' }}</td>
-                                        <td>{{ $canView ? (optional($application->customer)->email ?? 'N/A') : 'Locked' }}</td>
+                                        <td>{{ optional($application->customer)->email ?? 'N/A' }}</td>
                                         <td><strong>৳{{ number_format($application->expected_amount, 2) }}</strong></td>
                                         <td>{{ $application->tenure_months }} mo</td>
                                         <td class="text-capitalize">{{ str_replace('_', ' ', $application->service_category) }}</td>
@@ -163,39 +107,9 @@
                                         </td>
                                         <td>{{ $application->created_at->format('d M, Y') }}</td>
                                         <td>
-                                            @php
-                                                $canView = false;
-                                                if ($user->isSuperAdmin() || $user->isBankAdmin()) {
-                                                    $canView = true;
-                                                } else {
-                                                    $canView = \App\Models\LeadAccess::where('officer_id', $user->id)
-                                                        ->where('newloan_id', $application->id)
-                                                        ->exists();
-                                                }
-                                            @endphp
-
-                                            @if ($canView)
-                                                <a href="{{ route('branch-admin.new-applications.show', $application) }}"
-                                                    class="btn btn-sm btn-primary">
-                                                    <i class="bi bi-eye me-1"></i>View
-                                                </a>
-                                            @else
-                                                @if ((int) ($user->lead_balance ?? 0) > 0)
-                                                    <form action="{{ route('branch-admin.new-applications.unlock', $application) }}"
-                                                        method="POST" class="d-inline">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-sm btn-outline-primary">
-                                                            <i class="bi bi-unlock me-1"></i>Unlock to View (1)
-                                                        </button>
-                                                    </form>
-                                                @else
-                                                    <a href="{{ route('branch-admin.packages.gallery') }}"
-                                                        class="btn btn-sm btn-outline-secondary"
-                                                        title="Purchase leads to view">
-                                                        <i class="bi bi-cart me-1"></i>Buy Leads
-                                                    </a>
-                                                @endif
-                                            @endif
+                                            <a href="{{ route('branch-admin.new-applications.show', $application) }}" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-eye me-1"></i>View
+                                            </a>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -209,7 +123,7 @@
                 @else
                     <div class="text-center py-5">
                         <i class="bi bi-inbox display-1 text-muted"></i>
-                        <p class="text-muted mt-3">No new loan requests found.</p>
+                        <p class="text-muted mt-3">No unlocked new loan requests found.</p>
                     </div>
                 @endif
             </div>
