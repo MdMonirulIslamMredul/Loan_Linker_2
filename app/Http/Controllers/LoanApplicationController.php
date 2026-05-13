@@ -241,6 +241,40 @@ class LoanApplicationController extends Controller
         return view('branch-admin.new-applications.index', compact('applications', 'banks'));
     }
 
+    public function branchUnlockedNewApplications(Request $request)
+    {
+        $user = auth()->user();
+
+        $unlockedIds = \App\Models\LeadAccess::where('officer_id', $user->id)
+            ->whereNotNull('newloan_id')
+            ->pluck('newloan_id');
+
+        $query = NewLoanApplication::with('customer')
+            ->whereIn('id', $unlockedIds)
+            ->latest();
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('service_type')) {
+            $query->where('service_type', $request->service_type);
+        }
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->to_date);
+        }
+
+        $applications = $query->paginate(15);
+        $banks = Bank::orderBy('name')->get();
+
+        return view('branch-admin.new-applications.unlocked', compact('applications', 'banks'));
+    }
+
     public function newApplications(Request $request)
     {
         $query = NewLoanApplication::with('customer')->latest();
@@ -281,9 +315,20 @@ class LoanApplicationController extends Controller
     {
         $newApplication->load('customer');
 
+        $user = auth()->user();
+        $hasAccess = false;
+
+        if ($user->isSuperAdmin() || $user->isBankAdmin()) {
+            $hasAccess = true;
+        } else {
+            $hasAccess = \App\Models\LeadAccess::where('officer_id', $user->id)
+                ->where('newloan_id', $newApplication->id)
+                ->exists();
+        }
+
         $banks = Bank::orderBy('name')->get();
 
-        return view('branch-admin.new-applications.show', compact('newApplication', 'banks'));
+        return view('branch-admin.new-applications.show', compact('newApplication', 'banks', 'hasAccess'));
     }
 
     public function newApplicationShow(NewLoanApplication $newApplication)

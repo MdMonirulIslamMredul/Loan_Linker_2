@@ -47,16 +47,44 @@
                                 <p>{{ $app->additional_notes ?: 'No additional notes provided.' }}</p>
                             </div>
 
-                            <div class="mt-3">
+                            <div class="mt-4">
+                                <h6><i class="bi bi-unlock-fill text-primary me-2"></i>Officer Unlock Details</h6>
                                 @if ($app->leadAccesses->isNotEmpty())
-                                    <p><strong>Unlocked by:</strong>
-                                        {{ $app->leadAccesses->map(function ($access) {
-                                            return optional($access->officer)->name;
-                                        })->filter()->join(', ') ?: 'Unknown officer' }}
-                                    </p>
-                                    <a href="{{ route('customer.new_application.officer_details', $app) }}" class="btn btn-sm btn-outline-primary">View officer details</a>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-sm align-middle mt-2 border-top">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th class="ps-3">Officer Name</th>
+                                                    <th>Email</th>
+                                                    <th>Phone</th>
+                                                    <th class="text-end pe-3">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($app->leadAccesses as $access)
+                                                    <tr>
+                                                        <td class="ps-3 fw-medium">
+                                                            {{ optional($access->officer)->name ?? 'Unknown Officer' }}
+                                                        </td>
+                                                        <td>{{ optional($access->officer)->email ?? 'N/A' }}</td>
+                                                        <td>{{ optional($access->officer)->phone ?? 'N/A' }}</td>
+                                                        <td class="text-end pe-3">
+                                                            <a href="{{ route('customer.new_application.officer_details', ['newApplication' => $app, 'officer' => $access->officer_id]) }}" class="btn btn-sm btn-primary rounded-pill px-3">
+                                                                <i class="bi bi-eye me-1"></i> View
+                                                            </a>
+                                                            <a href="{{ route('chat.index', ['user_id' => $access->officer_id, 'user_name' => optional($access->officer)->name, 'user_role' => optional($access->officer)->role]) }}" class="btn btn-sm btn-success rounded-pill px-3 ms-1">
+                                                                <i class="bi bi-chat-dots me-1"></i> Chat
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 @else
-                                    <p><strong>Unlocked by:</strong> <span class="text-muted">Not unlocked yet</span></p>
+                                    <div class="p-3 bg-light rounded text-muted">
+                                        <i class="bi bi-info-circle me-2"></i> Not unlocked by any officer yet.
+                                    </div>
                                 @endif
                             </div>
                         </div>
