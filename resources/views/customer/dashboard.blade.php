@@ -54,22 +54,30 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Loan</th>
+                                <th>Request</th>
                                 <th>Amount</th>
                                 <th>Status</th>
-                                <th>Admin Feedback</th>
+                                <th>Notes</th>
                                 <th>Submitted</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($recentApplications as $app)
                                 <tr>
                                     <td>{{ $app->id }}</td>
-                                    <td>{{ optional($app->loan)->name }}</td>
-                                    <td>{{ number_format($app->loan_amount) }}</td>
+                                    <td>{{ ucfirst(str_replace('_', ' ', $app->service_type)) }}</td>
+                                    <td>৳{{ number_format($app->expected_amount, 2) }}</td>
                                     <td>{{ ucfirst($app->status) }}</td>
-                                    <td>{{ $app->admin_notes ?? '-' }}</td>
+                                    <td>{{ $app->additional_notes ?? '-' }}</td>
                                     <td>{{ $app->created_at->format('M d, Y') }}</td>
+                                    <td>
+                                        <a href="{{ route('customer.application.show', $app->id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                        @if ($app->status === 'pending')
+                                            <a href="{{ route('customer.application.edit', $app->id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                        @endif
+                                        <a href="{{ route('customer.application.delete', $app->id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this application?');">Delete</a>
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
