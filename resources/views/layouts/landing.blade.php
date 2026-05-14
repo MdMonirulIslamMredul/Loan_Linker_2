@@ -76,7 +76,10 @@
 
                         @auth
                             <li class="nav-item">
-                                @php $role = auth()->user()->role; @endphp
+                                @php 
+                                $role = auth()->user()->role;
+                                 $avatar = auth()->user()->profile_photo ?? auth()->user()->avatar ?? auth()->user()->image ?? null; 
+                                @endphp
                                 @if ($role === 'customer')
                                     <a class="nav-link fw-medium" href="{{ url('customer/dashboard') }}">Dashboard</a>
                                 @elseif ($role === 'super_admin')
@@ -90,13 +93,31 @@
                                     <a class="nav-link fw-medium" href="{{ url('/') }}">Dashboard</a>
                                 @endif
                             </li>
-                            <li class="nav-item ms-lg-2">
-                                <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                            <li class="nav-item dropdown ms-lg-3">
+                                <a class="nav-link d-flex align-items-center gap-2 dropdown-toggle" href="#" id="customerNavDropdown"
+                                    role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    @if ($avatar)
+                                        <img src="{{ asset('storage/' . $avatar) }}" alt="{{ auth()->user()->name }}"
+                                            class="rounded-circle" style="width: 34px; height: 34px; object-fit: cover;">
+                                    @else
+                                        <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white"
+                                            style="width: 34px; height: 34px;">
+                                            <i class="bi bi-person-fill"></i>
+                                        </span>
+                                    @endif
+                                    <span>{{ auth()->user()->name ?? 'Account' }}</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="customerNavDropdown">
+                                    <li><a class="dropdown-item" href="{{ route('customer.profile') }}">My Profile</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('customer.profile.password.edit') }}">Change Password</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                       <form method="POST" action="{{ route('logout') }}" class="m-0 p-0">
                                     @csrf
-                                    <button type="submit" class="btn btn-danger">
-                                        Logout
-                                    </button>
+                                    <button type="submit" class="dropdown-item text-danger">Logout</button>
                                 </form>
+                                    </li>
+                                </ul>
                             </li>
                         @else
                             <li class="nav-item">

@@ -243,6 +243,7 @@ Route::middleware(['auth', 'branch.admin'])->prefix('branch-admin')->group(funct
 
     // Unlock lead for a specific application
     Route::post('/applications/{application}/unlock', [LeadAccessController::class, 'unlock'])->name('branch-admin.applications.unlock');
+    Route::post('/new-applications/{newApplication}/unlock', [LeadAccessController::class, 'unlockNewApplication'])->name('branch-admin.new-applications.unlock');
     Route::get('/packages/history', [OfficerPurchaseController::class, 'history'])->name('branch-admin.packages.history');
 });
 
@@ -265,6 +266,7 @@ Route::middleware(['auth', 'branch.admin'])->prefix('branch-admin')->group(funct
 
     // New Loan Requests Management
     Route::get('/new-applications', [LoanApplicationController::class, 'branchNewApplications'])->name('branch-admin.new-applications.index');
+    Route::get('/new-applications/unlocked', [LoanApplicationController::class, 'branchUnlockedNewApplications'])->name('branch-admin.new-applications.unlocked');
     Route::get('/new-applications/{newApplication}', [LoanApplicationController::class, 'branchNewApplicationShow'])->name('branch-admin.new-applications.show');
     Route::post('/new-applications/{newApplication}/status', [LoanApplicationController::class, 'updateNewLoanApplicationStatus'])->name('branch-admin.new-applications.updateStatus');
 
@@ -295,5 +297,21 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->group(function () {
     Route::get('/applications', [App\Http\Controllers\Customer\CustomerController::class, 'applications'])->name('customer.applications');
     Route::get('/applications/create', [App\Http\Controllers\Customer\CustomerController::class, 'createNewApplication'])->name('customer.new_application.create');
     Route::post('/applications', [App\Http\Controllers\Customer\CustomerController::class, 'storeNewApplication'])->name('customer.new_application.store');
+    Route::get('/applications/{newApplication}', [App\Http\Controllers\Customer\CustomerController::class, 'showNewApplication'])->name('customer.application.show');
+    Route::get('/applications/{newApplication}/edit', [App\Http\Controllers\Customer\CustomerController::class, 'editNewApplication'])->name('customer.application.edit');
+    Route::put('/applications/{newApplication}', [App\Http\Controllers\Customer\CustomerController::class, 'updateNewApplication'])->name('customer.application.update');
+    Route::get('/applications/{newApplication}/delete', [App\Http\Controllers\Customer\CustomerController::class, 'deleteNewApplication'])->name('customer.application.delete');
+    Route::get('/applications/{newApplication}/officer-details/{officer?}', [App\Http\Controllers\Customer\CustomerController::class, 'newApplicationOfficerDetails'])
+        ->name('customer.new_application.officer_details');
     // additional customer panel routes can be added here under App\Http\Controllers\Customer namespace
+});
+
+// Chat Routes
+Route::middleware(['auth'])->prefix('chat')->group(function () {
+    Route::get('/', [\App\Http\Controllers\ChatController::class, 'index'])->name('chat.index');
+    Route::get('/conversations', [\App\Http\Controllers\ChatController::class, 'getConversations'])->name('chat.conversations');
+    Route::get('/conversations/{conversation}/messages', [\App\Http\Controllers\ChatController::class, 'getMessages'])->name('chat.messages');
+    Route::post('/messages', [\App\Http\Controllers\ChatController::class, 'sendMessage'])->name('chat.send');
+    Route::post('/conversations/{conversation}/read', [\App\Http\Controllers\ChatController::class, 'markAsSeen'])->name('chat.read');
+    Route::get('/users/search', [\App\Http\Controllers\ChatController::class, 'searchUsers'])->name('chat.users.search');
 });

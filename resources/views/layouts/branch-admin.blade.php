@@ -125,6 +125,23 @@
                 <span>Dashboard</span>
             </a>
 
+            <a href="{{ route('chat.index') }}"
+                class="menu-item {{ request()->routeIs('chat.*') ? 'active' : '' }}">
+                <i class="bi bi-chat-dots"></i>
+                <span>Chat</span>
+                @php
+                    $unreadChatCount = \App\Models\Message::where('is_seen', false)
+                        ->where('sender_id', '!=', auth()->id())
+                        ->whereHas('conversation', function ($query) {
+                            $query->where('user_one_id', auth()->id())
+                                  ->orWhere('user_two_id', auth()->id());
+                        })->count();
+                @endphp
+                @if($unreadChatCount > 0)
+                    <span class="badge bg-danger ms-auto rounded-pill">{{ $unreadChatCount }}</span>
+                @endif
+            </a>
+
             <a href="/branch-admin/profile" class="menu-item {{ request()->routeIs('branch-admin.profile') ? 'active' : '' }}">
                 <i class="bi bi-person"></i>
                 <span>Profile</span>
@@ -146,15 +163,37 @@
 
             <div class="menu-section-title">Applications</div>
 
+            @php
+                $pendingNewRequestsQuery = \App\Models\NewLoanApplication::where('status', 'pending');
+
+                if (! auth()->user()->isSuperAdmin() && ! auth()->user()->isBankAdmin()) {
+                    $unlockedNewLoanIds = \App\Models\LeadAccess::where('officer_id', auth()->id())
+                        ->whereNotNull('newloan_id')
+                        ->pluck('newloan_id');
+
+                    $pendingNewRequestsQuery->whereNotIn('id', $unlockedNewLoanIds);
+                }
+
+                $pendingNewRequests = $pendingNewRequestsQuery->count();
+            @endphp
+
             {{-- <a href="{{ route('branch-admin.applications.index') }}"
                 class="menu-item {{ request()->routeIs('branch-admin.applications.index') ? 'active' : '' }}">
                 <i class="bi bi-file-text"></i>
                 <span>All Loan Applications</span>
             </a> --}}
             <a href="{{ route('branch-admin.new-applications.index') }}"
-                class="menu-item {{ request()->routeIs('branch-admin.new-applications.*') ? 'active' : '' }}">
+                class="menu-item {{ request()->routeIs('branch-admin.new-applications.index') ? 'active' : '' }}">
                 <i class="bi bi-file-earmark-plus"></i>
                 <span>New Loan Requests</span>
+                @if ($pendingNewRequests)
+                    <span class="badge bg-danger ms-2">{{ $pendingNewRequests }}</span>
+                @endif
+            </a>
+            <a href="{{ route('branch-admin.new-applications.unlocked') }}"
+                class="menu-item {{ request()->routeIs('branch-admin.new-applications.unlocked') ? 'active' : '' }}">
+                <i class="bi bi-unlock"></i>
+                <span>Unlocked Requests</span>
             </a>
 
             <div class="menu-section-title">Packages</div>
