@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
-@section('title', 'Create Branch Admin')
-@section('dashboard-title', 'Super Admin - Create Branch Admin')
+@section('title', 'Create  Bank Officers ')
+@section('dashboard-title', 'Super Admin - Create  Bank Officers ')
 
 @section('content')
     <div class="card border-0 shadow-sm" style="max-width: 800px; margin: 0 auto;">

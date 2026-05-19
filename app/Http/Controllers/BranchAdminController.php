@@ -6,6 +6,7 @@ use App\Models\Bank;
 use App\Models\BankOfficial;
 use App\Models\Loan;
 use App\Models\LoanCategory;
+use App\Models\NewLoanApplication;
 use App\Models\OfficerDocument;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,6 +24,12 @@ class BranchAdminController extends Controller
         $branch = $user->branch;
         $bank = $user->bank;
 
+        $newApplications = NewLoanApplication::where('status', 'pending')
+            ->orderBy('created_at', 'desc')
+            ->paginate(5);
+
+        $newRequestsCount = NewLoanApplication::where('status', 'pending')->count();
+
         // Get loan applications for this branch's loans
         $applications = \App\Models\LoanApplication::whereHas('loan', function ($query) use ($user) {
             $query->where('branch_id', $user->branch_id)
@@ -32,7 +39,7 @@ class BranchAdminController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(5);
 
-        return view('branch-admin.dashboard', compact('branch', 'bank', 'applications'));
+        return view('branch-admin.dashboard', compact('branch', 'bank', 'applications', 'newApplications', 'newRequestsCount'));
     }
 
     /**

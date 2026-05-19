@@ -88,6 +88,8 @@ class BankAdminController extends Controller
             'role' => 'branch_admin',
             'bank_id' => Auth::user()->bank_id,
             'branch_id' => $validated['branch_id'],
+            'is_access' => null,
+            'access_mes' => null,
         ]);
 
         return redirect()->route('bank-admin.dashboard')->with('success', 'Branch Admin created successfully.');

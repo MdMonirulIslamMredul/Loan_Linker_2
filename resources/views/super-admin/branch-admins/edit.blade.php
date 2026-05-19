@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
-@section('title', 'Edit Branch Admin')
-@section('dashboard-title', 'Super Admin - Edit Branch Admin')
+@section('title', 'Edit  Bank Officers Details')
+@section('dashboard-title', 'Super Admin - Edit  Bank Officers Details')
 
 @section('content')
     <div class="card border-0 shadow-sm" style="max-width: 800px; margin: 0 auto;">
@@ -11,8 +11,8 @@
                     <i class="bi bi-person-badge fs-2 text-success"></i>
                 </div>
                 <div>
-                    <h2 class="mb-1 fw-bold">Edit Branch Admin / Officer </h2>
-                    <p class="mb-0 text-muted">Update branch administrator details</p>
+                    <h2 class="mb-1 fw-bold">Edit Bank Officer </h2>
+                    <p class="mb-0 text-muted">Update bank officer details</p>
                 </div>
             </div>
 
@@ -60,22 +60,21 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="branch_id" class="form-label fw-semibold">
-                        <i class="bi bi-diagram-3 me-1"></i>Branch
+                    <label for="bank_select" class="form-label fw-semibold">
+                        <i class="bi bi-bank me-1"></i>Bank
                     </label>
-                    <select name="branch_id" id="branch_id" class="form-select" required>
-                        <option value="">Select a branch</option>
-                        @foreach ($branches as $branch)
-                            <option value="{{ $branch->id }}"
-                                {{ old('branch_id', $user->branch_id) == $branch->id ? 'selected' : '' }}>
-                                {{ $branch->name }} - {{ $branch->bank->name ?? 'N/A' }}
+                    <select id="bank_select" name="bank_id" class="form-select">
+                        <option value="">Select a bank</option>
+                        @foreach ($banks as $bank)
+                            <option value="{{ $bank->id }}"
+                                {{ old('bank_id', $user->bank_id) == $bank->id ? 'selected' : '' }}>
+                                {{ $bank->name }}
                             </option>
                         @endforeach
                     </select>
-                    @error('branch_id')
-                        <div class="text-danger small mt-1">{{ $message }}</div>
-                    @enderror
                 </div>
+
+                <input type="hidden" name="branch_id" value="{{ old('branch_id', $user->branch_id) }}">
 
                 <hr class="my-4">
 
@@ -125,3 +124,4 @@
         </div>
     </div>
 @endsection
+

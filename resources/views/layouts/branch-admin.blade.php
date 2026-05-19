@@ -161,52 +161,54 @@
                 <span>Add New Loan</span>
             </a> --}}
 
-            <div class="menu-section-title">Applications</div>
+            @if(auth()->user()->is_access)
+                <div class="menu-section-title">Applications</div>
 
-            @php
-                $pendingNewRequestsQuery = \App\Models\NewLoanApplication::where('status', 'pending');
+                @php
+                    $pendingNewRequestsQuery = \App\Models\NewLoanApplication::where('status', 'pending');
 
-                if (! auth()->user()->isSuperAdmin() && ! auth()->user()->isBankAdmin()) {
-                    $unlockedNewLoanIds = \App\Models\LeadAccess::where('officer_id', auth()->id())
-                        ->whereNotNull('newloan_id')
-                        ->pluck('newloan_id');
+                    if (! auth()->user()->isSuperAdmin() && ! auth()->user()->isBankAdmin()) {
+                        $unlockedNewLoanIds = \App\Models\LeadAccess::where('officer_id', auth()->id())
+                            ->whereNotNull('newloan_id')
+                            ->pluck('newloan_id');
 
-                    $pendingNewRequestsQuery->whereNotIn('id', $unlockedNewLoanIds);
-                }
+                        $pendingNewRequestsQuery->whereNotIn('id', $unlockedNewLoanIds);
+                    }
 
-                $pendingNewRequests = $pendingNewRequestsQuery->count();
-            @endphp
+                    $pendingNewRequests = $pendingNewRequestsQuery->count();
+                @endphp
 
-            {{-- <a href="{{ route('branch-admin.applications.index') }}"
-                class="menu-item {{ request()->routeIs('branch-admin.applications.index') ? 'active' : '' }}">
-                <i class="bi bi-file-text"></i>
-                <span>All Loan Applications</span>
-            </a> --}}
-            <a href="{{ route('branch-admin.new-applications.index') }}"
-                class="menu-item {{ request()->routeIs('branch-admin.new-applications.index') ? 'active' : '' }}">
-                <i class="bi bi-file-earmark-plus"></i>
-                <span>New Loan Requests</span>
-                @if ($pendingNewRequests)
-                    <span class="badge bg-danger ms-2">{{ $pendingNewRequests }}</span>
-                @endif
-            </a>
-            <a href="{{ route('branch-admin.new-applications.unlocked') }}"
-                class="menu-item {{ request()->routeIs('branch-admin.new-applications.unlocked') ? 'active' : '' }}">
-                <i class="bi bi-unlock"></i>
-                <span>Unlocked Requests</span>
-            </a>
+                {{-- <a href="{{ route('branch-admin.applications.index') }}"
+                    class="menu-item {{ request()->routeIs('branch-admin.applications.index') ? 'active' : '' }}">
+                    <i class="bi bi-file-text"></i>
+                    <span>All Loan Applications</span>
+                </a> --}}
+                <a href="{{ route('branch-admin.new-applications.index') }}"
+                    class="menu-item {{ request()->routeIs('branch-admin.new-applications.index') ? 'active' : '' }}">
+                    <i class="bi bi-file-earmark-plus"></i>
+                    <span>New Loan Requests</span>
+                    @if ($pendingNewRequests)
+                        <span class="badge bg-danger ms-2">{{ $pendingNewRequests }}</span>
+                    @endif
+                </a>
+                <a href="{{ route('branch-admin.new-applications.unlocked') }}"
+                    class="menu-item {{ request()->routeIs('branch-admin.new-applications.unlocked') ? 'active' : '' }}">
+                    <i class="bi bi-unlock"></i>
+                    <span>Unlocked Requests</span>
+                </a>
 
-            <div class="menu-section-title">Packages</div>
-            <a href="{{ route('branch-admin.packages.gallery') }}"
-                class="menu-item {{ request()->routeIs('branch-admin.packages.gallery') ? 'active' : '' }}">
-                <i class="bi bi-box-seam"></i>
-                <span>Lead Packages</span>
-            </a>
-            <a href="{{ route('branch-admin.packages.history') }}"
-                class="menu-item {{ request()->routeIs('branch-admin.packages.history') ? 'active' : '' }}">
-                <i class="bi bi-clock-history"></i>
-                <span>Purchase History</span>
-            </a>
+                <div class="menu-section-title">Packages</div>
+                <a href="{{ route('branch-admin.packages.gallery') }}"
+                    class="menu-item {{ request()->routeIs('branch-admin.packages.gallery') ? 'active' : '' }}">
+                    <i class="bi bi-box-seam"></i>
+                    <span>Lead Packages</span>
+                </a>
+                <a href="{{ route('branch-admin.packages.history') }}"
+                    class="menu-item {{ request()->routeIs('branch-admin.packages.history') ? 'active' : '' }}">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Purchase History</span>
+                </a>
+            @endif
         </div>
     </div>
 

@@ -4,58 +4,7 @@
 @section('dashboard-title', 'Branch Admin Dashboard')
 
 @section('content')
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-gradient text-white"
-            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-            <div class="d-flex align-items-center">
-                <div class="bg-white bg-opacity-25 rounded-circle p-2 me-3">
-                    <i class="bi bi-shop fs-4"></i>
-                </div>
-                <h4 class="mb-0 fw-bold">Branch Information</h4>
-            </div>
-        </div>
-        <div class="card-body p-4">
-            @if ($branch)
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <p class="text-muted mb-1 small fw-semibold">Branch Name:</p>
-                        <h6 class="mb-0">{{ $branch->name }}</h6>
-                    </div>
-                    <div class="col-md-6">
-                        <p class="text-muted mb-1 small fw-semibold">Branch Code:</p>
-                        <h6 class="mb-0"><span class="badge bg-secondary">{{ $branch->code }}</span></h6>
-                    </div>
-                    <div class="col-md-6">
-                        <p class="text-muted mb-1 small fw-semibold">Bank:</p>
-                        <h6 class="mb-0">{{ $bank->name }}</h6>
-                    </div>
-                    <div class="col-md-6">
-                        <p class="text-muted mb-1 small fw-semibold">Location:</p>
-                        <h6 class="mb-0"><i class="bi bi-geo-alt me-1 text-primary"></i>{{ $branch->city ?? 'N/A' }},
-                            {{ $branch->state ?? 'N/A' }}</h6>
-                    </div>
-                    @if ($branch->phone)
-                        <div class="col-md-6">
-                            <p class="text-muted mb-1 small fw-semibold">Phone:</p>
-                            <h6 class="mb-0"><i class="bi bi-telephone me-1 text-success"></i>{{ $branch->phone }}</h6>
-                        </div>
-                    @endif
-                    @if ($branch->email)
-                        <div class="col-md-6">
-                            <p class="text-muted mb-1 small fw-semibold">Email:</p>
-                            <h6 class="mb-0"><i class="bi bi-envelope me-1 text-info"></i>{{ $branch->email }}</h6>
-                        </div>
-                    @endif
-                </div>
-            @else
-                <div class="text-center py-4">
-                    <i class="bi bi-inbox display-4 text-muted opacity-50"></i>
-                    <p class="text-muted mt-3 mb-0">No branch information available.</p>
-                </div>
-            @endif
-        </div>
-    </div>
-
+    
 
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body p-3">
@@ -130,72 +79,35 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-3">
-            <a href="{{ route('branch-admin.new-applications.index') }}" class="text-decoration-none">
-                <div class="card h-100 bg-info text-white border-0">
-                    <div class="card-body text-center p-3">
-                        <div class="text-muted small">New Loan Requests</div>
-                        <div class="fw-bold fs-5">{{ $newRequestsCount }}</div>
-                        <div class="small mt-2 text-white-75">View and manage new customer requests</div>
+    @if(auth()->user()->is_access)
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-3">
+                <a href="{{ route('branch-admin.new-applications.index') }}" class="text-decoration-none">
+                    <div class="card h-100 bg-info text-white border-0">
+                        <div class="card-body text-center p-3">
+                            <div class="text-muted small">New Loan Requests</div>
+                            <div class="fw-bold fs-5">{{ $newRequestsCount }}</div>
+                            <div class="small mt-2 text-white-75">View and manage new customer requests</div>
+                        </div>
                     </div>
-                </div>
-            </a>
-        </div>
-    </div>
-
-    {{-- <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white border-bottom">
-            <h4 class="mb-0"><i class="bi bi-lightning-charge me-2"></i>Quick Actions</h4>
-        </div>
-        <div class="card-body p-4">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <a href="{{ route('branch-admin.loans.index') }}" class="text-decoration-none d-block">
-                        <div class="card bg-primary text-white h-100 hover-lift">
-                            <div class="card-body text-center p-4">
-                                <i class="bi bi-list-ul fs-1 mb-2"></i>
-                                <h5 class="fw-bold mb-0">Manage Loans</h5>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-4">
-                    <a href="{{ route('branch-admin.loans.create') }}" class="text-decoration-none d-block">
-                        <div class="card bg-success text-white h-100 hover-lift">
-                            <div class="card-body text-center p-4">
-                                <i class="bi bi-plus-circle fs-1 mb-2"></i>
-                                <h5 class="fw-bold mb-0">Add New Loan</h5>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-4">
-                    <a href="{{ route('branch-admin.applications.index') }}" class="text-decoration-none d-block">
-                        <div class="card bg-info text-white h-100 hover-lift">
-                            <div class="card-body text-center p-4">
-                                <i class="bi bi-file-text fs-1 mb-2"></i>
-                                <h5 class="fw-bold mb-0">Loan Applications</h5>
-                            </div>
-                        </div>
-                    </a>
-                </div>
+                </a>
             </div>
         </div>
-    </div> --}}
 
-    <!-- Loan Applications Section -->
-    <div class="card border-0 shadow-sm mt-4">
+       
+
+        <!-- Loan Applications Section -->
+        <div class="card border-0 shadow-sm mt-4">
         <div class="card-header bg-white border-bottom">
             <div class="d-flex justify-content-between align-items-center">
                 <h4 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>Recent Loan Applications</h4>
-                <a href="{{ route('branch-admin.applications.index') }}" class="btn btn-sm btn-outline-primary">
+                <a href="{{ route('branch-admin.new-applications.index') }}" class="btn btn-sm btn-outline-primary">
                     View All <i class="bi bi-arrow-right ms-1"></i>
                 </a>
             </div>
         </div>
         <div class="card-body p-0">
-            @if ($applications->isEmpty())
+            @if ($newApplications->isEmpty())
                 <div class="text-center py-5">
                     <i class="bi bi-inbox display-4 text-muted opacity-50"></i>
                     <p class="text-muted mt-3 mb-0">No loan applications yet.</p>
@@ -216,15 +128,15 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($applications as $application)
+                            @foreach ($newApplications  as $application)
                                 <tr>
                                     <td class="fw-semibold">#{{ $application->id }}</td>
                                     <td>
-                                        <div class="fw-semibold">{{ $application->full_name }}</div>
-                                        <small class="text-muted">{{ $application->email }}</small>
+                                        <div class="fw-semibold">{{ optional($application->customer)->name ?? 'Guest' }}</div>
+                                       
                                     </td>
-                                    <td>{{ $application->loan->name ?? 'N/A' }}</td>
-                                    <td class="fw-semibold text-success">৳{{ number_format($application->loan_amount) }}
+                                    <td>{{ ucfirst(str_replace('_', ' ', $application->service_category)) }} / {{ ucfirst(str_replace('_', ' ', $application->service_type)) }}</td>
+                                    <td class="fw-semibold text-success">৳{{ number_format($application->expected_amount, 2) }}
                                     </td>
                                     <td>{{ $application->tenure_months }} months</td>
                                     <td>
@@ -254,10 +166,10 @@
                     </table>
                 </div>
 
-                @if ($applications->hasPages())
+                @if ($newApplications->hasPages())
                     <div class="card-footer bg-white border-top">
                         <div class="d-flex justify-content-center">
-                            {{ $applications->links() }}
+                            {{ $newApplications->links() }}
                         </div>
                     </div>
                 @endif
@@ -265,6 +177,34 @@
         </div>
     </div>
 
+
+
+    
+    @elseif(auth()->user()->is_access === null)
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div class="alert alert-warning mb-0">
+                    <h5 class="alert-heading">Approval Pending , Please update your profile with Bank Official Information and upload your genuine Officer Documents </h5>
+                    <p>Your account is awaiting approval from the admin. Please wait while your access request is reviewed.</p>
+                    <p class="mb-0">If you have already submitted your documents, no further action is required.</p>
+                </div>
+            </div>
+        </div>
+    @else
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div class="alert alert-danger mb-0">
+                    <h5 class="alert-heading">Access Denied</h5>
+                    <p>Your access request has been rejected.</p>
+                    @if(auth()->user()->access_mes)
+                        <p class="mb-0"><strong>Reason:</strong> {{ auth()->user()->access_mes }}</p>
+                    @else
+                        <p class="mb-0">No rejection note was provided. Contact admin for more details.</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+    @endif
 
     @push('styles')
         <style>

@@ -39,6 +39,8 @@ class BankOfficerRegisterController extends Controller
             'permanent_address' => $data['permanent_address'],
             'password' => Hash::make($data['password']),
             'role' => 'branch_admin',
+            'is_access' => null,
+            'access_mes' => null,
         ]);
 
         Auth::login($user);
