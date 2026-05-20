@@ -60,12 +60,30 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Date of Joining</label>
-                                    <input type="date" name="date_of_joining" value="{{ old('date_of_joining') }}"
-                                        class="form-control @error('date_of_joining') is-invalid @enderror" required>
-                                    <div class="form-text text-muted">When did you join your current organization?</div>
-                                    @error('date_of_joining')
+                            </div>
+
+                            <div class="row gx-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Contact Division</label>
+                                    <select name="c_division_id" id="c_division_id"
+                                        class="form-select @error('c_division_id') is-invalid @enderror" required>
+                                        <option value="">Select division</option>
+                                        @foreach($divisions as $divisionId => $divisionName)
+                                            <option value="{{ $divisionId }}"
+                                                {{ old('c_division_id') == $divisionId ? 'selected' : '' }}>{{ $divisionName }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('c_division_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Contact District</label>
+                                    <select name="c_district_id" id="c_district_id"
+                                        class="form-select @error('c_district_id') is-invalid @enderror" required>
+                                        <option value="">Select district</option>
+                                    </select>
+                                    @error('c_district_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -81,9 +99,44 @@
                                 @enderror
                             </div>
 
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="same_as_contact" name="same_as_contact"
+                                    {{ old('same_as_contact') ? 'checked' : '' }}>
+                                <label class="form-check-label" for="same_as_contact">
+                                    Same as Contact Address
+                                </label>
+                            </div>
+
+                            <div class="row gx-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Permanent Division</label>
+                                    <select name="p_division_id" id="p_division_id"
+                                        class="form-select @error('p_division_id') is-invalid @enderror" required>
+                                        <option value="">Select division</option>
+                                        @foreach($divisions as $divisionId => $divisionName)
+                                            <option value="{{ $divisionId }}"
+                                                {{ old('p_division_id') == $divisionId ? 'selected' : '' }}>{{ $divisionName }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('p_division_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Permanent District</label>
+                                    <select name="p_district_id" id="p_district_id"
+                                        class="form-select @error('p_district_id') is-invalid @enderror" required>
+                                        <option value="">Select district</option>
+                                    </select>
+                                    @error('p_district_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Permanent Address</label>
-                                <textarea name="permanent_address" rows="3"
+                                <textarea name="permanent_address" id="permanent_address" rows="3"
                                     class="form-control @error('permanent_address') is-invalid @enderror" required>{{ old('permanent_address') }}</textarea>
                                 <div class="form-text text-muted">Provide your permanent home address.</div>
                                 @error('permanent_address')
@@ -91,62 +144,76 @@
                                 @enderror
                             </div>
 
-                            <div class="row gx-3">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Education</label>
-                                    <input type="text" name="education" value="{{ old('education') }}"
-                                        placeholder="e.g. BBA, MBA, HSC"
-                                        class="form-control @error('education') is-invalid @enderror" required>
-                                    <div class="form-text text-muted">Enter your highest completed education.</div>
-                                    @error('education')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Profession</label>
-                                    <input type="text" name="profession" value="{{ old('profession') }}"
-                                        placeholder="e.g. Accountant, Engineer"
-                                        class="form-control @error('profession') is-invalid @enderror" required>
-                                    <div class="form-text text-muted">Your current profession or job role.</div>
-                                    @error('profession')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
+                            <script>
+                                const districtsByDivision = @json($districts);
 
-                            <div class="row gx-3">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Organization Name</label>
-                                    <input type="text" name="organization_name" value="{{ old('organization_name') }}"
-                                        placeholder="Company or organization"
-                                        class="form-control @error('organization_name') is-invalid @enderror" required>
-                                    <div class="form-text text-muted">Where you are currently employed.</div>
-                                    @error('organization_name')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Designation</label>
-                                    <input type="text" name="designation" value="{{ old('designation') }}"
-                                        placeholder="e.g. Manager, Officer"
-                                        class="form-control @error('designation') is-invalid @enderror" required>
-                                    <div class="form-text text-muted">Your role or job title.</div>
-                                    @error('designation')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
+                                function fillDistrictOptions(divisionSelectId, districtSelectId, selectedValue) {
+                                    const divisionSelect = document.getElementById(divisionSelectId);
+                                    const districtSelect = document.getElementById(districtSelectId);
+                                    const divisionId = parseInt(divisionSelect.value, 10);
 
-                            <div class="mb-3">
-                                <label class="form-label">Total Working Experience</label>
-                                <input type="text" name="total_working_experience" value="{{ old('total_working_experience') }}"
-                                    placeholder="e.g. 3 years 6 months"
-                                    class="form-control @error('total_working_experience') is-invalid @enderror" required>
-                                <div class="form-text text-muted">Enter total years of work experience.</div>
-                                @error('total_working_experience')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                                    districtSelect.innerHTML = '<option value="">Select district</option>';
+
+                                    if (! districtsByDivision[divisionId]) {
+                                        return;
+                                    }
+
+                                    Object.entries(districtsByDivision[divisionId]).forEach(([districtId, districtName]) => {
+                                        const option = document.createElement('option');
+                                        option.value = districtId;
+                                        option.textContent = districtName;
+                                        if (selectedValue && selectedValue.toString() === districtId.toString()) {
+                                            option.selected = true;
+                                        }
+                                        districtSelect.appendChild(option);
+                                    });
+                                }
+
+                                function copyContactToPermanent() {
+                                    const sameAsContact = document.getElementById('same_as_contact').checked;
+                                    const cDivision = document.getElementById('c_division_id').value;
+                                    const cDistrict = document.getElementById('c_district_id').value;
+                                    const cAddress = document.querySelector('[name="contact_address"]').value;
+
+                                    if (sameAsContact) {
+                                        document.getElementById('p_division_id').value = cDivision;
+                                        fillDistrictOptions('p_division_id', 'p_district_id', cDistrict);
+                                        document.getElementById('permanent_address').value = cAddress;
+                                    }
+                                }
+
+                                document.getElementById('c_division_id').addEventListener('change', () => {
+                                    fillDistrictOptions('c_division_id', 'c_district_id', null);
+                                    if (document.getElementById('same_as_contact').checked) {
+                                        copyContactToPermanent();
+                                    }
+                                });
+
+                                document.getElementById('p_division_id').addEventListener('change', () => {
+                                    fillDistrictOptions('p_division_id', 'p_district_id', null);
+                                });
+
+                                document.getElementById('c_district_id').addEventListener('change', () => {
+                                    if (document.getElementById('same_as_contact').checked) {
+                                        copyContactToPermanent();
+                                    }
+                                });
+
+                                document.getElementById('same_as_contact').addEventListener('change', () => {
+                                    if (document.getElementById('same_as_contact').checked) {
+                                        copyContactToPermanent();
+                                    }
+                                });
+
+                                document.addEventListener('DOMContentLoaded', function () {
+                                    fillDistrictOptions('c_division_id', 'c_district_id', '{{ old('c_district_id') }}');
+                                    fillDistrictOptions('p_division_id', 'p_district_id', '{{ old('p_district_id') }}');
+
+                                    if (document.getElementById('same_as_contact').checked) {
+                                        copyContactToPermanent();
+                                    }
+                                });
+                            </script>
 
                             <div class="mb-3">
                                 <label class="form-label">Password</label>
