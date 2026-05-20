@@ -8,6 +8,8 @@ use App\Http\Controllers\BankAdminController;
 use App\Http\Controllers\BranchAdminController;
 use App\Http\Controllers\LoanApplicationController;
 use App\Http\Controllers\LoanCategoryController;
+use App\Http\Controllers\ServiceCategoryController;
+use App\Http\Controllers\ServiceTypeController;
 use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\LogoSettingController;
 use App\Http\Controllers\AboutSettingController;
@@ -89,6 +91,8 @@ Route::middleware(['auth', 'super.admin'])->prefix('super-admin')->group(functio
     Route::get('/branch-admins/create', [SuperAdminController::class, 'createBranchAdmin'])->name('super-admin.branch-admins.create');
     Route::post('/branch-admins', [SuperAdminController::class, 'storeBranchAdmin'])->name('super-admin.branch-admins.store');
     Route::get('/branch-admins/{user}/edit', [SuperAdminController::class, 'editBranchAdmin'])->name('super-admin.branch-admins.edit');
+    Route::get('/branch-admins/{user}', [SuperAdminController::class, 'showBranchAdmin'])->name('super-admin.branch-admins.show');
+    Route::patch('/branch-admins/{user}/access', [SuperAdminController::class, 'updateBranchAdminAccess'])->name('super-admin.branch-admins.update-access');
     Route::put('/branch-admins/{user}', [SuperAdminController::class, 'updateBranchAdmin'])->name('super-admin.branch-admins.update');
 
     // Loan Management
@@ -106,6 +110,22 @@ Route::middleware(['auth', 'super.admin'])->prefix('super-admin')->group(functio
     Route::get('/loan-categories/{loanCategory}/edit', [LoanCategoryController::class, 'edit'])->name('super-admin.loan-categories.edit');
     Route::put('/loan-categories/{loanCategory}', [LoanCategoryController::class, 'update'])->name('super-admin.loan-categories.update');
     Route::delete('/loan-categories/{loanCategory}', [LoanCategoryController::class, 'destroy'])->name('super-admin.loan-categories.destroy');
+
+    // Service Category Management
+    Route::get('/service-categories', [ServiceCategoryController::class, 'index'])->name('super-admin.service-categories.index');
+    Route::get('/service-categories/create', [ServiceCategoryController::class, 'create'])->name('super-admin.service-categories.create');
+    Route::post('/service-categories', [ServiceCategoryController::class, 'store'])->name('super-admin.service-categories.store');
+    Route::get('/service-categories/{serviceCategory}/edit', [ServiceCategoryController::class, 'edit'])->name('super-admin.service-categories.edit');
+    Route::put('/service-categories/{serviceCategory}', [ServiceCategoryController::class, 'update'])->name('super-admin.service-categories.update');
+    Route::delete('/service-categories/{serviceCategory}', [ServiceCategoryController::class, 'destroy'])->name('super-admin.service-categories.destroy');
+
+    // Service Type Management
+    Route::get('/service-types', [ServiceTypeController::class, 'index'])->name('super-admin.service-types.index');
+    Route::get('/service-types/create', [ServiceTypeController::class, 'create'])->name('super-admin.service-types.create');
+    Route::post('/service-types', [ServiceTypeController::class, 'store'])->name('super-admin.service-types.store');
+    Route::get('/service-types/{serviceType}/edit', [ServiceTypeController::class, 'edit'])->name('super-admin.service-types.edit');
+    Route::put('/service-types/{serviceType}', [ServiceTypeController::class, 'update'])->name('super-admin.service-types.update');
+    Route::delete('/service-types/{serviceType}', [ServiceTypeController::class, 'destroy'])->name('super-admin.service-types.destroy');
 
     // Testimonials Management
     Route::get('/testimonials', [TestimonialController::class, 'index'])->name('super-admin.testimonials.index');
@@ -267,8 +287,12 @@ Route::middleware(['auth', 'branch.admin'])->prefix('branch-admin')->group(funct
     // New Loan Requests Management
     Route::get('/new-applications', [LoanApplicationController::class, 'branchNewApplications'])->name('branch-admin.new-applications.index');
     Route::get('/new-applications/unlocked', [LoanApplicationController::class, 'branchUnlockedNewApplications'])->name('branch-admin.new-applications.unlocked');
+    Route::get('/new-applications/locked', [LoanApplicationController::class, 'branchLockedNewApplications'])->name('branch-admin.new-applications.locked');
     Route::get('/new-applications/{newApplication}', [LoanApplicationController::class, 'branchNewApplicationShow'])->name('branch-admin.new-applications.show');
+    Route::get('/new-applications/{newApplication}/customer-ratings', [LoanApplicationController::class, 'branchCustomerRatings'])->name('branch-admin.new-applications.customer-ratings');
     Route::post('/new-applications/{newApplication}/status', [LoanApplicationController::class, 'updateNewLoanApplicationStatus'])->name('branch-admin.new-applications.updateStatus');
+    Route::post('/new-applications/{newApplication}/customer-rating', [LoanApplicationController::class, 'storeCustomerRating'])->name('branch-admin.new-applications.customer-rating.store');
+    Route::get('/ratings-history', [App\Http\Controllers\BranchAdminController::class, 'ratingsHistory'])->name('branch-admin.ratings.history');
 
     // Branch admin profile & password
     Route::get('/profile', [App\Http\Controllers\BranchAdminController::class, 'profile'])->name('branch-admin.profile');
@@ -303,6 +327,11 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->group(function () {
     Route::get('/applications/{newApplication}/delete', [App\Http\Controllers\Customer\CustomerController::class, 'deleteNewApplication'])->name('customer.application.delete');
     Route::get('/applications/{newApplication}/officer-details/{officer?}', [App\Http\Controllers\Customer\CustomerController::class, 'newApplicationOfficerDetails'])
         ->name('customer.new_application.officer_details');
+    Route::get('/applications/{newApplication}/officer-details/{officer}/ratings', [App\Http\Controllers\Customer\CustomerController::class, 'officerRatingHistory'])
+        ->name('customer.application.officer_ratings');
+    Route::get('/ratings', [App\Http\Controllers\Customer\CustomerController::class, 'ratings'])->name('customer.ratings');
+    Route::post('/applications/{newApplication}/officer-details/{officer}/bank-officer-rating', [App\Http\Controllers\Customer\CustomerController::class, 'storeBankOfficerRating'])
+        ->name('customer.application.bank_officer_rating.store');
     // additional customer panel routes can be added here under App\Http\Controllers\Customer namespace
 });
 
