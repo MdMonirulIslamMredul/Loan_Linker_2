@@ -4,14 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Bank;
 use App\Models\BankOfficial;
+use App\Models\Division;
+use App\Models\District;
+use App\Models\LeadAccess;
 use App\Models\Loan;
 use App\Models\LoanCategory;
 use App\Models\NewLoanApplication;
 use App\Models\OfficerDocument;
+use App\Models\CustomerRating;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class BranchAdminController extends Controller
 {
@@ -24,11 +29,24 @@ class BranchAdminController extends Controller
         $branch = $user->branch;
         $bank = $user->bank;
 
-        $newApplications = NewLoanApplication::where('status', 'pending')
-            ->orderBy('created_at', 'desc')
-            ->paginate(5);
+        // $newApplications = NewLoanApplication::where('status', 'pending')
+        //     ->orderBy('created_at', 'desc')
+        //     ->paginate(10);
+
+           
+        $newApplications = NewLoanApplication::with(['serviceCategory', 'serviceType'])
+        ->where('status', 'pending')
+        ->orderBy('created_at', 'desc')
+        ->paginate(10);
 
         $newRequestsCount = NewLoanApplication::where('status', 'pending')->count();
+
+        $unlockedCount = LeadAccess::where('officer_id', $user->id)
+            ->whereNotNull('newloan_id')
+            ->count();
+
+        $totalNewApplications = NewLoanApplication::count();
+        $lockedCount = max(0, $totalNewApplications - $unlockedCount);
 
         // Get loan applications for this branch's loans
         $applications = \App\Models\LoanApplication::whereHas('loan', function ($query) use ($user) {
@@ -37,9 +55,26 @@ class BranchAdminController extends Controller
         })
             ->with(['loan'])
             ->orderBy('created_at', 'desc')
-            ->paginate(5);
+            ->paginate(10);
 
-        return view('branch-admin.dashboard', compact('branch', 'bank', 'applications', 'newApplications', 'newRequestsCount'));
+        return view('branch-admin.dashboard', compact('branch', 'bank', 'applications', 'newApplications', 'newRequestsCount', 'unlockedCount', 'lockedCount'));
+    }
+
+    protected function getLocationData(): array
+    {
+        $divisions = Division::orderBy('name')->pluck('name', 'id')->toArray();
+        $districts = District::orderBy('name')
+            ->get()
+            ->groupBy('division_id')
+            ->map(function ($group) {
+                return $group->pluck('name', 'id')->toArray();
+            })
+            ->toArray();
+
+        return [
+            'divisions' => $divisions,
+            'districts' => $districts,
+        ];
     }
 
     /**
@@ -58,7 +93,16 @@ class BranchAdminController extends Controller
     {
         $user = Auth::user();
         $branches = \App\Models\Branch::where('is_active', true)->get();
-        return view('branch-admin.edit-profile', compact('user', 'branches'));
+        $locationData = $this->getLocationData();
+        $banks = Bank::where('is_active', true)->get();
+
+        return view('branch-admin.edit-profile', [
+            'user' => $user,
+            'branches' => $branches,
+            'divisions' => $locationData['divisions'],
+            'districts' => $locationData['districts'],
+            'banks' => $banks,  
+        ]);
     }
 
     /**
@@ -68,15 +112,40 @@ class BranchAdminController extends Controller
     {
         $user = Auth::user();
 
+        $locationData = $this->getLocationData();
+        $divisions = $locationData['divisions'];
+        $districts = $locationData['districts'];
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'phone' => 'nullable|string|max:20',
+            'dob' => 'nullable|date',
+            'nid_number' => 'nullable|string|max:255',
+            'bank_id' => 'nullable|integer|exists:banks,id',
+            'c_division_id' => ['required', 'integer', Rule::in(array_keys($divisions))],
+            'c_district_id' => ['required', 'integer'],
+            'contact_address' => 'nullable|string|max:1000',
+            'p_division_id' => ['required', 'integer', Rule::in(array_keys($divisions))],
+            'p_district_id' => ['required', 'integer'],
+            'permanent_address' => 'nullable|string|max:1000',
+            'education' => 'nullable|string|max:255',
+            'profession' => 'nullable|string|max:255',
+            'organization_name' => 'nullable|string|max:255',
+            'designation' => 'nullable|string|max:255',
+            'date_of_joining' => 'nullable|date',
+            'total_working_experience' => 'nullable|string|max:100',
         ]);
 
-        $user->name = $validated['name'];
-        $user->email = $validated['email'];
-        $user->phone = $validated['phone'] ?? $user->phone;
+        if (! isset($districts[$validated['c_division_id']][$validated['c_district_id']])) {
+            return back()->withErrors(['c_district_id' => 'The selected contact district does not belong to the selected division.'])->withInput();
+        }
+
+        if (! isset($districts[$validated['p_division_id']][$validated['p_district_id']])) {
+            return back()->withErrors(['p_district_id' => 'The selected permanent district does not belong to the selected division.'])->withInput();
+        }
+
+        $user->fill($validated);
         $user->save();
 
         return redirect()->route('branch-admin.profile')->with('success', 'Profile updated successfully.');
@@ -352,5 +421,44 @@ class BranchAdminController extends Controller
 
         return redirect()->route('branch-admin.loans.index')
             ->with('success', 'Loan deleted successfully.');
+    }
+
+    /**
+     * Show branch admin rating history and available customer rating opportunities.
+     */
+    public function ratingsHistory()
+    {
+        $user = Auth::user();
+
+        $ratings = CustomerRating::with(['customer', 'newLoanApplication'])
+            ->where('branch_admin_id', $user->id)
+            ->orderByDesc('created_at')
+            ->get();
+
+        $ratingCount = $ratings->count();
+        $averageRating = $ratingCount ? $ratings->avg('rating') : null;
+        $averageStars = $averageRating ? (int) round($averageRating) : 0;
+
+        $unlocks = \App\Models\LeadAccess::with(['newLoanApplication.customer'])
+            ->where('officer_id', $user->id)
+            ->whereNotNull('newloan_id')
+            ->orderByDesc('created_at')
+            ->get();
+
+        $ratingKeys = $ratings->mapWithKeys(function ($rating) {
+            return [sprintf('%s', $rating->new_loan_application_id) => true];
+        });
+
+        $pendingUnlocks = $unlocks->filter(function ($unlock) use ($ratingKeys) {
+            return $unlock->newloan_id && ! isset($ratingKeys[$unlock->newloan_id]);
+        });
+
+        return view('branch-admin.ratings-history', compact(
+            'ratings',
+            'ratingCount',
+            'averageRating',
+            'averageStars',
+            'pendingUnlocks'
+        ));
     }
 }
