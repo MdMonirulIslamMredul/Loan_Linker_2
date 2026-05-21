@@ -24,24 +24,28 @@
                         @enderror
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="service_category" class="form-label">Service Category</label>
-                        <select name="service_category" id="service_category" class="form-select @error('service_category') is-invalid @enderror" required>
+                        <label for="service_category_id" class="form-label">Service Category</label>
+                        <select name="service_category_id" id="service_category_id" class="form-select @error('service_category_id') is-invalid @enderror" required>
                             <option value="">Select category</option>
-                            <option value="credit_card" {{ old('service_category') === 'credit_card' ? 'selected' : '' }}>Credit Card</option>
-                            <option value="loan" {{ old('service_category') === 'loan' ? 'selected' : '' }}>Loan</option>
+                            @foreach($serviceCategories as $category)
+                                <option value="{{ $category->id }}" {{ old('service_category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                            @endforeach
                         </select>
-                        @error('service_category')
+                        @error('service_category_id')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                     <div class="col-md-6 mb-3">
-                        <label for="service_type" class="form-label">Service Type</label>
-                        <select name="service_type" id="service_type" class="form-select @error('service_type') is-invalid @enderror" required>
+                    <div class="col-md-6 mb-3">
+                        <label for="service_type_id" class="form-label">Service Type</label>
+                        <select name="service_type_id" id="service_type_id" class="form-select @error('service_type_id') is-invalid @enderror" required>
                             <option value="">Select service type</option>
-                            <option value="visa_credit_card" {{ old('service_type') === 'visa_credit_card' ? 'selected' : '' }}>Visa Credit Card</option>
-                            <option value="personal_loan" {{ old('service_type') === 'personal_loan' ? 'selected' : '' }}>Personal Loan</option>
+                            @foreach($serviceCategories as $category)
+                                @foreach($category->serviceTypes as $type)
+                                    <option value="{{ $type->id }}" data-category-id="{{ $category->id }}" {{ old('service_type_id') == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
+                                @endforeach
+                            @endforeach
                         </select>
-                        @error('service_type')
+                        @error('service_type_id')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
@@ -51,7 +55,7 @@
                    
                     <div class="col-md-12 mb-3">
                         <label class="form-label d-flex justify-content-between align-items-center" for="bank_ids_0">
-                            <span class="fw-bold">Bank Selection</span>
+                            <span class="fw-bold">If You Want You Can Select Your Preferred Banks</span>
                             <small class="text-muted">Choose between 1 and 5 banks</small>
                         </label>
                         <div class="row g-3 mt-2">
@@ -98,6 +102,9 @@
             document.addEventListener('DOMContentLoaded', function () {
                 const form = document.querySelector('form[action="{{ route('customer.new_application.store') }}"]');
                 const selects = Array.from(document.querySelectorAll('select[name="bank_ids[]"]'));
+                const categorySelect = document.querySelector('#service_category_id');
+                const typeSelect = document.querySelector('#service_type_id');
+                const typeOptions = Array.from(typeSelect.options);
 
                 function refreshOptions() {
                     const selectedValues = selects.map(select => select.value).filter(Boolean);
@@ -120,8 +127,23 @@
                     });
                 }
 
-                selects.forEach(select => {
-                    select.addEventListener('change', refreshOptions);
+                function refreshTypeOptions() {
+                    const selectedCategory = categorySelect.value;
+
+                    typeSelect.innerHTML = '<option value="">Select service type</option>';
+                    typeOptions.forEach(option => {
+                        if (!option.value) {
+                            return;
+                        }
+                        const optionCategory = option.dataset.categoryId;
+                        if (!selectedCategory || optionCategory === selectedCategory) {
+                            typeSelect.appendChild(option.cloneNode(true));
+                        }
+                    });
+                }
+
+                categorySelect.addEventListener('change', function () {
+                    refreshTypeOptions();
                 });
 
                 if (form) {
@@ -130,6 +152,7 @@
                     });
                 }
 
+                refreshTypeOptions();
                 refreshOptions();
             });
         </script>

@@ -5,6 +5,10 @@
         <div class="card-body">
             <h4 class="mb-4">My New Loan Requests</h4>
 
+              <div class="mb-4">
+                <a href="{{ route('customer.new_application.create') }}" class="btn btn-primary">Create New Loan Application</a>
+            </div>
+
             @if ($applications->count() === 0)
                 <p class="text-muted">You have not submitted any new loan requests yet.</p>
             @else
