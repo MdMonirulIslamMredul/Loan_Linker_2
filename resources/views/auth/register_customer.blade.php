@@ -231,6 +231,17 @@
                                 <input type="password" name="password_confirmation" class="form-control" required>
                             </div>
 
+                            <div class="form-check mb-3">
+                                <input class="form-check-input @error('accepted_terms') is-invalid @enderror" type="checkbox"
+                                    id="accepted_terms" name="accepted_terms" {{ old('accepted_terms') ? 'checked' : '' }}>
+                                <label class="form-check-label" for="accepted_terms">
+                                    I accept the <a href="{{ route('pages.terms') }}" target="_blank">Terms & Conditions</a>.
+                                </label>
+                                @error('accepted_terms')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+
                             <div class="d-grid">
                                 <button class="btn btn-primary">Register</button>
                             </div>
