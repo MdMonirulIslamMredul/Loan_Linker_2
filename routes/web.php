@@ -21,6 +21,7 @@ use App\Http\Controllers\HomepageCarouselController;
 use App\Http\Controllers\ImageAdvertisementController;
 use App\Http\Controllers\Auth\BankOfficerRegisterController;
 use App\Http\Controllers\Auth\CustomerRegisterController;
+use App\Http\Controllers\TermConditionController;
 
 // Public Routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -37,7 +38,7 @@ Route::post('/contact-us', [AboutSettingController::class, 'submitContact'])->na
 
 // Legal / static pages
 Route::view('/privacy-policy', 'privacy_policy')->name('pages.privacy_policy');
-Route::view('/terms-conditions', 'terms')->name('pages.terms');
+Route::get('/terms-conditions', [TermConditionController::class, 'show'])->name('pages.terms');
 
 
 Route::get('/services', function () {
@@ -178,6 +179,13 @@ Route::middleware(['auth', 'super.admin'])->prefix('super-admin')->group(functio
     Route::get('/about-settings', [AboutSettingController::class, 'index'])->name('super-admin.about-settings.index');
     Route::put('/about-settings', [AboutSettingController::class, 'update'])->name('super-admin.about-settings.update');
 
+    // Terms & Conditions Management
+    Route::get('/terms-conditions', [TermConditionController::class, 'index'])->name('super-admin.terms-conditions.index');
+    Route::get('/terms-conditions/create', [TermConditionController::class, 'create'])->name('super-admin.terms-conditions.create');
+    Route::post('/terms-conditions', [TermConditionController::class, 'store'])->name('super-admin.terms-conditions.store');
+    Route::get('/terms-conditions/{termsCondition}/edit', [TermConditionController::class, 'edit'])->name('super-admin.terms-conditions.edit');
+    Route::put('/terms-conditions/{termsCondition}', [TermConditionController::class, 'update'])->name('super-admin.terms-conditions.update');
+    Route::delete('/terms-conditions/{termsCondition}', [TermConditionController::class, 'destroy'])->name('super-admin.terms-conditions.destroy');
 
 
     // Loan Applications Management
@@ -191,6 +199,9 @@ Route::middleware(['auth', 'super.admin'])->prefix('super-admin')->group(functio
     Route::post('/new-applications/{newApplication}/status', [LoanApplicationController::class, 'updateNewLoanApplicationStatus'])->name('super-admin.new-applications.updateStatus');
     // Customers Management
     Route::get('/customers', [SuperAdminController::class, 'listCustomers'])->name('super-admin.customers.index');
+    Route::get('/ratings', [SuperAdminController::class, 'ratingsIndex'])->name('super-admin.ratings.index');
+    Route::get('/ratings/bank-officer', [SuperAdminController::class, 'bankOfficerRatingsIndex'])->name('super-admin.ratings.bank-officer');
+    Route::get('/ratings/{type}/{user}', [SuperAdminController::class, 'ratingUserDetails'])->name('super-admin.ratings.user.details');
     Route::post('/customers/{user}/reset-password', [SuperAdminController::class, 'resetCustomerPassword'])->name('super-admin.customers.reset-password');
     // Customer Messages Management
     Route::get('/customer-messages', [SuperAdminController::class, 'customerMessages'])->name('super-admin.customer-messages.index');
