@@ -116,7 +116,7 @@
                                     <th>Tenure</th>
                                     <th>Category</th>
                                     <th>Type</th>
-                                    <th>Banks</th>
+                                    {{-- <th>Banks</th> --}}
                                     <th>Status</th>
                                     <th>Requested</th>
                                     <th>Actions</th>
@@ -140,16 +140,18 @@
                                         <td>{{ $canView ? (optional($application->customer)->email ?? 'N/A') : 'Locked' }}</td>
                                         <td><strong>৳{{ number_format($application->expected_amount, 2) }}</strong></td>
                                         <td>{{ $application->tenure_months }} mo</td>
-                                        <td class="text-capitalize">{{ str_replace('_', ' ', $application->service_category) }}</td>
-                                        <td class="text-capitalize">{{ str_replace('_', ' ', $application->service_type) }}</td>
-                                        <td>
+                                        {{-- <td class="text-capitalize">{{ str_replace('_', ' ', $application->service_category) }}</td>
+                                        <td class="text-capitalize">{{ str_replace('_', ' ', $application->service_type) }}</td> --}}
+                                        <td class="text-capitalize">{{ optional($application->serviceCategory)->name ?? 'N/A' }}</td>
+                                        <td class="text-capitalize">{{ optional($application->serviceType)->name ?? 'N/A' }}</td>
+                                        {{-- <td>
                                             @php
                                                 $bankNames = collect($application->bank_ids)->filter()->map(function ($bankId) use ($banks) {
                                                     return optional($banks->firstWhere('id', $bankId))->name;
                                                 })->filter()->join(', ');
                                             @endphp
                                             {{ $bankNames ?: 'N/A' }}
-                                        </td>
+                                        </td> --}}
                                         <td>
                                             @if ($application->status === 'pending')
                                                 <span class="badge bg-warning">Pending</span>

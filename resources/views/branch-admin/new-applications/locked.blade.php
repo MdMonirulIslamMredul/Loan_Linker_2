@@ -1,19 +1,22 @@
 @extends('layouts.branch-admin')
 
-@section('title', 'Unlocked New Loan Requests')
+@section('title', 'Locked New Loan Requests')
 
 @section('content')
     <div class="container-fluid py-4">
         <div class="row mb-4">
             <div class="col-md-6">
-                <h2><i class="bi bi-unlock me-2"></i>Unlocked New Loan Requests</h2>
-                <p class="text-muted">Review the new loan requests you have unlocked.</p>
+                <h2><i class="bi bi-lock-fill me-2"></i>Locked New Loan Requests</h2>
+                <p class="text-muted">Review the loan requests you have not unlocked yet.</p>
             </div>
         </div>
 
         <div class="card mb-4 border-0 shadow-sm">
             <div class="card-body">
-                <form method="GET" action="{{ route('branch-admin.new-applications.unlocked') }}" class="row g-3">
+                @php
+                    $user = auth()->user();
+                @endphp
+                <form method="GET" action="{{ route('branch-admin.new-applications.locked') }}" class="row g-3">
                     <div class="col-md-3">
                         <label for="status" class="form-label">Status</label>
                         <select name="status" id="status" class="form-select">
@@ -48,7 +51,7 @@
                         <button type="submit" class="btn btn-primary me-2">
                             <i class="bi bi-filter me-2"></i>Filter
                         </button>
-                        <a href="{{ route('branch-admin.new-applications.unlocked') }}" class="btn btn-secondary">
+                        <a href="{{ route('branch-admin.new-applications.locked') }}" class="btn btn-secondary">
                             <i class="bi bi-x-circle me-2"></i>Clear
                         </a>
                     </div>
@@ -70,10 +73,9 @@
                                     <th>Tenure</th>
                                     <th>Category</th>
                                     <th>Type</th>
-                                    <th>Banks</th>
                                     <th>Status</th>
                                     <th>Requested</th>
-                                    <th>Actions</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -87,14 +89,6 @@
                                         <td class="text-capitalize">{{ optional($application->serviceCategory)->name ?? 'N/A' }}</td>
                                         <td class="text-capitalize">{{ optional($application->serviceType)->name ?? 'N/A' }}</td>
                                         <td>
-                                            @php
-                                                $bankNames = collect($application->bank_ids)->filter()->map(function ($bankId) use ($banks) {
-                                                    return optional($banks->firstWhere('id', $bankId))->name;
-                                                })->filter()->join(', ');
-                                            @endphp
-                                            {{ $bankNames ?: 'N/A' }}
-                                        </td>
-                                        <td>
                                             @if ($application->status === 'pending')
                                                 <span class="badge bg-warning">Pending</span>
                                             @elseif ($application->status === 'review')
@@ -107,9 +101,18 @@
                                         </td>
                                         <td>{{ $application->created_at->format('d M, Y') }}</td>
                                         <td>
-                                            <a href="{{ route('branch-admin.new-applications.show', $application) }}" class="btn btn-sm btn-primary">
-                                                <i class="bi bi-eye me-1"></i>View
-                                            </a>
+                                            @if ((int) ($user->lead_balance ?? 0) > 0)
+                                                <form action="{{ route('branch-admin.new-applications.unlock', $application) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-unlock me-1"></i>Unlock to View
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <a href="{{ route('branch-admin.packages.gallery') }}" class="btn btn-sm btn-outline-secondary" title="Purchase leads to unlock">
+                                                    <i class="bi bi-cart me-1"></i>Buy Leads
+                                                </a>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
@@ -123,7 +126,7 @@
                 @else
                     <div class="text-center py-5">
                         <i class="bi bi-inbox display-1 text-muted"></i>
-                        <p class="text-muted mt-3">No unlocked new loan requests found.</p>
+                        <p class="text-muted mt-3">No locked new loan requests found.</p>
                     </div>
                 @endif
             </div>
