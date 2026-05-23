@@ -26,7 +26,7 @@
                     <select name="bank_name" class="form-control" required>
                         <option value="">Select a bank</option>
                         @foreach ($banks as $bank)
-                            <option value="{{ $bank->name }}" {{ old('bank_name', $bankOfficial->bank_name ?? '') === $bank->name ? 'selected' : '' }}>
+                            <option value="{{ $bank->name }}" {{ old('bank_name', $bankOfficial->bank_name ?? optional(auth()->user()->bank)->name ?? '') === $bank->name ? 'selected' : '' }}>
                                 {{ $bank->name }}
                             </option>
                         @endforeach

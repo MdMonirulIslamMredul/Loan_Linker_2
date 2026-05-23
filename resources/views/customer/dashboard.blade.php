@@ -65,8 +65,8 @@
                         <tbody>
                             @foreach ($recentApplications as $app)
                                 <tr>
-                                    <td>{{ $app->id }}</td>
-                                    <td>{{ ucfirst(str_replace('_', ' ', $app->service_type)) }}</td>
+                                    <td>{{ $app->id }}</td>  
+                                    <td>{{ ucfirst(str_replace('_', ' ', optional($app->serviceType)->name ?? $app->service_type)) }}</td>
                                     <td>৳{{ number_format($app->expected_amount, 2) }}</td>
                                     <td>{{ ucfirst($app->status) }}</td>
                                     <td>{{ $app->additional_notes ?? '-' }}</td>
@@ -77,6 +77,14 @@
                                             <a href="{{ route('customer.application.edit', $app->id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
                                         @endif
                                         <a href="{{ route('customer.application.delete', $app->id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this application?');">Delete</a>
+                                        @if ($app->lead_accesses_count > 0)
+                                            <div class="d-flex flex-column align-items-start">
+                                                <a href="{{ route('customer.new_application.officer_details', ['newApplication' => $app, 'officer' => null]) }}" class="btn btn-sm btn-outline-success mb-1">
+                                                    Officer Details
+                                                    <span class="d-block small text-dark">{{ $app->lead_accesses_count }} Officer(s) Unlocked</span>
+                                                </a>
+                                            </div>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach

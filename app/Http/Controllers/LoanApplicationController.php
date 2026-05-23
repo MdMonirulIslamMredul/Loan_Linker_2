@@ -8,6 +8,7 @@ use App\Models\NewLoanApplication;
 use App\Models\Bank;
 use App\Models\Branch;
 use App\Models\LoanCategory;
+use App\Models\CustomerRating;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
@@ -275,6 +276,41 @@ class LoanApplicationController extends Controller
         return view('branch-admin.new-applications.unlocked', compact('applications', 'banks'));
     }
 
+    public function branchLockedNewApplications(Request $request)
+    {
+        $user = auth()->user();
+
+        $unlockedIds = \App\Models\LeadAccess::where('officer_id', $user->id)
+            ->whereNotNull('newloan_id')
+            ->pluck('newloan_id');
+
+        $query = NewLoanApplication::with('customer')
+            ->whereNotIn('id', $unlockedIds)
+            ->latest();
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('service_type')) {
+            $query->where('service_type', $request->service_type);
+        }
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->to_date);
+        }
+
+        $applications = $query->paginate(15);
+        $banks = Bank::orderBy('name')->get();
+        
+
+        return view('branch-admin.new-applications.locked', compact('applications', 'banks'));
+    }
+
     public function newApplications(Request $request)
     {
         $query = NewLoanApplication::with('customer')->latest();
@@ -313,7 +349,13 @@ class LoanApplicationController extends Controller
 
     public function branchNewApplicationShow(NewLoanApplication $newApplication)
     {
-        $newApplication->load('customer');
+        $newApplication->load([
+            'customer.customerDocument',
+            'customer.customerFinancial',
+            'customerRatings',
+            'serviceCategory',
+            'serviceType',
+        ]);
 
         $user = auth()->user();
         $hasAccess = false;
@@ -326,9 +368,91 @@ class LoanApplicationController extends Controller
                 ->exists();
         }
 
+        $customerAverageRating = null;
+        $customerRatingCount = 0;
+        $customerAverageStars = 0;
+
+        if ($newApplication->customer?->id) {
+            $customerRatingCount = CustomerRating::where('customer_id', $newApplication->customer->id)->count();
+            if ($customerRatingCount) {
+                $customerAverageRating = CustomerRating::where('customer_id', $newApplication->customer->id)->avg('rating');
+                $customerAverageStars = (int) round($customerAverageRating);
+            }
+        }
+
         $banks = Bank::orderBy('name')->get();
 
-        return view('branch-admin.new-applications.show', compact('newApplication', 'banks', 'hasAccess'));
+        return view('branch-admin.new-applications.show', compact('newApplication', 'banks', 'hasAccess', 'customerAverageRating', 'customerRatingCount', 'customerAverageStars'));
+    }
+
+    public function branchCustomerRatings(NewLoanApplication $newApplication)
+    {
+        $user = auth()->user();
+
+        if (!$user || ($user->role ?? '') !== 'branch_admin') {
+            abort(403, 'Unauthorized.');
+        }
+
+        $newApplication->load(['customer']);
+        $customer = $newApplication->customer;
+
+        if (!$customer) {
+            return redirect()->back()->with('error', 'Customer not found for this request.');
+        }
+
+        $customerRatings = CustomerRating::with(['branchAdmin', 'newLoanApplication'])
+            ->where('customer_id', $customer->id)
+            ->orderByDesc('created_at')
+            ->get();
+
+        $customerRatingCount = $customerRatings->count();
+        $customerAverageRating = $customerRatingCount ? $customerRatings->avg('rating') : null;
+        $customerAverageStars = $customerAverageRating ? (int) round($customerAverageRating) : 0;
+
+        return view('branch-admin.new-applications.customer-ratings', compact(
+            'newApplication',
+            'customer',
+            'customerRatings',
+            'customerRatingCount',
+            'customerAverageRating',
+            'customerAverageStars'
+        ));
+    }
+
+    public function storeCustomerRating(Request $request, NewLoanApplication $newApplication)
+    {
+        $user = auth()->user();
+
+        if (!$user || ($user->role ?? '') !== 'branch_admin') {
+            abort(403, 'Unauthorized.');
+        }
+
+        $hasAccess = \App\Models\LeadAccess::where('officer_id', $user->id)
+            ->where('newloan_id', $newApplication->id)
+            ->exists();
+
+        if (! $hasAccess) {
+            return redirect()->back()->with('error', 'You must unlock this request before rating the customer.');
+        }
+
+        $validated = $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:2000',
+        ]);
+
+        CustomerRating::updateOrCreate(
+            [
+                'branch_admin_id' => $user->id,
+                'new_loan_application_id' => $newApplication->id,
+            ],
+            [
+                'customer_id' => $newApplication->customer_id,
+                'rating' => $validated['rating'],
+                'comment' => $validated['comment'] ?? null,
+            ]
+        );
+
+        return redirect()->back()->with('success', 'Customer rating saved successfully.');
     }
 
     public function newApplicationShow(NewLoanApplication $newApplication)

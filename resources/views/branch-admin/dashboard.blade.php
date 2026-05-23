@@ -1,7 +1,7 @@
 @extends('layouts.branch-admin')
 
-@section('title', 'Branch Admin Dashboard')
-@section('dashboard-title', 'Branch Admin Dashboard')
+@section('title', 'Bank Officer Dashboard')
+@section('dashboard-title', 'Bank Officer Dashboard')
 
 @section('content')
     
@@ -11,89 +11,81 @@
             @php
                 $user = auth()->user();
                 $leadBalance = $user->lead_balance ?? 0;
-                $branchId = $user->branch_id;
-                $userId = $user->id;
-
-                $appIds = \App\Models\LoanApplication::whereHas('loan', function ($q) use ($branchId, $userId) {
-                    $q->where('branch_id', $branchId)->where('branch_admin_id', $userId);
-                })
-                    ->pluck('id')
-                    ->toArray();
-
-                $totalApplications = count($appIds);
-                $unlockedCount = 0;
-                if (!empty($appIds)) {
-                    $unlockedCount = \App\Models\LeadAccess::where('officer_id', $userId)
-                        ->whereIn('application_id', $appIds)
-                        ->count();
-                }
-                $lockedCount = max(0, $totalApplications - $unlockedCount);
-                $newRequestsCount = \App\Models\NewLoanApplication::count();
             @endphp
 
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <div class="card h-100 bg-white border-0">
-                        <div class="card-body text-center p-3">
-                            <div class="text-muted small">Lead Balance</div>
-                            <div class="fw-bold fs-5">{{ number_format($leadBalance) }}</div>
-                        </div>
-                    </div>
-                </div>
 
+ @if(auth()->user()->is_access)
+            <div class="row g-2">
                 <div class="col-md-3">
-                    <a href="{{ route('branch-admin.applications.index', ['access' => 'unlocked']) }}"
-                        class="text-decoration-none">
-                        <div class="card h-100 bg-light border-0">
-                            <div class="card-body text-center p-3">
-                                <div class="text-muted small">Available (Unlocked)</div>
-                                <div class="fw-bold fs-5 text-success">{{ $unlockedCount }}</div>
+                    <a href="{{ route('branch-admin.packages.history') }}" class="text-decoration-none">
+                        <div class="card h-100 shadow-sm border-0 rounded-4 hover-lift">
+                            <div class="card-body text-center p-2">
+                                <div class="mb-2">
+                                    <span class="badge bg-primary rounded-pill py-1 px-2 shadow-sm">
+                                        <i class="bi bi-wallet2 fs-6"></i>
+                                    </span>
+                                </div>
+                                <div class="text-uppercase text-muted small mb-1">Lead Balance</div>
+                                <div class="fs-4 fw-bold">{{ number_format($leadBalance) }}</div>
                             </div>
                         </div>
                     </a>
                 </div>
 
                 <div class="col-md-3">
-                    <a href="{{ route('branch-admin.applications.index', ['access' => 'locked']) }}"
-                        class="text-decoration-none">
-                        <div class="card h-100 bg-light border-0">
-                            <div class="card-body text-center p-3">
-                                <div class="text-muted small">New (Locked)</div>
-                                <div class="fw-bold fs-5 text-warning">{{ $lockedCount }}</div>
+                    <a href="{{ route('branch-admin.new-applications.unlocked') }}" class="text-decoration-none">
+                        <div class="card h-100 shadow-sm border-0 rounded-4 bg-success bg-opacity-10 hover-lift">
+                            <div class="card-body text-center p-2">
+                                <div class="mb-2">
+                                    <span class="badge bg-success rounded-pill py-1 px-2 shadow-sm">
+                                        <i class="bi bi-unlock-fill fs-6"></i>
+                                    </span>
+                                </div>
+                                <div class="text-uppercase text-success small mb-1">Available</div>
+                                <div class="fs-4 fw-bold text-success">{{ $unlockedCount ?? 0 }}</div>
                             </div>
                         </div>
                     </a>
                 </div>
 
                 <div class="col-md-3">
-                    <a href="{{ route('branch-admin.applications.index') }}" class="text-decoration-none">
-                        <div class="card h-100 bg-white border-0">
-                            <div class="card-body text-center p-3">
-                                <div class="text-muted small">Total Applications</div>
-                                <div class="fw-bold fs-5">{{ $totalApplications }}</div>
+                    <a href="{{ route('branch-admin.new-applications.locked') }}" class="text-decoration-none">
+                        <div class="card h-100 shadow-sm border-0 rounded-4 bg-warning bg-opacity-10 hover-lift">
+                            <div class="card-body text-center p-2">
+                                <div class="mb-2">
+                                    <span class="badge bg-warning rounded-pill py-1 px-2 shadow-sm text-dark">
+                                        <i class="bi bi-lock-fill fs-6"></i>
+                                    </span>
+                                </div>
+                                <div class="text-uppercase text-warning small mb-1">New (Locked)</div>
+                                <div class="fs-4 fw-bold text-warning">{{ $lockedCount ?? 0 }}</div>
                             </div>
                         </div>
                     </a>
                 </div>
+
+                <div class="col-md-3">
+                    <a href="{{ route('branch-admin.new-applications.index') }}" class="text-decoration-none">
+                        <div class="card h-100 shadow-sm border-0 rounded-4 bg-info bg-opacity-10 hover-lift">
+                            <div class="card-body text-center p-2">
+                                <div class="mb-2">
+                                    <span class="badge bg-info rounded-pill py-1 px-2 shadow-sm">
+                                        <i class="bi bi-file-earmark-text fs-6"></i>
+                                    </span>
+                                </div>
+                                <div class="text-uppercase text-info small mb-1">New Loan Requests</div>
+                                <div class="fs-4 fw-bold text-info">{{ $newRequestsCount }}</div>
+                                <div class="small mt-1 text-muted">View new customer requests</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+        
             </div>
         </div>
     </div>
 
-    @if(auth()->user()->is_access)
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body p-3">
-                <a href="{{ route('branch-admin.new-applications.index') }}" class="text-decoration-none">
-                    <div class="card h-100 bg-info text-white border-0">
-                        <div class="card-body text-center p-3">
-                            <div class="text-muted small">New Loan Requests</div>
-                            <div class="fw-bold fs-5">{{ $newRequestsCount }}</div>
-                            <div class="small mt-2 text-white-75">View and manage new customer requests</div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        </div>
-
+   
        
 
         <!-- Loan Applications Section -->
@@ -118,48 +110,71 @@
                         <thead class="table-light">
                             <tr>
                                 <th>ID</th>
-                                <th>Applicant</th>
-                                <th>Loan</th>
+                                <th>Customer</th>
+                                <th>Email</th>
                                 <th>Amount</th>
                                 <th>Tenure</th>
+                                <th>Category</th>
+                                <th>Type</th>
                                 <th>Status</th>
-                                <th>Applied Date</th>
-                                {{-- <th>Actions</th> --}}
+                                <th>Requested</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($newApplications  as $application)
+                            @foreach ($newApplications as $application)
+                                @php
+                                    $canView = false;
+                                    if ($user->isSuperAdmin() || $user->isBankAdmin()) {
+                                        $canView = true;
+                                    } else {
+                                        $canView = \App\Models\LeadAccess::where('officer_id', $user->id)
+                                            ->where('newloan_id', $application->id)
+                                            ->exists();
+                                    }
+                                @endphp
                                 <tr>
-                                    <td class="fw-semibold">#{{ $application->id }}</td>
-                                    <td>
-                                        <div class="fw-semibold">{{ optional($application->customer)->name ?? 'Guest' }}</div>
-                                       
-                                    </td>
-                                    <td>{{ ucfirst(str_replace('_', ' ', $application->service_category)) }} / {{ ucfirst(str_replace('_', ' ', $application->service_type)) }}</td>
-                                    <td class="fw-semibold text-success">৳{{ number_format($application->expected_amount, 2) }}
-                                    </td>
+                                    <td><strong>#{{ $application->id }}</strong></td>
+                                    <td>{{ optional($application->customer)->name ?? 'Guest' }}</td>
+                                    <td>{{ $canView ? (optional($application->customer)->email ?? 'N/A') : 'Locked' }}</td>
+                                    <td><strong>৳{{ number_format($application->expected_amount, 2) }}</strong></td>
                                     <td>{{ $application->tenure_months }} months</td>
+                                    <td class="text-capitalize">{{ optional($application->serviceCategory)->name ?? 'N/A' }}</td>
+                                    <td class="text-capitalize">{{ optional($application->serviceType)->name ?? 'N/A' }}</td>
                                     <td>
                                         @if ($application->status === 'pending')
                                             <span class="badge bg-warning">Pending</span>
+                                        @elseif($application->status === 'review')
+                                            <span class="badge bg-info">Review</span>
                                         @elseif($application->status === 'approved')
                                             <span class="badge bg-success">Approved</span>
                                         @elseif($application->status === 'rejected')
                                             <span class="badge bg-danger">Rejected</span>
                                         @else
-                                            <span
-                                                class="badge bg-secondary">{{ ucfirst($application->status ?? 'Unknown') }}</span>
+                                            <span class="badge bg-secondary">{{ ucfirst($application->status ?? 'Unknown') }}</span>
                                         @endif
                                     </td>
-                                    <td class="text-muted small">
-                                        {{ $application->created_at->format('M d, Y') }}
+                                    <td>{{ $application->created_at->format('d M, Y') }}</td>
+                                    <td>
+                                        @if ($canView)
+                                            <a href="{{ route('branch-admin.new-applications.show', $application) }}" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-eye me-1"></i>View
+                                            </a>
+                                        @else
+                                            @if ((int) ($user->lead_balance ?? 0) > 0)
+                                                <form action="{{ route('branch-admin.new-applications.unlock', $application) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-unlock me-1"></i>Unlock to View (1)
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <a href="{{ route('branch-admin.packages.gallery') }}" class="btn btn-sm btn-outline-secondary" title="Purchase leads to view">
+                                                    <i class="bi bi-cart me-1"></i>Buy Leads
+                                                </a>
+                                            @endif
+                                        @endif
                                     </td>
-                                    {{-- <td>
-                                        <a href="{{ route('branch-admin.applications.show', $application) }}"
-                                            class="btn btn-sm btn-outline-primary" title="View Details">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                    </td> --}}
                                 </tr>
                             @endforeach
                         </tbody>
@@ -169,7 +184,7 @@
                 @if ($newApplications->hasPages())
                     <div class="card-footer bg-white border-top">
                         <div class="d-flex justify-content-center">
-                            {{ $newApplications->links() }}
+                            {{ $newApplications->links('pagination::bootstrap-5') }}
                         </div>
                     </div>
                 @endif
@@ -216,6 +231,7 @@
                 transform: translateY(-5px);
                 box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2) !important;
             }
+
         </style>
     @endpush
 @endsection
