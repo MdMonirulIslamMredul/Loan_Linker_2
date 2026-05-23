@@ -49,6 +49,52 @@
                 </div>
             </div>
 
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h6 class="mb-3">Officer Unlocks</h6>
+                    @if ($newApplication->leadAccesses->isNotEmpty())
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Officer</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Unlocked</th>
+                                        <th class="text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($newApplication->leadAccesses as $access)
+                                        <tr>
+                                            <td>{{ optional($access->officer)->name ?? 'Unknown' }}</td>
+                                            <td>{{ optional($access->officer)->email ?? 'N/A' }}</td>
+                                            <td>{{ optional($access->officer)->phone ?? 'N/A' }}</td>
+                                            <td>{{ optional($access->purchased_at)->format('M d, Y') ?? optional($access->created_at)->format('M d, Y') }}</td>
+                                            <td class="text-end">
+                                                <a href="{{ route('customer.new_application.officer_details', ['newApplication' => $newApplication, 'officer' => $access->officer_id]) }}" class="btn btn-sm btn-primary">View</a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="alert alert-info mb-0">No officer details are available yet. Unlock an officer to view contact and official details.</div>
+                    @endif
+                </div>
+            </div>
+
+            @if ($newApplication->bankOfficerRatings->isNotEmpty())
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h6 class="mb-3">Your Officer Ratings</h6>
+                        <p class="mb-1"><strong>Average Rating:</strong> {{ number_format($newApplication->bankOfficerRatings->avg('rating'), 1) }} / 5</p>
+                        <p class="mb-0"><strong>Total Ratings:</strong> {{ $newApplication->bankOfficerRatings->count() }}</p>
+                    </div>
+                </div>
+            @endif
+
             <div class="mt-4 d-flex gap-2 flex-wrap">
                 <a href="{{ route('customer.applications') }}" class="btn btn-outline-secondary">Back to Applications</a>
                 @if ($newApplication->status === 'pending')
