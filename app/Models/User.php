@@ -27,6 +27,10 @@ class User extends Authenticatable
         'phone',
         'nid_number',
         'dob',
+        'c_division_id',
+        'c_district_id',
+        'p_division_id',
+        'p_district_id',
         'contact_address',
         'permanent_address',
         'education',
@@ -41,6 +45,10 @@ class User extends Authenticatable
         'bank_official_id',
         'officer_document_id',
         'is_active',
+        'accepted_terms',
+        'terms_accepted_at',
+        'is_access',
+        'access_mes',
     ];
 
     /**
@@ -64,6 +72,9 @@ class User extends Authenticatable
         'date_of_joining' => 'date',
         'password' => 'hashed',
         'is_active' => 'boolean',
+        'accepted_terms' => 'boolean',
+        'terms_accepted_at' => 'datetime',
+        'is_access' => 'boolean',
     ];
 
     /**
@@ -80,6 +91,38 @@ class User extends Authenticatable
     public function branch()
     {
         return $this->belongsTo(Branch::class);
+    }
+
+    /**
+     * Get the contact division for the user.
+     */
+    public function contactDivision()
+    {
+        return $this->belongsTo(Division::class, 'c_division_id');
+    }
+
+    /**
+     * Get the contact district for the user.
+     */
+    public function contactDistrict()
+    {
+        return $this->belongsTo(District::class, 'c_district_id');
+    }
+
+    /**
+     * Get the permanent division for the user.
+     */
+    public function permanentDivision()
+    {
+        return $this->belongsTo(Division::class, 'p_division_id');
+    }
+
+    /**
+     * Get the permanent district for the user.
+     */
+    public function permanentDistrict()
+    {
+        return $this->belongsTo(District::class, 'p_district_id');
     }
 
     /**
@@ -142,5 +185,25 @@ class User extends Authenticatable
     public function officerDocument()
     {
         return $this->belongsTo(OfficerDocument::class, 'officer_document_id');
+    }
+
+    public function customerRatingsReceived()
+    {
+        return $this->hasMany(CustomerRating::class, 'customer_id');
+    }
+
+    public function customerRatingsGiven()
+    {
+        return $this->hasMany(CustomerRating::class, 'branch_admin_id');
+    }
+
+    public function bankOfficerRatingsReceived()
+    {
+        return $this->hasMany(BankOfficerRating::class, 'officer_id');
+    }
+
+    public function bankOfficerRatingsGiven()
+    {
+        return $this->hasMany(BankOfficerRating::class, 'customer_id');
     }
 }
