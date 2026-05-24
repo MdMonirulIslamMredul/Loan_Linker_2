@@ -58,6 +58,7 @@ class CustomerRegisterController extends Controller
             'p_district_id' => ['required', 'integer'],
             'permanent_address' => 'required|string|max:1000',
             'password' => 'required|string|min:8|confirmed',
+            'accepted_terms' => 'accepted',
         ]);
 
         if (! isset($districts[$data['c_division_id']][$data['c_district_id']])) {
@@ -81,6 +82,8 @@ class CustomerRegisterController extends Controller
             'permanent_address' => $data['permanent_address'],
             'password' => Hash::make($data['password']),
             'role' => 'customer',
+            'accepted_terms' => true,
+            'terms_accepted_at' => now(),
         ]);
 
         Auth::login($user);

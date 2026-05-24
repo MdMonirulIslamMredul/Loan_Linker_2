@@ -34,6 +34,46 @@
                     <td>{{ $user->phone ?? '-' }}</td>
                 </tr>
                 <tr>
+                    <th>NID Number</th>
+                    <td>{{ $user->nid_number ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <th>Date of Birth</th>
+                    <td>{{ $user->dob ? $user->dob->format('M d, Y') : '-' }}</td>
+                </tr>
+                <tr>
+                    <th>Contact Address</th>
+                    <td>{{ $user->contactDivision->name ?? '-' }} , {{ $user->contactDistrict->name ?? '-' }} , {{ $user->contact_address ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <th>Permanent Address</th>
+                    <td>{{ $user->permanentDivision->name ?? '-' }} , {{ $user->permanentDistrict->name ?? '-' }} , {{ $user->permanent_address ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <th>Education</th>
+                    <td>{{ $user->education ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <th>Profession</th>
+                    <td>{{ $user->profession ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <th>Organization</th>
+                    <td>{{ $user->organization_name ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <th>Designation</th>
+                    <td>{{ $user->designation ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <th>Date of Joining</th>
+                    <td>{{ $user->date_of_joining ? $user->date_of_joining->format('M d, Y') : '-' }}</td>
+                </tr>
+                <tr>
+                    <th>Working Experience</th>
+                    <td>{{ $user->total_working_experience ?? '-' }}</td>
+                </tr>
+                <tr>
                     <th>Role</th>
                     <td>{{ $user->role }}</td>
                 </tr>
