@@ -8,6 +8,8 @@ use App\Models\Loan;
 use App\Models\LoanCategory;
 use App\Models\User;
 use App\Models\CustomerMessage;
+use App\Models\CustomerRating;
+use App\Models\BankOfficerRating;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -314,6 +316,8 @@ class SuperAdminController extends Controller
             'role' => 'branch_admin',
             'bank_id' => $branch->bank_id,
             'branch_id' => $validated['branch_id'],
+            'is_access' => null,
+            'access_mes' => null,
         ]);
 
         return redirect()->route('super-admin.dashboard')->with('success', 'Branch Admin created successfully.');
@@ -322,10 +326,45 @@ class SuperAdminController extends Controller
     /**
      * Display a listing of all branch admins.
      */
-    public function listBranchAdmins()
+    public function listBranchAdmins(Request $request)
     {
-        $branchAdmins = User::with('branch', 'bank')->where('role', 'branch_admin')->paginate(15);
-        return view('super-admin.branch-admins.index', compact('branchAdmins'));
+        $filterQuery = User::where('role', 'branch_admin');
+
+        if ($request->has('is_access')) {
+            if ($request->input('is_access') === '0') {
+                $filterQuery->where(function ($query) {
+                    $query->where('is_access', false)
+                          ->orWhereNull('is_access');
+                });
+            } elseif ($request->input('is_access') === '1') {
+                $filterQuery->where('is_access', true);
+            }
+        }
+
+        if ($request->filled('created_from')) {
+            $filterQuery->whereDate('created_at', '>=', $request->input('created_from'));
+        }
+
+        if ($request->filled('created_to')) {
+            $filterQuery->whereDate('created_at', '<=', $request->input('created_to'));
+        }
+
+        $branchAdmins = (clone $filterQuery)
+            ->with('branch', 'bank')
+            ->paginate(15)
+            ->appends($request->query());
+
+        $stats = [
+            'total' => (clone $filterQuery)->count(),
+            'access_granted' => (clone $filterQuery)->where('is_access', true)->count(),
+            'no_access' => (clone $filterQuery)->where(function ($query) {
+                $query->where('is_access', false)
+                      ->orWhereNull('is_access');
+            })->count(),
+            'inactive' => (clone $filterQuery)->where('is_active', false)->count(),
+        ];
+
+        return view('super-admin.branch-admins.index', compact('branchAdmins', 'stats'));
     }
 
     /**
@@ -339,6 +378,42 @@ class SuperAdminController extends Controller
     }
 
     /**
+     * Display the specified branch admin details.
+     */
+    public function showBranchAdmin(User $user)
+    {
+        if (!$user->isBranchAdmin()) {
+            abort(404);
+        }
+
+        $user->load(['bank', 'branch', 'bankOfficial', 'officerDocument']);
+
+        return view('super-admin.branch-admins.show', ['admin' => $user]);
+    }
+
+    /**
+     * Update branch admin access status.
+     */
+    public function updateBranchAdminAccess(Request $request, User $user)
+    {
+        if (!$user->isBranchAdmin()) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'is_access' => 'required|boolean',
+            'access_mes' => 'required_if:is_access,0|string|max:1000',
+        ]);
+
+        $user->is_access = $validated['is_access'];
+        $user->access_mes = $validated['is_access'] == 0 ? $validated['access_mes'] : null;
+        $user->save();
+
+        return redirect()->route('super-admin.branch-admins.index', $user)
+            ->with('success', 'Branch admin access updated successfully.');
+    }
+
+    /**
      * Update the specified branch admin in storage.
      */
     public function updateBranchAdmin(Request $request, User $user)
@@ -348,18 +423,15 @@ class SuperAdminController extends Controller
             'email' => 'required|email|unique:users,email,' . $user->id,
             'phone' => 'required|string|max:20',
             'password' => 'nullable|string|min:6|confirmed',
-            'branch_id' => 'required|exists:branches,id',
+            'bank_id' => 'required|exists:banks,id',
             'is_active' => 'nullable',
         ]);
-
-        // Get the bank_id from the selected branch
-        $branch = Branch::findOrFail($validated['branch_id']);
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
         $user->phone = $validated['phone'];
-        $user->branch_id = $validated['branch_id'];
-        $user->bank_id = $branch->bank_id;
+        $user->branch_id = $request->input('branch_id', $user->branch_id);
+        $user->bank_id = $validated['bank_id'];
         $user->is_active = $request->boolean('is_active');
 
         // Only update password if provided
@@ -399,6 +471,109 @@ class SuperAdminController extends Controller
     {
         $customers = User::where('role', 'customer')->orderBy('created_at', 'desc')->paginate(15);
         return view('super-admin.customers.index', compact('customers'));
+    }
+
+    /**
+     * Display the ratings index for super admin.
+     */
+    public function ratingsIndex(Request $request)
+    {
+        $search = trim($request->query('search', ''));
+        $searchTarget = $request->query('search_target', '');
+
+        $ratingsQuery = CustomerRating::with(['customer', 'branchAdmin', 'newLoanApplication']);
+
+        if ($search) {
+            $like = '%' . $search . '%';
+
+            if ($searchTarget === 'customer') {
+                $ratingsQuery->whereHas('customer', function ($query) use ($like) {
+                    $query->where('name', 'like', $like)
+                          ->orWhere('email', 'like', $like)
+                          ->orWhere('phone', 'like', $like);
+                });
+            } elseif ($searchTarget === 'branch_admin') {
+                $ratingsQuery->whereHas('branchAdmin', function ($query) use ($like) {
+                    $query->where('name', 'like', $like)
+                          ->orWhere('email', 'like', $like)
+                          ->orWhere('phone', 'like', $like);
+                });
+            } else {
+                $ratingsQuery->where(function ($query) use ($like) {
+                    $query->whereHas('customer', function ($query) use ($like) {
+                        $query->where('name', 'like', $like)
+                              ->orWhere('email', 'like', $like)
+                              ->orWhere('phone', 'like', $like);
+                    })->orWhereHas('branchAdmin', function ($query) use ($like) {
+                        $query->where('name', 'like', $like)
+                              ->orWhere('email', 'like', $like)
+                              ->orWhere('phone', 'like', $like);
+                    });
+                });
+            }
+        }
+
+        $ratingCount = (clone $ratingsQuery)->count();
+        $averageRating = $ratingCount ? (clone $ratingsQuery)->avg('rating') : null;
+        $ratings = $ratingsQuery->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
+
+        return view('super-admin.ratings.index', compact('ratings', 'ratingCount', 'averageRating', 'search', 'searchTarget'));
+    }
+
+    /**
+     * Display the bank officer ratings index for super admin.
+     */
+    public function bankOfficerRatingsIndex(Request $request)
+    {
+        $search = trim($request->query('search', ''));
+
+        $ratingsQuery = BankOfficerRating::with(['customer', 'officer', 'newLoanApplication']);
+
+        if ($search) {
+            $like = '%' . $search . '%';
+            $ratingsQuery->where(function ($query) use ($like) {
+                $query->whereHas('officer', function ($query) use ($like) {
+                    $query->where('name', 'like', $like)
+                          ->orWhere('email', 'like', $like)
+                          ->orWhere('phone', 'like', $like);
+                })->orWhereHas('customer', function ($query) use ($like) {
+                    $query->where('name', 'like', $like)
+                          ->orWhere('email', 'like', $like)
+                          ->orWhere('phone', 'like', $like);
+                });
+            });
+        }
+
+        $ratingCount = (clone $ratingsQuery)->count();
+        $averageRating = $ratingCount ? (clone $ratingsQuery)->avg('rating') : null;
+        $ratings = $ratingsQuery->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
+
+        return view('super-admin.ratings.bank-officer-index', compact('ratings', 'ratingCount', 'averageRating', 'search'));
+    }
+
+    /**
+     * Show detailed ratings for a specific customer or branch admin.
+     */
+    public function ratingUserDetails(Request $request, string $type, User $user)
+    {
+        if ($type === 'customer') {
+            abort_if($user->role !== 'customer', 404);
+            $ratingsQuery = CustomerRating::with(['branchAdmin', 'newLoanApplication'])->where('customer_id', $user->id);
+        } elseif ($type === 'branch_admin') {
+            abort_if($user->role !== 'branch_admin', 404);
+            $ratingsQuery = CustomerRating::with(['customer', 'newLoanApplication'])->where('branch_admin_id', $user->id);
+        } elseif ($type === 'bank_officer') {
+            abort_if($user->role !== 'branch_admin', 404);
+            $ratingsQuery = BankOfficerRating::with(['customer', 'newLoanApplication'])->where('officer_id', $user->id);
+        } else {
+            abort(404);
+        }
+
+        $ratingCount = (clone $ratingsQuery)->count();
+        $averageRating = $ratingCount ? (clone $ratingsQuery)->avg('rating') : null;
+        $ratings = $ratingsQuery->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
+
+        return view('super-admin.ratings.user-details', compact('type', 'user', 'ratings', 'ratingCount', 'averageRating'));
     }
 
     /**

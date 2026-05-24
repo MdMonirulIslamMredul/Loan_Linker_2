@@ -201,16 +201,12 @@
                     <i class="bi bi-bank"></i>
                     <span>View All Banks</span>
                 </a>
-                <a href="{{ route('super-admin.bank-admins.create') }}"
+                {{-- <a href="{{ route('super-admin.bank-admins.create') }}"
                     class="menu-item {{ request()->routeIs('super-admin.bank-admins.create') ? 'active' : '' }}">
                     <i class="bi bi-person-badge"></i>
                     <span>Create Bank Officer</span>
-                </a>
-                <a href="{{ route('super-admin.bank-admins.index') }}"
-                    class="menu-item {{ request()->routeIs('super-admin.bank-admins.index') ? 'active' : '' }}">
-                    <i class="bi bi-people"></i>
-                    <span>View Bank Officers</span>
-                </a>
+                </a> --}}
+              
             </div>
 
             @php
@@ -255,7 +251,10 @@
 
             @php
                 $loansActive =
-                    request()->routeIs('super-admin.loans.*') || request()->routeIs('super-admin.loan-categories.*');
+                    request()->routeIs('super-admin.loans.*') ||
+                    request()->routeIs('super-admin.loan-categories.*') ||
+                    request()->routeIs('super-admin.service-categories.*') ||
+                    request()->routeIs('super-admin.service-types.*');
             @endphp
             {{-- <div class="menu-section-title">Loans Management</div> --}}
             <a href="#loansMenu" class="menu-item d-flex align-items-center {{ $loansActive ? 'active' : '' }}"
@@ -284,8 +283,17 @@
                     <i class="bi bi-tags"></i>
                     <span>Loan Categories</span>
                 </a>
+                <a href="{{ route('super-admin.service-categories.index') }}"
+                    class="menu-item {{ request()->routeIs('super-admin.service-categories.*') ? 'active' : '' }}">
+                    <i class="bi bi-grid-3x3-gap"></i>
+                    <span>Service Categories</span>
+                </a>
+                <a href="{{ route('super-admin.service-types.index') }}"
+                    class="menu-item {{ request()->routeIs('super-admin.service-types.*') ? 'active' : '' }}">
+                    <i class="bi bi-diagram-3"></i>
+                    <span>Service Types</span>
+                </a>
             </div>
-
 
             @php
                 $packagesActive =
@@ -322,9 +330,30 @@
                 </a>
             </div>
 
+             @php
+                $pendingBranchAdmins = \App\Models\User::where('role', 'branch_admin')->whereNull('is_access')->count();
+            @endphp
+
+            <a href="{{ route('super-admin.branch-admins.index') }}"
+               class="menu-item {{ request()->routeIs('super-admin.branch-admins.index') ? 'active' : '' }}">
+                <i class="bi bi-people"></i>
+                <span>
+                   View Bank Officers
+                   @if($pendingBranchAdmins)
+                       <span class="badge bg-danger ms-2">{{ $pendingBranchAdmins }}</span>
+                   @endif
+                </span>
+            </a>
+
+
+            
+
+
+
             @php
                 $pendingOrders = \App\Models\PackageOrder::where('status', 'pending')->count();
                 $pendingNewRequests = \App\Models\NewLoanApplication::where('status', 'pending')->count();
+               
             @endphp
             <a href="{{ route('super-admin.package-orders.index') }}"
                 class="menu-item {{ request()->routeIs('super-admin.package-orders.index') ? 'active' : '' }}">
@@ -336,6 +365,8 @@
                     @endif
                 </span>
             </a>
+
+            
 
             <div class="menu-section-title">Customer Applications</div>
 
@@ -376,6 +407,30 @@
 
 
 
+            @php
+                $ratingsActive = request()->routeIs('super-admin.ratings.*') || request()->routeIs('super-admin.ratings.bank-officer');
+            @endphp
+            <a href="#ratingsMenu" class="menu-item d-flex align-items-center {{ $ratingsActive ? 'active' : '' }}"
+                data-bs-toggle="collapse" role="button" aria-expanded="{{ $ratingsActive ? 'true' : 'false' }}"
+                aria-controls="ratingsMenu">
+                <span>
+                    <i class="bi bi-star-fill"></i>
+                    <span>Ratings</span>
+                </span>
+                <i class="bi bi-chevron-down"></i>
+            </a>
+            <div class="collapse submenu {{ $ratingsActive ? 'show' : '' }}" id="ratingsMenu">
+                <a href="{{ route('super-admin.ratings.index') }}"
+                    class="menu-item {{ request()->routeIs('super-admin.ratings.index') ? 'active' : '' }}">
+                    <i class="bi bi-star"></i>
+                    <span>Customer Ratings</span>
+                </a>
+                <a href="{{ route('super-admin.ratings.bank-officer') }}"
+                    class="menu-item {{ request()->routeIs('super-admin.ratings.bank-officer') ? 'active' : '' }}">
+                    <i class="bi bi-people-fill"></i>
+                    <span>Bank Officer Ratings</span>
+                </a>
+            </div>
 
             <div class="menu-section-title">Site Settings</div>
             <a href="{{ route('super-admin.logo-settings.index') }}"
@@ -387,6 +442,11 @@
                 class="menu-item {{ request()->routeIs('super-admin.about-settings.*') ? 'active' : '' }}">
                 <i class="bi bi-info-circle"></i>
                 <span>About Settings</span>
+            </a>
+            <a href="{{ route('super-admin.terms-conditions.index') }}"
+                class="menu-item {{ request()->routeIs('super-admin.terms-conditions.*') ? 'active' : '' }}">
+                <i class="bi bi-file-earmark-text"></i>
+                <span>Terms & Conditions</span>
             </a>
             <a href="{{ route('super-admin.homepage-carousels.index') }}"
                 class="menu-item {{ request()->routeIs('super-admin.homepage-carousels.*') ? 'active' : '' }}">
