@@ -76,6 +76,21 @@
             margin-left: 10px !important;
         }
 
+        .sidebar-toggle-btn {
+            position: fixed;
+            top: 3rem;
+            left: 1rem;
+            z-index: 1055;
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+        }
+
         @media (max-width: 991.98px) {
             .sidebar {
                 width: 100%;
@@ -137,6 +152,8 @@
                             <a class="nav-link fw-medium" href="{{ route('contact') }}">Contact Us</a>
                         </li>
 
+                       
+
                         @auth
                         <li class="nav-item">
                             @php
@@ -188,6 +205,11 @@
                             <a href="{{ route('login') }}" class="btn btn-primary">Get Started</a>
                         </li>
                         @endauth
+
+                            <li class="nav-item ms-lg-2">
+                                <a href="{{ route('customer.new_application.create') }}"  class="btn btn-primary"> Apply For Loan </a>
+                            </li>
+                        
                     </ul>
                 </div>
             </div>
@@ -229,6 +251,8 @@
                             href="{{ route('customer.documents') }}"><i class="bi bi-folder2-open me-2"></i>Documents</a>
                         <a class="nav-link {{ request()->routeIs('customer.financial') ? 'active' : '' }}"
                             href="{{ route('customer.financial') }}"><i class="bi bi-currency-dollar me-2"></i>Financial</a>
+                        <a class="nav-link {{ request()->routeIs('customer.ratings') ? 'active' : '' }}"
+                            href="{{ route('customer.ratings') }}"><i class="bi bi-star me-2"></i>My Ratings</a>
                     </div>
                     <div class="mt-4">
                         <p class="section-label mb-2">Profile</p>
@@ -251,6 +275,9 @@
         </div>
 
         <div class="d-lg-flex flex-grow-1">
+            <button class="btn btn-primary sidebar-toggle-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#customerSidebar" aria-controls="customerSidebar" aria-label="Open customer menu">
+                <i class="bi bi-list"></i>
+            </button>
             <aside
                 class="sidebar d-none d-lg-flex flex-column border-end p-4 overflow-auto card rounded-3 shadow-sm">
 
@@ -280,6 +307,8 @@
                         href="{{ route('customer.documents') }}"><i class="bi bi-folder2-open me-2"></i>Documents</a>
                     <a class="nav-link {{ request()->routeIs('customer.financial') ? 'active' : '' }}"
                         href="{{ route('customer.financial') }}"><i class="bi bi-currency-dollar me-2"></i>Financial</a>
+                    <a class="nav-link {{ request()->routeIs('customer.ratings') ? 'active' : '' }}"
+                        href="{{ route('customer.ratings') }}"><i class="bi bi-star me-2"></i>My Ratings</a>
 
                     <div class="mt-5 pt-4 border-top">
                         <p class="section-label mb-2">Profile</p>

@@ -34,12 +34,12 @@
                 </tr>
                 <tr>
                     <th>Contact Address</th>
-                    <td>{{ $user->contact_address ?? '-' }}</td>
+                    <td>{{ $user->contactDivision->name ?? '-' }} , {{ $user->contactDistrict->name ?? '-' }} , {{ $user->contact_address ?? '-' }}</td>
                 </tr>
                 <tr>
                     <th>Permanent Address</th>
-                    <td>{{ $user->permanent_address ?? '-' }}</td>
-                </tr>   
+                    <td>{{ $user->permanentDivision->name ?? '-' }} , {{ $user->permanentDistrict->name ?? '-' }} , {{ $user->permanent_address ?? '-' }}</td>
+                </tr>
                 <tr>
                     <th>Education</th>
                     <td>{{ $user->education ?? '-' }}</td>
