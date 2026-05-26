@@ -63,6 +63,7 @@ class BankOfficerRegisterController extends Controller
             'p_district_id' => ['required', 'integer'],
             'permanent_address' => 'required|string|max:1000',
             'password' => 'required|string|min:8|confirmed',
+            'accepted_terms' => 'accepted',
         ]);
 
         if (! isset($districts[$data['c_division_id']][$data['c_district_id']])) {
@@ -88,6 +89,8 @@ class BankOfficerRegisterController extends Controller
             'password' => Hash::make($data['password']),
             'bank_id' => $data['bank_id'],
             'role' => 'branch_admin',
+            'accepted_terms' => true,
+            'terms_accepted_at' => now(),
             'is_access' => null,
             'access_mes' => null,
         ]);

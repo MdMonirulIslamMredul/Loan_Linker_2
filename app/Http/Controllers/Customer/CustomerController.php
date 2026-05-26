@@ -9,10 +9,16 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Models\Bank;
+use App\Models\BankOfficerRating;
 use App\Models\CustomerDocument;
 use App\Models\CustomerFinancial;
+use App\Models\Division;
+use App\Models\District;
+use App\Models\LeadAccess;
 use App\Models\LoanApplication;
 use App\Models\NewLoanApplication;
+use App\Models\ServiceCategory;
+use App\Models\ServiceType;
 use App\Models\User;
 
 class CustomerController extends Controller
@@ -36,7 +42,9 @@ class CustomerController extends Controller
         $rejectedApplications = NewLoanApplication::where('customer_id', $user->id)->where('status', 'rejected')->count();
         $pendingApplications = NewLoanApplication::where('customer_id', $user->id)->whereIn('status', ['pending', 'review'])->count();
 
-        $recentApplications = NewLoanApplication::where('customer_id', $user->id)
+        $recentApplications = NewLoanApplication::with(['serviceType'])
+            ->withCount('leadAccesses')
+            ->where('customer_id', $user->id)
             ->latest()
             ->take(5)
             ->get();
@@ -60,8 +68,28 @@ class CustomerController extends Controller
         }
 
         $banks = Bank::orderBy('name')->get();
+        $serviceCategories = ServiceCategory::with(['serviceTypes' => function ($query) {
+            $query->where('is_active', true)->orderBy('name');
+        }])->where('is_active', true)->orderBy('name')->get();
 
-        return view('customer.new-application.create', compact('banks'));
+        return view('customer.new-application.create', compact('banks', 'serviceCategories'));
+    }
+
+    protected function getLocationData(): array
+    {
+        $divisions = Division::orderBy('name')->pluck('name', 'id')->toArray();
+        $districts = District::orderBy('name')
+            ->get()
+            ->groupBy('division_id')
+            ->map(function ($group) {
+                return $group->pluck('name', 'id')->toArray();
+            })
+            ->toArray();
+
+        return [
+            'divisions' => $divisions,
+            'districts' => $districts,
+        ];
     }
 
     /**
@@ -89,7 +117,13 @@ class CustomerController extends Controller
             abort(403, 'Unauthorized.');
         }
 
-        return view('customer.edit-profile', compact('user'));
+        $locationData = $this->getLocationData();
+
+        return view('customer.edit-profile', [
+            'user' => $user,
+            'divisions' => $locationData['divisions'],
+            'districts' => $locationData['districts'],
+        ]);
     }
 
     /**
@@ -146,7 +180,50 @@ class CustomerController extends Controller
                 ->with('error', 'No officer details found.');
         }
 
-        return view('customer.new-application.officer_details', compact('newApplication', 'unlocks', 'officer'));
+        $officerIds = $unlocks->pluck('officer_id')->filter()->unique()->values();
+        $officerRatingStats = BankOfficerRating::whereIn('officer_id', $officerIds)
+            ->get()
+            ->groupBy('officer_id')
+            ->map(function ($ratings) {
+                return [
+                    'count' => $ratings->count(),
+                    'avg' => $ratings->avg('rating'),
+                    'stars' => (int) round($ratings->avg('rating')),
+                ];
+            });
+
+        return view('customer.new-application.officer_details', compact('newApplication', 'unlocks', 'officer', 'officerRatingStats'));
+    }
+
+    public function ratings()
+    {
+        $user = auth()->user();
+
+        if (!$user || ($user->role ?? '') !== 'customer') {
+            abort(403, 'Unauthorized.');
+        }
+
+        $unlocks = LeadAccess::with(['newLoanApplication', 'officer.bankOfficial'])
+            ->whereHas('newLoanApplication', function ($query) use ($user) {
+                $query->where('customer_id', $user->id);
+            })
+            ->orderByDesc('created_at')
+            ->get();
+
+        $givenRatings = BankOfficerRating::with(['newLoanApplication', 'officer'])
+            ->where('customer_id', $user->id)
+            ->orderByDesc('created_at')
+            ->get();
+
+        $ratingKeys = $givenRatings->mapWithKeys(function ($rating) {
+            return [sprintf('%s-%s', $rating->new_loan_application_id, $rating->officer_id) => true];
+        });
+
+        $pendingUnlocks = $unlocks->filter(function ($unlock) use ($ratingKeys) {
+            return ! isset($ratingKeys[sprintf('%s-%s', $unlock->newloan_id, $unlock->officer_id)]);
+        });
+
+        return view('customer.ratings', compact('givenRatings', 'pendingUnlocks'));
     }
 
     public function storeNewApplication(Request $request)
@@ -163,13 +240,22 @@ class CustomerController extends Controller
         $data = Validator::make($payload, [
             'expected_amount' => ['required', 'numeric', 'min:0'],
             'tenure_months' => ['required', 'integer', 'min:1'],
-            'service_category' => ['required', 'in:credit_card,loan'],
-            'service_type' => ['required', 'in:visa_credit_card,personal_loan'],
-            'bank_ids' => ['required', 'array', 'min:1', 'max:5'],
+            'service_category_id' => ['required', 'exists:service_categories,id'],
+            'service_type_id' => ['required', 'exists:service_types,id'],
+            'bank_ids' => ['array', 'max:5'],
             'bank_ids.*' => ['required', 'exists:banks,id'],
             'additional_notes' => ['nullable', 'string', 'max:2000'],
         ])->validate();
 
+        $category = ServiceCategory::find($data['service_category_id']);
+        $type = ServiceType::find($data['service_type_id']);
+
+        if (!$category || !$type || (int) $type->service_category_id !== (int) $category->id) {
+            return back()->withErrors(['service_type_id' => 'The selected service type does not belong to the selected category.'])->withInput();
+        }
+
+        $data['service_category'] = $category->slug;
+        $data['service_type'] = $type->slug;
         $data['customer_id'] = $user->id;
         $data['status'] = 'pending';
 
@@ -186,9 +272,76 @@ class CustomerController extends Controller
             abort(403, 'Unauthorized.');
         }
 
+        $newApplication->load('bankOfficerRatings');
+
         $banks = Bank::whereIn('id', $newApplication->bank_ids ?? [])->get()->keyBy('id');
 
         return view('customer.new-application.show', compact('newApplication', 'banks'));
+    }
+
+    public function storeBankOfficerRating(Request $request, NewLoanApplication $newApplication, User $officer)
+    {
+        $user = auth()->user();
+
+        if (!$user || ($user->role ?? '') !== 'customer' || $newApplication->customer_id !== $user->id) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $access = $newApplication->leadAccesses()->where('officer_id', $officer->id)->first();
+        if (! $access) {
+            return redirect()->back()->with('error', 'Officer details are not available for rating.');
+        }
+
+        $validated = $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:2000',
+        ]);
+
+        BankOfficerRating::updateOrCreate(
+            [
+                'customer_id' => $user->id,
+                'officer_id' => $officer->id,
+                'new_loan_application_id' => $newApplication->id,
+            ],
+            [
+                'rating' => $validated['rating'],
+                'comment' => $validated['comment'] ?? null,
+            ]
+        );
+
+        return redirect()->back()->with('success', 'Officer rating saved successfully.');
+    }
+
+    public function officerRatingHistory(Request $request, NewLoanApplication $newApplication, User $officer)
+    {
+        $user = auth()->user();
+
+        if (!$user || ($user->role ?? '') !== 'customer' || $newApplication->customer_id !== $user->id) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $access = $newApplication->leadAccesses()->where('officer_id', $officer->id)->first();
+        if (! $access) {
+            return redirect()->back()->with('error', 'Officer details are not available.');
+        }
+
+        $officerRatings = BankOfficerRating::with(['customer', 'newLoanApplication'])
+            ->where('officer_id', $officer->id)
+            ->orderByDesc('created_at')
+            ->get();
+
+        $ratingCount = $officerRatings->count();
+        $averageRating = $ratingCount ? $officerRatings->avg('rating') : null;
+        $averageStars = $averageRating ? (int) round($averageRating) : 0;
+
+        return view('customer.new-application.officer_ratings', compact(
+            'newApplication',
+            'officer',
+            'officerRatings',
+            'ratingCount',
+            'averageRating',
+            'averageStars'
+        ));
     }
 
     public function editNewApplication(Request $request, NewLoanApplication $newApplication)
@@ -204,8 +357,11 @@ class CustomerController extends Controller
         }
 
         $banks = Bank::orderBy('name')->get();
+        $serviceCategories = ServiceCategory::with(['serviceTypes' => function ($query) {
+            $query->where('is_active', true)->orderBy('name');
+        }])->where('is_active', true)->orderBy('name')->get();
 
-        return view('customer.new-application.edit', compact('newApplication', 'banks'));
+        return view('customer.new-application.edit', compact('newApplication', 'banks', 'serviceCategories'));
     }
 
     public function updateNewApplication(Request $request, NewLoanApplication $newApplication)
@@ -226,12 +382,22 @@ class CustomerController extends Controller
         $data = Validator::make($payload, [
             'expected_amount' => ['required', 'numeric', 'min:0'],
             'tenure_months' => ['required', 'integer', 'min:1'],
-            'service_category' => ['required', 'in:credit_card,loan'],
-            'service_type' => ['required', 'in:visa_credit_card,personal_loan'],
-            'bank_ids' => ['required', 'array', 'min:1', 'max:5'],
+            'service_category_id' => ['required', 'exists:service_categories,id'],
+            'service_type_id' => ['required', 'exists:service_types,id'],
+            'bank_ids' => ['array', 'max:5'],
             'bank_ids.*' => ['required', 'exists:banks,id'],
             'additional_notes' => ['nullable', 'string', 'max:2000'],
         ])->validate();
+
+        $category = ServiceCategory::find($data['service_category_id']);
+        $type = ServiceType::find($data['service_type_id']);
+
+        if (!$category || !$type || (int) $type->service_category_id !== (int) $category->id) {
+            return back()->withErrors(['service_type_id' => 'The selected service type does not belong to the selected category.'])->withInput();
+        }
+
+        $data['service_category'] = $category->slug;
+        $data['service_type'] = $type->slug;
 
         $newApplication->update($data);
 
@@ -256,7 +422,7 @@ class CustomerController extends Controller
     }
 
     /**
-     * Update customer profile (name, email, phone).
+     * Update customer profile.
      */
     public function updateProfile(Request $request)
     {
@@ -266,11 +432,36 @@ class CustomerController extends Controller
             abort(403, 'Unauthorized.');
         }
 
+        $locationData = $this->getLocationData();
+        $divisions = $locationData['divisions'];
+        $districts = $locationData['districts'];
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'phone' => ['nullable', 'string', 'max:30'],
+            'dob' => ['nullable', 'date'],
+            'c_division_id' => ['required', 'integer', Rule::in(array_keys($divisions))],
+            'c_district_id' => ['required', 'integer'],
+            'contact_address' => ['nullable', 'string', 'max:1000'],
+            'p_division_id' => ['required', 'integer', Rule::in(array_keys($divisions))],
+            'p_district_id' => ['required', 'integer'],
+            'permanent_address' => ['nullable', 'string', 'max:1000'],
+            'education' => ['nullable', 'string', 'max:255'],
+            'profession' => ['nullable', 'string', 'max:255'],
+            'organization_name' => ['nullable', 'string', 'max:255'],
+            'designation' => ['nullable', 'string', 'max:255'],
+            'date_of_joining' => ['nullable', 'date'],
+            'total_working_experience' => ['nullable', 'string', 'max:100'],
         ]);
+
+        if (! isset($districts[$data['c_division_id']][$data['c_district_id']])) {
+            return back()->withErrors(['c_district_id' => 'The selected contact district does not belong to the selected division.'])->withInput();
+        }
+
+        if (! isset($districts[$data['p_division_id']][$data['p_district_id']])) {
+            return back()->withErrors(['p_district_id' => 'The selected permanent district does not belong to the selected division.'])->withInput();
+        }
 
         $user->fill($data);
         $user->save();

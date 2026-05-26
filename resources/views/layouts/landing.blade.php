@@ -74,6 +74,8 @@
                             <a class="nav-link fw-medium" href= "{{ route('contact') }}">Contact Us</a>
                         </li>
 
+                       
+
                         @auth
                             <li class="nav-item">
                                 @php 
@@ -123,12 +125,13 @@
                             <li class="nav-item">
                                 <a class="nav-link fw-medium" href="{{ route('login') }}">Login</a>
                             </li>
+                        @endauth
                             <li class="nav-item ms-lg-2">
-                                <a href="{{ route('login') }}" class="btn btn-primary">
-                                    Get Started
+                                <a href="{{ route('customer.new_application.create') }}"  class="btn btn-primary">
+                                    Apply For Loan
                                 </a>
                             </li>
-                        @endauth
+                        
                     </ul>
                 </div>
             </div>

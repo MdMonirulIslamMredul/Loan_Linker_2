@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Branch Admin Dashboard')</title>
+    <title>@yield('title', 'Bank Officer Dashboard')</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -125,22 +125,7 @@
                 <span>Dashboard</span>
             </a>
 
-            <a href="{{ route('chat.index') }}"
-                class="menu-item {{ request()->routeIs('chat.*') ? 'active' : '' }}">
-                <i class="bi bi-chat-dots"></i>
-                <span>Chat</span>
-                @php
-                    $unreadChatCount = \App\Models\Message::where('is_seen', false)
-                        ->where('sender_id', '!=', auth()->id())
-                        ->whereHas('conversation', function ($query) {
-                            $query->where('user_one_id', auth()->id())
-                                  ->orWhere('user_two_id', auth()->id());
-                        })->count();
-                @endphp
-                @if($unreadChatCount > 0)
-                    <span class="badge bg-danger ms-auto rounded-pill">{{ $unreadChatCount }}</span>
-                @endif
-            </a>
+         
 
             <a href="/branch-admin/profile" class="menu-item {{ request()->routeIs('branch-admin.profile') ? 'active' : '' }}">
                 <i class="bi bi-person"></i>
@@ -162,6 +147,27 @@
             </a> --}}
 
             @if(auth()->user()->is_access)
+
+
+               <a href="{{ route('chat.index') }}"
+                class="menu-item {{ request()->routeIs('chat.*') ? 'active' : '' }}">
+                <i class="bi bi-chat-dots"></i>
+                <span>Chat</span>
+                @php
+                    $unreadChatCount = \App\Models\Message::where('is_seen', false)
+                        ->where('sender_id', '!=', auth()->id())
+                        ->whereHas('conversation', function ($query) {
+                            $query->where('user_one_id', auth()->id())
+                                  ->orWhere('user_two_id', auth()->id());
+                        })->count();
+                @endphp
+                @if($unreadChatCount > 0)
+                    <span class="badge bg-danger ms-auto rounded-pill">{{ $unreadChatCount }}</span>
+                @endif
+            </a>
+
+
+
                 <div class="menu-section-title">Applications</div>
 
                 @php
@@ -195,6 +201,12 @@
                     class="menu-item {{ request()->routeIs('branch-admin.new-applications.unlocked') ? 'active' : '' }}">
                     <i class="bi bi-unlock"></i>
                     <span>Unlocked Requests</span>
+                </a>
+
+                 <a href="{{ route('branch-admin.ratings.history') }}"
+                    class="menu-item {{ request()->routeIs('branch-admin.ratings.history') ? 'active' : '' }}">
+                    <i class="bi bi-star"></i>
+                    <span>Ratings History</span>
                 </a>
 
                 <div class="menu-section-title">Packages</div>
