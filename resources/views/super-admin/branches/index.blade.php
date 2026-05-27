@@ -26,7 +26,7 @@
                                 <th>Code</th>
                                 <th>City</th>
                                 <th>Phone</th>
-                                <th>Officers / Admins</th>
+                                {{-- <th>Officers / Admins</th> --}}
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -40,7 +40,7 @@
                                     <td>{{ $branch->code }}</td>
                                     <td>{{ $branch->city ?? 'N/A' }}</td>
                                     <td>{{ $branch->phone ?? 'N/A' }}</td>
-                                    <td>{{ $branch->users_count }}</td>
+                                    {{-- <td>{{ $branch->users_count }}</td> --}}
                                     <td>
                                         <span class="badge {{ $branch->is_active ? 'bg-success' : 'bg-danger' }}">
                                             {{ $branch->is_active ? 'Active' : 'Inactive' }}

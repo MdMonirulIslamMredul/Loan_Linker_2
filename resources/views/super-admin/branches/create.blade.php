@@ -63,7 +63,7 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label for="state" class="form-label fw-semibold">State</label>
+                        <label for="state" class="form-label fw-semibold">Thana</label>
                         <input type="text" name="state" id="state" value="{{ old('state') }}"
                             class="form-control">
                         @error('state')
