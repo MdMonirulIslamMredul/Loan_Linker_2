@@ -148,7 +148,7 @@
         <div class="container py-5">
             <div class="row g-4">
                 <!-- About -->
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-4 col-md-6">
                     <div class="d-flex align-items-center mb-3">
                         @if ($logoSettings->footer_logo)
                             <img src="{{ asset('storage/' . $logoSettings->footer_logo) }}"
@@ -168,45 +168,26 @@
                 </div>
 
                 <!-- Quick Links -->
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-4 col-md-6">
                     <h5 class="fw-semibold mb-3 text-white">Quick Links</h5>
                     <ul class="list-unstyled">
                         <li class="mb-2"><a href="/"
                                 class="text-white-50 text-decoration-none hover-link">Home</a></li>
-                        <li class="mb-2"><a href="{{ route('banks.all') }}"
-                                class="text-white-50 text-decoration-none hover-link">All Banks</a></li>
-                        <li class="mb-2"><a href="{{ route('loans.all') }}"
-                                class="text-white-50 text-decoration-none hover-link">Browse Loans</a></li>
                         <li class="mb-2"><a href="{{ route('about') }}"
                                 class="text-white-50 text-decoration-none hover-link">About
                                 Us</a></li>
-                        <li class="mb-2"><a href="{{ route('search') }}?q="
-                                class="text-white-50 text-decoration-none hover-link">Search Loans</a></li>
-                        {{-- <li class="mb-2"><a href="{{ route('login') }}" class="text-white-50 text-decoration-none hover-link">Login</a></li> --}}
-                    </ul>
-                </div>
+                        <li class="mb-2"><a href="{{ route('register.customer') }}"
+                                class="text-white-50 text-decoration-none hover-link">Register as Customer</a></li>
+                        <li class="mb-2"><a href="{{ route('register.bank_officer')}}"
+                                class="text-white-50 text-decoration-none hover-link">Register as Bank Officer</a></li>
+                        <li class="mb-2"><a href="{{ route('pages.terms') }}"
+                                class="text-white-50 text-decoration-none hover-link">Terms & Conditions</a></li>
 
-                <!-- Loan Types -->
-                <div class="col-lg-3 col-md-6">
-                    <h5 class="fw-semibold mb-3 text-white">Loan Types</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="{{ route('search') }}?q=personal"
-                                class="text-white-50 text-decoration-none hover-link">Personal Loans</a></li>
-                        <li class="mb-2"><a href="{{ route('search') }}?q=home"
-                                class="text-white-50 text-decoration-none hover-link">Home Loans</a></li>
-                        <li class="mb-2"><a href="{{ route('search') }}?q=car"
-                                class="text-white-50 text-decoration-none hover-link">Car Loans</a></li>
-                        <li class="mb-2"><a href="{{ route('search') }}?q=business"
-                                class="text-white-50 text-decoration-none hover-link">Business Loans</a></li>
-                        <li class="mb-2"><a href="{{ route('search') }}?q=education"
-                                class="text-white-50 text-decoration-none hover-link">Education Loans</a></li>
-                        <li class="mb-2"><a href="{{ route('search') }}?q=sme"
-                                class="text-white-50 text-decoration-none hover-link">SME Loans</a></li>
                     </ul>
                 </div>
 
                 <!-- Contact -->
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-4 col-md-6">
                     <h5 class="fw-semibold mb-3 text-white">Contact Us</h5>
                     <ul class="list-unstyled">
                         <li class="mb-2 text-white-50">
@@ -260,18 +241,13 @@
             </div>
 
             <div class="border-top border-secondary mt-4 pt-4 text-center">
-                <p class="mb-1 text-white-50">Loan Linker &copy; 2025. All Rights Reserved.</p>
+                <p class="mb-1 text-white-50">Loan Linker &copy; 2026. All Rights Reserved.</p>
                 <p class="mb-0 text-white-50">
-                    <a href="{{ route('search') }}?q=personal"
-                        class="text-white-50 text-decoration-none hover-link">Personal Loan</a>
+                    
+                    <a href="{{ route('contact') }}" class="text-white-50 text-decoration-none hover-link">Contact Us</a>
                     &nbsp;|&nbsp;
-                    <a href="{{ route('search') }}?q=sme" class="text-white-50 text-decoration-none hover-link">SME
-                        Loan</a>
-                    &nbsp;|&nbsp;
-                    <a href="{{ route('search') }}?q=credit-card"
-                        class="text-white-50 text-decoration-none hover-link">Credit Card</a>
-                    &nbsp;|&nbsp;
-                    <a href="#" class="text-white-50 text-decoration-none hover-link">Bank Officer
+                    <a href="{{ route('register.bank_officer') }}"
+                        class="text-white-50 text-decoration-none hover-link">Bank Officer
                         Registration</a>
                     &nbsp;|&nbsp;
                     <a href="{{ route('pages.privacy_policy') }}"

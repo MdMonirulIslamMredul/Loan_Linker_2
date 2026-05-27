@@ -362,8 +362,8 @@
         <section id="categories" class="py-5 bg-white">
             <div class="container">
                 <div class="text-center mb-5">
-                    <h2 class="display-5 fw-bold mb-3">Explore Loan Categories</h2>
-                    <p class="lead text-muted">Find the right type of loan for your needs</p>
+                    <h2 class="display-5 fw-bold mb-3">Explore All Service </h2>
+                    <p class="lead text-muted">Find the right type of service for your needs</p>
                 </div>
 
                 <!-- Desktop Carousel (3 cards per slide) -->
@@ -468,7 +468,7 @@
                 <!-- View All Loan Categories Button -->
                 <div class="text-center mt-5">
                     <a href="{{ route('loan-categories.index') }}" class="btn btn-primary btn-lg px-5">
-                        <i class="bi bi-list me-2"></i>View All Loan Categories
+                        <i class="bi bi-list me-2"></i>View All Services
                     </a>
                 </div>
 
@@ -478,7 +478,7 @@
 
 
     <!-- All Banks Slider Section -->
-    @if ($banks->count() > 0)
+    {{-- @if ($banks->count() > 0)
         <section id="banks" class="py-5 bg-white">
             <div class="container">
                 <div class="text-center mb-5">
@@ -518,7 +518,7 @@
                                                     <p class="card-text text-muted small" style="min-height: 40px;">
                                                         {{ Str::limit($bank->description, 80) }}</p>
 
-                                                    {{-- @php
+                                                    @php
                                                         $loanCount = $bank->branches->sum(function ($branch) {
                                                             return $branch->loans->where('is_active', true)->count();
                                                         });
@@ -535,10 +535,10 @@
                                                             </div>
                                                             <div class="text-muted">Loan Offers</div>
                                                         </div>
-                                                    </div> --}}
+                                                    </div>
 
-                                                    {{-- <a href="{{ route('search') }}?q={{ urlencode($bank->name) }}"
-                                                        class="btn btn-primary">View Loans</a> --}}
+                                                    <a href="{{ route('search') }}?q={{ urlencode($bank->name) }}"
+                                                        class="btn btn-primary">View Loans</a>
                                                 </div>
                                             </div>
                                         </div>
@@ -649,7 +649,7 @@
                 </div>
             </div>
         </section>
-    @endif
+    @endif --}}
 
     <!-- Why Choose Us Section -->
     <section id="about" class="py-5" style="background: linear-gradient(135deg, #E0F2FE 0%, #EDE9FE 100%);">
@@ -949,10 +949,9 @@
     <!-- CTA Section -->
     <section class="py-5 text-white text-center" style="background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);">
         <div class="container">
-            <h2 class="display-5 fw-bold mb-3">Ready to Find Your Perfect Loan?</h2>
-            <p class="lead mb-4 mx-auto" style="max-width: 600px;">Start comparing loan offers from Bangladesh's top banks
-                today</p>
-            <a href="{{ route('loans.all') }}" class="btn btn-light btn-lg shadow">Browse All Loans</a>
+            <h2 class="display-5 fw-bold mb-3">Ready For Apply your Needs Service?</h2>
+            <p class="lead mb-4 mx-auto" style="max-width: 600px;">Just Registration > Document Add > Apply for Your Loan</p>
+            <a href="{{ route('customer.new_application.create')  }}" class="btn btn-light btn-lg shadow">Apply Now</a>
         </div>
     </section>
 @endsection
