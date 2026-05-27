@@ -60,21 +60,23 @@
                         </label>
                         <div class="row g-3 mt-2">
                             @for ($i = 0; $i < 5; $i++)
+                                @php
+                                    $selectedBank = optional($banks->firstWhere('id', old("bank_ids.$i")))->name;
+                                @endphp
                                 <div class="col-12 col-sm-6">
-                                    <label for="bank_ids_{{ $i }}" class="form-label">Bank {{ $i + 1 }}</label>
-                                    <select name="bank_ids[]" id="bank_ids_{{ $i }}" class="form-select @error('bank_ids.' . $i) is-invalid @enderror">
-                                        <option value="">Select bank {{ $i + 1 }}</option>
-                                        @foreach($banks as $bank)
-                                            <option value="{{ $bank->id }}" {{ old("bank_ids.$i") == $bank->id ? 'selected' : '' }}>{{ $bank->name }}</option>
-                                        @endforeach
-                                    </select>
+                                    <label for="bank_search_{{ $i }}" class="form-label">Bank {{ $i + 1 }}</label>
+                                    <div class="mb-2 position-relative">
+                                        <input type="search" name="bank_names[]" id="bank_search_{{ $i }}" class="form-control bank-search-input @error('bank_ids.' . $i) is-invalid @enderror" data-target="bank_ids_{{ $i }}" placeholder="Select bank or search" aria-label="Search bank {{ $i + 1 }}" value="{{ old("bank_names.$i", $selectedBank) }}" autocomplete="off">
+                                        <input type="hidden" name="bank_ids[]" id="bank_ids_{{ $i }}" value="{{ old("bank_ids.$i") }}">
+                                        <div class="bank-search-dropdown list-group position-absolute w-100 mt-1 d-none" style="max-height:220px; overflow-y:auto; z-index:1050;"></div>
+                                    </div>
                                     @error('bank_ids.' . $i)
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             @endfor
                         </div>
-                        <div class="form-text">Use each dropdown to pick one bank. Leave unused fields blank.</div>
+                        <div class="form-text">Start typing a bank name to search, then choose from the list. Leave unused fields blank.</div>
                         @error('bank_ids')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
@@ -100,32 +102,96 @@
     @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                const form = document.querySelector('form[action="{{ route('customer.new_application.store') }}"]');
-                const selects = Array.from(document.querySelectorAll('select[name="bank_ids[]"]'));
+                const bankSearchInputs = Array.from(document.querySelectorAll('.bank-search-input'));
+                const bankList = @json($banks->map(function ($bank) { return ['id' => $bank->id, 'name' => $bank->name]; }));
                 const categorySelect = document.querySelector('#service_category_id');
                 const typeSelect = document.querySelector('#service_type_id');
                 const typeOptions = Array.from(typeSelect.options);
 
-                function refreshOptions() {
-                    const selectedValues = selects.map(select => select.value).filter(Boolean);
+                function findBankIdByName(name) {
+                    const normalized = name.trim().toLowerCase();
+                    const bank = bankList.find(item => item.name.toLowerCase() === normalized);
+                    return bank ? bank.id : '';
+                }
 
-                    selects.forEach(select => {
-                        const currentValue = select.value;
-                        Array.from(select.options).forEach(option => {
-                            if (!option.value) {
-                                option.disabled = false;
-                                return;
+                function getDropdown(input) {
+                    return input.closest('.position-relative')?.querySelector('.bank-search-dropdown');
+                }
+
+                function renderDropdown(input, filter = '') {
+                    const dropdown = getDropdown(input);
+                    if (!dropdown) {
+                        return;
+                    }
+
+                    const normalized = filter.trim().toLowerCase();
+                    const matches = bankList.filter(item => item.name.toLowerCase().includes(normalized));
+
+                    dropdown.innerHTML = '';
+                    if (!matches.length) {
+                        const none = document.createElement('div');
+                        none.className = 'list-group-item disabled';
+                        none.textContent = 'No banks found';
+                        dropdown.appendChild(none);
+                        return;
+                    }
+
+                    matches.forEach(bank => {
+                        const item = document.createElement('button');
+                        item.type = 'button';
+                        item.className = 'list-group-item list-group-item-action';
+                        item.textContent = bank.name;
+                        item.addEventListener('click', function () {
+                            input.value = bank.name;
+                            const hiddenInput = document.getElementById(input.dataset.target);
+                            if (hiddenInput) {
+                                hiddenInput.value = bank.id;
                             }
-                            option.disabled = selectedValues.includes(option.value) && option.value !== currentValue;
+                            dropdown.classList.add('d-none');
                         });
+                        dropdown.appendChild(item);
                     });
                 }
 
-                function disableEmptySelects() {
-                    selects.forEach(select => {
-                        select.disabled = !select.value;
+                function openDropdown(input) {
+                    const dropdown = getDropdown(input);
+                    if (!dropdown) {
+                        return;
+                    }
+                    renderDropdown(input, input.value);
+                    dropdown.classList.remove('d-none');
+                }
+
+                function closeAllDropdowns() {
+                    document.querySelectorAll('.bank-search-dropdown').forEach(dropdown => {
+                        dropdown.classList.add('d-none');
                     });
                 }
+
+                bankSearchInputs.forEach(input => {
+                    input.addEventListener('focus', function () {
+                        openDropdown(this);
+                    });
+                    input.addEventListener('input', function () {
+                        const hiddenInput = document.getElementById(this.dataset.target);
+                        if (hiddenInput) {
+                            hiddenInput.value = findBankIdByName(this.value);
+                        }
+                        renderDropdown(this, this.value);
+                    });
+                    input.addEventListener('change', function () {
+                        const hiddenInput = document.getElementById(this.dataset.target);
+                        if (hiddenInput) {
+                            hiddenInput.value = findBankIdByName(this.value);
+                        }
+                    });
+                });
+
+                document.addEventListener('click', function (event) {
+                    if (!event.target.closest('.bank-search-dropdown') && !event.target.closest('.bank-search-input')) {
+                        closeAllDropdowns();
+                    }
+                });
 
                 function refreshTypeOptions() {
                     const selectedCategory = categorySelect.value;
@@ -146,14 +212,7 @@
                     refreshTypeOptions();
                 });
 
-                if (form) {
-                    form.addEventListener('submit', function () {
-                        disableEmptySelects();
-                    });
-                }
-
                 refreshTypeOptions();
-                refreshOptions();
             });
         </script>
     @endpush

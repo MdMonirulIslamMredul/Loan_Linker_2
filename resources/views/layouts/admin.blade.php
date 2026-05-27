@@ -201,11 +201,11 @@
                     <i class="bi bi-bank"></i>
                     <span>View All Banks</span>
                 </a>
-                {{-- <a href="{{ route('super-admin.bank-admins.create') }}"
-                    class="menu-item {{ request()->routeIs('super-admin.bank-admins.create') ? 'active' : '' }}">
-                    <i class="bi bi-person-badge"></i>
-                    <span>Create Bank Officer</span>
-                </a> --}}
+                <a href="{{ route('super-admin.branches.index') }}"
+                    class="menu-item {{ request()->routeIs('super-admin.branches.index') ? 'active' : '' }}">
+                    <i class="bi bi-diagram-3-fill"></i>
+                    <span>View Bank Branches</span>
+                </a>
               
             </div>
 
