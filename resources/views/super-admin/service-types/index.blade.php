@@ -65,10 +65,37 @@
                     </table>
                 </div>
 
-                <div class="mt-4">
-                    {{ $types->links() }}
+                <div class="mt-4 d-flex justify-content-center">
+                    {{ $types->links('pagination::bootstrap-5') }}
                 </div>
             @endif
         </div>
     </div>
+
+@push('styles')
+    <style>
+        .pagination {
+            margin-bottom: 0;
+            font-size: 0.9rem;
+        }
+
+        .pagination .page-link {
+            padding: 0.4rem 0.7rem;
+            min-width: 2rem;
+            line-height: 1.25;
+        }
+
+        .pagination .page-link svg,
+        .pagination .page-link .bi,
+        .pagination .page-link::before,
+        .pagination .page-link::after {
+            font-size: 0.95rem;
+        }
+
+        .pagination .page-item:first-child .page-link,
+        .pagination .page-item:last-child .page-link {
+            border-radius: 0.35rem;
+        }
+    </style>
+@endpush
 @endsection
