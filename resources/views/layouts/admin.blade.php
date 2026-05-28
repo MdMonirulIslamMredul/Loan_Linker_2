@@ -124,6 +124,33 @@
                 display: inline-block;
             }
         }
+
+        /* Compact pagination for admin tables */
+        .pagination {
+            margin-bottom: 0;
+            font-size: 0.88rem;
+        }
+
+        .pagination .page-link {
+            padding: 0.35rem 0.75rem;
+            min-width: 2.2rem;
+            line-height: 1.2;
+        }
+
+        .pagination .page-item:first-child .page-link,
+        .pagination .page-item:last-child .page-link {
+            border-radius: 0.35rem;
+        }
+
+        .pagination .page-link svg,
+        .pagination .page-link .bi {
+            font-size: 1rem;
+        }
+
+        .table-responsive + .mt-4 .pagination,
+        .mt-4 .pagination {
+            justify-content: flex-end;
+        }
     </style>
     @stack('styles')
 </head>
@@ -376,11 +403,11 @@
                 <span>Customer List</span>
             </a>
 
-            <a href="{{ route('super-admin.applications.index') }}"
+            {{-- <a href="{{ route('super-admin.applications.index') }}"
                 class="menu-item {{ request()->routeIs('super-admin.applications.index') ? 'active' : '' }}">
                 <i class="bi bi-file-text"></i>
                 <span>Loan Applications</span>
-            </a>
+            </a> --}}
 
             <a href="{{ route('super-admin.new-applications.index') }}"
                 class="menu-item {{ request()->routeIs('super-admin.new-applications.*') ? 'active' : '' }}">
