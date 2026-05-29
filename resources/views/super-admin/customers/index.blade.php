@@ -102,14 +102,19 @@
                                                     class="bi bi-calendar3 me-1"></i>{{ $c->created_at->format('d M, Y') }}</small>
                                         </td>
                                         <td>
-                                            <form action="{{ route('super-admin.customers.reset-password', $c->id) }}"
-                                                method="POST"
-                                                onsubmit="return confirm('Reset password to default for this customer?');">
-                                                @csrf
-                                                <button type="submit" class="btn btn-sm btn-outline-primary">
-                                                    <i class="bi bi-key"></i> Reset Password
-                                                </button>
-                                            </form>
+                                            <div class="d-flex gap-2">
+                                                <a href="{{ route('super-admin.customers.show', $c->id) }}" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
+                                                <form action="{{ route('super-admin.customers.reset-password', $c->id) }}"
+                                                    method="POST"
+                                                    onsubmit="return confirm('Reset password to default for this customer?');">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-key"></i> Reset Password
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach
