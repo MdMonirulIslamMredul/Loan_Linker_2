@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Bank;
 use App\Models\Branch;
+use App\Models\District;
 use App\Models\Loan;
 use App\Models\LoanCategory;
 use App\Models\User;
@@ -230,7 +231,7 @@ class SuperAdminController extends Controller
 
         Branch::create($validated);
 
-        return redirect()->route('super-admin.dashboard')->with('success', 'Branch created successfully.');
+        return redirect()->route('super-admin.branches.index')->with('success', 'Branch created successfully.');
     }
 
     /**
@@ -341,6 +342,14 @@ class SuperAdminController extends Controller
             }
         }
 
+        if ($request->filled('bank_id')) {
+            $filterQuery->where('bank_id', $request->input('bank_id'));
+        }
+
+        if ($request->filled('district_id')) {
+            $filterQuery->where('c_district_id', $request->input('district_id'));
+        }
+
         if ($request->filled('created_from')) {
             $filterQuery->whereDate('created_at', '>=', $request->input('created_from'));
         }
@@ -364,7 +373,10 @@ class SuperAdminController extends Controller
             'inactive' => (clone $filterQuery)->where('is_active', false)->count(),
         ];
 
-        return view('super-admin.branch-admins.index', compact('branchAdmins', 'stats'));
+        $banks = Bank::where('is_active', true)->orderBy('name')->get();
+        $districts = District::orderBy('name')->get();
+
+        return view('super-admin.branch-admins.index', compact('branchAdmins', 'stats', 'banks', 'districts'));
     }
 
     /**
@@ -471,6 +483,42 @@ class SuperAdminController extends Controller
     {
         $customers = User::where('role', 'customer')->orderBy('created_at', 'desc')->paginate(15);
         return view('super-admin.customers.index', compact('customers'));
+    }
+
+    /**
+     * Display the specified customer details.
+     */
+    public function showCustomer(User $user)
+    {
+        if (!$user->isCustomer()) {
+            abort(404);
+        }
+
+        $user->load(['bank', 'branch', 'contactDivision', 'contactDistrict', 'permanentDivision', 'permanentDistrict', 'customerDocument', 'customerFinancial']);
+
+        return view('super-admin.customers.show', ['customer' => $user]);
+    }
+
+    /**
+     * Update the specified customer's active status.
+     */
+    public function updateCustomerStatus(Request $request, User $user)
+    {
+        if (!$user->isCustomer()) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'is_active' => 'required|boolean',
+        ]);
+
+        $user->is_active = $validated['is_active'];
+        $user->save();
+
+        $statusLabel = $user->is_active ? 'activated' : 'deactivated';
+
+        return redirect()->route('super-admin.customers.show', $user->id)
+            ->with('success', "Customer account has been {$statusLabel}.");
     }
 
     /**

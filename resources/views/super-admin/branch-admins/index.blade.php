@@ -59,12 +59,30 @@
             <div class="card-body">
                 <form method="GET" action="{{ route('super-admin.branch-admins.index') }}">
                     <div class="row g-3 align-items-end">
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <label class="form-label">Access Status</label>
                             <select name="is_access" class="form-select">
                                 <option value="" {{ request('is_access') === null ? 'selected' : '' }}>All</option>
                                 <option value="1" {{ request('is_access') === '1' ? 'selected' : '' }}>Access Granted</option>
                                 <option value="0" {{ request('is_access') === '0' ? 'selected' : '' }}>No Access</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Bank</label>
+                            <select name="bank_id" class="form-select">
+                                <option value="">All Banks</option>
+                                @foreach($banks as $bank)
+                                    <option value="{{ $bank->id }}" {{ request('bank_id') == $bank->id ? 'selected' : '' }}>{{ $bank->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Area / District</label>
+                            <select name="district_id" class="form-select">
+                                <option value="">All Districts</option>
+                                @foreach($districts as $district)
+                                    <option value="{{ $district->id }}" {{ request('district_id') == $district->id ? 'selected' : '' }}>{{ $district->name }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="col-md-3">
@@ -75,7 +93,7 @@
                             <label class="form-label">Created To</label>
                             <input type="date" name="created_to" class="form-control" value="{{ request('created_to') }}">
                         </div>
-                        <div class="col-md-3 d-flex gap-2">
+                        <div class="col-md-6 d-flex gap-2">
                             <button type="submit" class="btn btn-info w-100">Filter</button>
                             <a href="{{ route('super-admin.branch-admins.index') }}" class="btn btn-outline-secondary w-100">Reset</a>
                         </div>
