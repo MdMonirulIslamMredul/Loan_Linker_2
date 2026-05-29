@@ -107,16 +107,46 @@
                                     <strong>{{ $admin->total_working_experience }}</strong>
                                 </div>
                             @endif
-                            @if($admin->contact_address)
+                            @if($admin->contact_address || $admin->c_division_id || $admin->contactDivision || $admin->c_district_id || $admin->contactDistrict)
                                 <div class="col-12 mb-3">
                                     <small class="text-muted d-block">Contact Address</small>
-                                    <p class="mb-0">{{ $admin->contact_address }}</p>
+                                    <p class="mb-0">
+                                        @if($admin->contactDivision?->name)
+                                            <strong>{{ $admin->contactDivision->name }}</strong>
+                                        @endif
+                                        @if($admin->contactDivision?->name && $admin->contactDistrict?->name)
+                                            , 
+                                        @endif
+                                        @if($admin->contactDistrict?->name)
+                                            <strong>{{ $admin->contactDistrict->name }}</strong>
+                                        @endif
+                                        @if($admin->contact_address && ($admin->contactDivision?->name || $admin->contactDistrict?->name))
+                                            , {{ $admin->contact_address }}
+                                        @elseif($admin->contact_address)
+                                            {{ $admin->contact_address }}
+                                        @endif
+                                    </p>
                                 </div>
                             @endif
-                            @if($admin->permanent_address)
+                            @if($admin->permanent_address || $admin->p_division_id || $admin->permanentDivision || $admin->p_district_id || $admin->permanentDistrict)
                                 <div class="col-12 mb-3">
                                     <small class="text-muted d-block">Permanent Address</small>
-                                    <p class="mb-0">{{ $admin->permanent_address }}</p>
+                                    <p class="mb-0">
+                                        @if($admin->permanentDivision?->name)
+                                            <strong>{{ $admin->permanentDivision->name }}</strong>
+                                        @endif
+                                        @if($admin->permanentDivision?->name && $admin->permanentDistrict?->name)
+                                            , 
+                                        @endif
+                                        @if($admin->permanentDistrict?->name)
+                                            <strong>{{ $admin->permanentDistrict->name }}</strong>
+                                        @endif
+                                        @if($admin->permanent_address && ($admin->permanentDivision?->name || $admin->permanentDistrict?->name))
+                                            , {{ $admin->permanent_address }}
+                                        @elseif($admin->permanent_address)
+                                            {{ $admin->permanent_address }}
+                                        @endif
+                                    </p>
                                 </div>
                             @endif
                         </div>

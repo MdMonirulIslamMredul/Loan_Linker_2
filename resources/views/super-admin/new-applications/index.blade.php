@@ -92,6 +92,7 @@
                                     <th>ID</th>
                                     <th>Customer</th>
                                     <th>Email</th>
+                                    <th>Phone</th>
                                     <th>Amount</th>
                                     <th>Tenure</th>
                                     <th>Category</th>
@@ -106,8 +107,18 @@
                                 @foreach ($applications as $application)
                                     <tr>
                                         <td><strong>#{{ $application->id }}</strong></td>
-                                        <td>{{ optional($application->customer)->name ?? 'Guest' }}</td>
+                                        <td>
+                                            @if ($application->customer)
+                                                <strong>{{ $application->customer->name }}</strong>
+                                                <div class="mt-1">
+                                                    <span class="badge bg-info text-white">ID: {{ $application->customer_id }}</span>
+                                                </div>
+                                            @else
+                                                Guest
+                                            @endif
+                                        </td>
                                         <td>{{ optional($application->customer)->email ?? 'N/A' }}</td>
+                                        <td>{{ optional($application->customer)->phone ?? 'N/A' }}</td>
                                         <td><strong>৳{{ number_format($application->expected_amount, 2) }}</strong></td>
                                         <td>{{ $application->tenure_months }} mo</td>
                                         <td class="text-capitalize">{{ str_replace('_', ' ', $application->service_category) }}</td>

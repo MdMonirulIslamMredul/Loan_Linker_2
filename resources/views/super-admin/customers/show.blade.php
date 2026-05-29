@@ -117,36 +117,46 @@
                                     <strong>{{ $customer->total_working_experience }}</strong>
                                 </div>
                             @endif
-                            @if($customer->contact_address)
+                            @if($customer->contact_address || $customer->contactDivision || $customer->contactDistrict)
                                 <div class="col-12 mb-3">
                                     <small class="text-muted d-block">Contact Address</small>
-                                    <p class="mb-0">{{ $customer->contact_address }}</p>
+                                    <p class="mb-0">
+                                        @if($customer->contactDivision?->name)
+                                            <strong>{{ $customer->contactDivision->name }}</strong>
+                                        @endif
+                                        @if($customer->contactDivision?->name && $customer->contactDistrict?->name)
+                                            , 
+                                        @endif
+                                        @if($customer->contactDistrict?->name)
+                                            <strong>{{ $customer->contactDistrict->name }}</strong>
+                                        @endif
+                                        @if($customer->contact_address && ($customer->contactDivision?->name || $customer->contactDistrict?->name))
+                                            , {{ $customer->contact_address }}
+                                        @elseif($customer->contact_address)
+                                            {{ $customer->contact_address }}
+                                        @endif
+                                    </p>
                                 </div>
                             @endif
-                            @if($customer->permanent_address)
+                            @if($customer->permanent_address || $customer->permanentDivision || $customer->permanentDistrict)
                                 <div class="col-12 mb-3">
                                     <small class="text-muted d-block">Permanent Address</small>
-                                    <p class="mb-0">{{ $customer->permanent_address }}</p>
-                                </div>
-                            @endif
-                            @if($customer->contactDivision || $customer->contactDistrict)
-                                <div class="col-md-6 mb-3">
-                                    <small class="text-muted d-block">Contact Division</small>
-                                    <strong>{{ $customer->contactDivision->name ?? 'N/A' }}</strong>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <small class="text-muted d-block">Contact District</small>
-                                    <strong>{{ $customer->contactDistrict->name ?? 'N/A' }}</strong>
-                                </div>
-                            @endif
-                            @if($customer->permanentDivision || $customer->permanentDistrict)
-                                <div class="col-md-6 mb-3">
-                                    <small class="text-muted d-block">Permanent Division</small>
-                                    <strong>{{ $customer->permanentDivision->name ?? 'N/A' }}</strong>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <small class="text-muted d-block">Permanent District</small>
-                                    <strong>{{ $customer->permanentDistrict->name ?? 'N/A' }}</strong>
+                                    <p class="mb-0">
+                                        @if($customer->permanentDivision?->name)
+                                            <strong>{{ $customer->permanentDivision->name }}</strong>
+                                        @endif
+                                        @if($customer->permanentDivision?->name && $customer->permanentDistrict?->name)
+                                            , 
+                                        @endif
+                                        @if($customer->permanentDistrict?->name)
+                                            <strong>{{ $customer->permanentDistrict->name }}</strong>
+                                        @endif
+                                        @if($customer->permanent_address && ($customer->permanentDivision?->name || $customer->permanentDistrict?->name))
+                                            , {{ $customer->permanent_address }}
+                                        @elseif($customer->permanent_address)
+                                            {{ $customer->permanent_address }}
+                                        @endif
+                                    </p>
                                 </div>
                             @endif
                         </div>
