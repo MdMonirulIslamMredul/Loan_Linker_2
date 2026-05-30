@@ -27,6 +27,7 @@ class NewLoanApplication extends Model
 
     protected $casts = [
         'bank_ids' => 'array',
+        'customer_id' => 'integer',
     ];
 
     public function customer()

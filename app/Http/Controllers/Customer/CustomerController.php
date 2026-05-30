@@ -32,7 +32,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user || ($user->role ?? '') !== 'customer') {
+        if (!$user || !$user->isCustomer()) {
             abort(403, 'Unauthorized.');
         }
 
@@ -63,7 +63,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user || ($user->role ?? '') !== 'customer') {
+        if (!$user || !$user->isCustomer()) {
             abort(403, 'Unauthorized.');
         }
 
@@ -99,7 +99,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user || ($user->role ?? '') !== 'customer') {
+        if (!$user || !$user->isCustomer()) {
             abort(403, 'Unauthorized.');
         }
 
@@ -113,7 +113,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user || ($user->role ?? '') !== 'customer') {
+        if (!$user || !$user->isCustomer()) {
             abort(403, 'Unauthorized.');
         }
 
@@ -133,7 +133,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user || ($user->role ?? '') !== 'customer') {
+        if (!$user || !$user->isCustomer()) {
             abort(403, 'Unauthorized.');
         }
 
@@ -147,7 +147,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user || ($user->role ?? '') !== 'customer') {
+        if (!$user || !$user->isCustomer()) {
             abort(403, 'Unauthorized.');
         }
 
@@ -163,7 +163,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user || ($user->role ?? '') !== 'customer' || $newApplication->customer_id !== $user->id) {
+        if (!$user || !$user->isCustomer() || (int) $newApplication->customer_id !== (int) $user->id) {
             abort(403, 'Unauthorized.');
         }
 
@@ -199,7 +199,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user || ($user->role ?? '') !== 'customer') {
+        if (!$user || !$user->isCustomer()) {
             abort(403, 'Unauthorized.');
         }
 
@@ -230,7 +230,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user || ($user->role ?? '') !== 'customer') {
+        if (!$user || !$user->isCustomer()) {
             abort(403, 'Unauthorized.');
         }
 
@@ -268,7 +268,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user || ($user->role ?? '') !== 'customer' || $newApplication->customer_id !== $user->id) {
+        if (!$user || !$user->isCustomer() || (int) $newApplication->customer_id !== (int) $user->id) {
             abort(403, 'Unauthorized.');
         }
 
@@ -283,7 +283,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user || ($user->role ?? '') !== 'customer' || $newApplication->customer_id !== $user->id) {
+        if (!$user || !$user->isCustomer() || (int) $newApplication->customer_id !== (int) $user->id) {
             abort(403, 'Unauthorized.');
         }
 
@@ -316,7 +316,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user || ($user->role ?? '') !== 'customer' || $newApplication->customer_id !== $user->id) {
+        if (!$user || !$user->isCustomer() || (int) $newApplication->customer_id !== (int) $user->id) {
             abort(403, 'Unauthorized.');
         }
 
@@ -348,7 +348,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user || ($user->role ?? '') !== 'customer' || $newApplication->customer_id !== $user->id) {
+        if (!$user || !$user->isCustomer() || (int) $newApplication->customer_id !== (int) $user->id) {
             abort(403, 'Unauthorized.');
         }
 
@@ -368,7 +368,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user || ($user->role ?? '') !== 'customer' || $newApplication->customer_id !== $user->id) {
+        if (!$user || !$user->isCustomer() || (int) $newApplication->customer_id !== (int) $user->id) {
             abort(403, 'Unauthorized.');
         }
 
@@ -408,7 +408,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user || ($user->role ?? '') !== 'customer' || $newApplication->customer_id !== $user->id) {
+        if (!$user || !$user->isCustomer() || (int) $newApplication->customer_id !== (int) $user->id) {
             abort(403, 'Unauthorized.');
         }
 
@@ -428,7 +428,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user || ($user->role ?? '') !== 'customer') {
+        if (!$user || !$user->isCustomer()) {
             abort(403, 'Unauthorized.');
         }
 
@@ -476,7 +476,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user || ($user->role ?? '') !== 'customer') {
+        if (!$user || !$user->isCustomer()) {
             abort(403, 'Unauthorized.');
         }
 
@@ -499,7 +499,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user || ($user->role ?? '') !== 'customer') {
+        if (!$user || !$user->isCustomer()) {
             abort(403, 'Unauthorized.');
         }
 
@@ -512,7 +512,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user || ($user->role ?? '') !== 'customer') {
+        if (!$user || !$user->isCustomer()) {
             abort(403, 'Unauthorized.');
         }
 
@@ -524,6 +524,7 @@ class CustomerController extends Controller
             'pay_slip' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
             'bank_statements' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
             'trade_license' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
+            'tin_certificate' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
             'lend_document' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
             'other_document' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
         ]);
@@ -538,6 +539,7 @@ class CustomerController extends Controller
             'pay_slip',
             'bank_statements',
             'trade_license',
+            'tin_certificate',
             'lend_document',
             'other_document',
         ] as $field) {
@@ -562,7 +564,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user || ($user->role ?? '') !== 'customer') {
+        if (!$user || !$user->isCustomer()) {
             abort(403, 'Unauthorized.');
         }
 
@@ -575,7 +577,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user || ($user->role ?? '') !== 'customer') {
+        if (!$user || !$user->isCustomer()) {
             abort(403, 'Unauthorized.');
         }
 
