@@ -286,7 +286,7 @@
             </a>
         </div>
 
-        <div class="col-6 col-md-4 col-lg-2">
+        {{-- <div class="col-6 col-md-4 col-lg-2">
             <a href="{{ route('super-admin.applications.index') }}" class="text-decoration-none">
                 <div class="card border-0 shadow-sm text-center p-3 dashboard-count-card">
                     <div class="d-flex align-items-center justify-content-center gap-2">
@@ -296,16 +296,18 @@
                     <div class="text-muted small">Applications</div>
                 </div>
             </a>
-        </div>
+        </div> --}}
 
         <div class="col-6 col-md-4 col-lg-2">
-            <div class="card border-0 shadow-sm text-center p-3 dashboard-count-card">
-                <div class="d-flex align-items-center justify-content-center gap-2">
-                    <i class="bi bi-envelope-exclamation text-warning count-icon"></i>
-                    <div class="fs-4 fw-bold">{{ $newLoanRequestsCount }}</div>
+            <a href="{{ route('super-admin.new-applications.index') }}" class="text-decoration-none">
+                <div class="card border-0 shadow-sm text-center p-3 dashboard-count-card">
+                    <div class="d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-envelope-exclamation text-warning count-icon"></i>
+                        <div class="fs-4 fw-bold">{{ $newLoanRequestsCount }}</div>
+                    </div>
+                    <div class="text-muted small">New Loan Requests</div>
                 </div>
-                <div class="text-muted small">New Loan Requests</div>
-            </div>
+            </a>
         </div>
 
     </div>

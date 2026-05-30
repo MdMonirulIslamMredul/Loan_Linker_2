@@ -75,6 +75,7 @@
             </div>
 
             <div class="mb-4">
+                <input type="hidden" name="is_active" value="0">
                 <div class="form-check">
                     <input type="checkbox" name="is_active" value="1" {{ old('is_active', $bank->is_active) ? 'checked' : '' }} class="form-check-input" id="is_active">
                     <label class="form-check-label fw-semibold" for="is_active">Active</label>

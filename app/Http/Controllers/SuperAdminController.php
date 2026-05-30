@@ -175,8 +175,10 @@ class SuperAdminController extends Controller
             'details' => 'nullable|string',
             'logo' => 'nullable|image|max:2048',
             'banner' => 'nullable|image|max:2048',
-            'is_active' => 'nullable',
+            'is_active' => 'boolean',
         ]);
+
+        $validated['is_active'] = $request->boolean('is_active');
 
         if ($request->hasFile('logo')) {
             $logoName = time() . '_logo_' . $request->file('logo')->getClientOriginalName();
@@ -398,7 +400,16 @@ class SuperAdminController extends Controller
             abort(404);
         }
 
-        $user->load(['bank', 'branch', 'bankOfficial', 'officerDocument']);
+        $user->load([
+            'bank',
+            'branch',
+            'bankOfficial',
+            'officerDocument',
+            'contactDivision',
+            'contactDistrict',
+            'permanentDivision',
+            'permanentDistrict',
+        ]);
 
         return view('super-admin.branch-admins.show', ['admin' => $user]);
     }
