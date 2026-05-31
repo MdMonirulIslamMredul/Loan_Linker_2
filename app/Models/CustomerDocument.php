@@ -17,6 +17,7 @@ class CustomerDocument extends Model
         'pay_slip',
         'bank_statements',
         'trade_license',
+        'tin_certificate',
         'lend_document',
         'other_document',
     ];
