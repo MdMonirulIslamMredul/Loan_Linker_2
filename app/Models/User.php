@@ -154,7 +154,7 @@ class User extends Authenticatable
      */
     public function isCustomer(): bool
     {
-        return $this->role === 'customer';
+        return trim(strtolower($this->role ?? '')) === 'customer';
     }
 
     public function leadAccesses()

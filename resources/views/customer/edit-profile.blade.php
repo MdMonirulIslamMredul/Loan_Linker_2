@@ -125,7 +125,13 @@
 
                 <div class="mb-3">
                     <label class="form-label">Profession</label>
-                    <input type="text" name="profession" value="{{ old('profession', $user->profession) }}" class="form-control">
+                    <select name="profession" class="form-select">
+                        <option value="">Select profession</option>
+                        <option value="Government Job" {{ old('profession', $user->profession) === 'Government Job' ? 'selected' : '' }}>Government Job</option>
+                        <option value="Private Job" {{ old('profession', $user->profession) === 'Private Job' ? 'selected' : '' }}>Private Job</option>
+                        <option value="Business" {{ old('profession', $user->profession) === 'Business' ? 'selected' : '' }}>Business</option>
+                        <option value="Others" {{ old('profession', $user->profession) === 'Others' ? 'selected' : '' }}>Others</option>
+                    </select>
                 </div>
 
                 <div class="mb-3">
