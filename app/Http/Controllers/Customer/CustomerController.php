@@ -67,7 +67,7 @@ class CustomerController extends Controller
             abort(403, 'Unauthorized.');
         }
 
-        $banks = Bank::orderBy('name')->get();
+        $banks = Bank::where('is_active', true)->orderBy('name')->get();
         $serviceCategories = ServiceCategory::with(['serviceTypes' => function ($query) {
             $query->where('is_active', true)->orderBy('name');
         }])->where('is_active', true)->orderBy('name')->get();
@@ -243,7 +243,7 @@ class CustomerController extends Controller
             'service_category_id' => ['required', 'exists:service_categories,id'],
             'service_type_id' => ['required', 'exists:service_types,id'],
             'bank_ids' => ['array', 'max:5'],
-            'bank_ids.*' => ['required', 'exists:banks,id'],
+            'bank_ids.*' => ['required', Rule::exists('banks', 'id')->where('is_active', true)],
             'additional_notes' => ['nullable', 'string', 'max:2000'],
         ])->validate();
 
@@ -356,7 +356,7 @@ class CustomerController extends Controller
             return redirect()->route('customer.applications')->with('error', 'Only pending applications can be edited.');
         }
 
-        $banks = Bank::orderBy('name')->get();
+        $banks = Bank::where('is_active', true)->orderBy('name')->get();
         $serviceCategories = ServiceCategory::with(['serviceTypes' => function ($query) {
             $query->where('is_active', true)->orderBy('name');
         }])->where('is_active', true)->orderBy('name')->get();
@@ -385,7 +385,7 @@ class CustomerController extends Controller
             'service_category_id' => ['required', 'exists:service_categories,id'],
             'service_type_id' => ['required', 'exists:service_types,id'],
             'bank_ids' => ['array', 'max:5'],
-            'bank_ids.*' => ['required', 'exists:banks,id'],
+            'bank_ids.*' => ['required', Rule::exists('banks', 'id')->where('is_active', true)],
             'additional_notes' => ['nullable', 'string', 'max:2000'],
         ])->validate();
 
