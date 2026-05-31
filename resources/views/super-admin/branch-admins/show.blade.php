@@ -330,17 +330,24 @@
                         <form action="{{ route('super-admin.branch-admins.update-access', $admin) }}" method="POST">
                             @csrf
                             @method('PATCH')
+                            @php
+                                $selectedAccess = old('is_access', $admin->is_access);
+                                $showAccessMes = $selectedAccess === false || $selectedAccess === '0';
+                            @endphp
                             <div class="mb-3">
                                 <small class="text-muted d-block">Access Permission</small>
                                 <select name="is_access" id="is_access" class="form-select">
-                                    <option value="" {{ $admin->is_access === null ? 'selected' : '' }}>Select access status</option>
-                                    <option value="0" {{ $admin->is_access === false ? 'selected' : '' }}>Not Allowed</option>
-                                    <option value="1" {{ $admin->is_access === true ? 'selected' : '' }}>Allowed</option>
+                                    <option value="" {{ $selectedAccess === null ? 'selected' : '' }}>Select access status</option>
+                                    <option value="0" {{ $selectedAccess === false || $selectedAccess === '0' ? 'selected' : '' }}>Not Allowed</option>
+                                    <option value="1" {{ $selectedAccess === true || $selectedAccess === '1' ? 'selected' : '' }}>Allowed</option>
                                 </select>
+                                @error('is_access')
+                                    <div class="text-danger small mt-1">{{ $message }}</div>
+                                @enderror
                             </div>
-                            <div class="mb-3" id="accessMesContainer">
+                            <div class="mb-3" id="accessMesContainer" style="display: {{ $showAccessMes ? 'block' : 'none' }};">
                                 <small class="text-muted d-block">Rejection Reason</small>
-                                <textarea name="access_mes" class="form-control" rows="4">{{ old('access_mes', $admin->access_mes) }}</textarea>
+                                <textarea name="access_mes" class="form-control" rows="4" {{ $showAccessMes ? 'required' : 'disabled' }}>{{ old('access_mes', $admin->access_mes) }}</textarea>
                                 @error('access_mes')
                                     <div class="text-danger small mt-1">{{ $message }}</div>
                                 @enderror
@@ -385,12 +392,16 @@
                         return;
                     }
 
+                    var textarea = accessMesContainer.querySelector('textarea');
+
                     if (accessSelect.value === '0') {
                         accessMesContainer.style.display = 'block';
-                        accessMesContainer.querySelector('textarea').required = true;
+                        textarea.removeAttribute('disabled');
+                        textarea.setAttribute('required', 'required');
                     } else {
                         accessMesContainer.style.display = 'none';
-                        accessMesContainer.querySelector('textarea').required = false;
+                        textarea.removeAttribute('required');
+                        textarea.setAttribute('disabled', 'disabled');
                     }
                 }
 

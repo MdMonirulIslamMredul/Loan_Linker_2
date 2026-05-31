@@ -424,12 +424,12 @@ class SuperAdminController extends Controller
         }
 
         $validated = $request->validate([
-            'is_access' => 'required|boolean',
-            'access_mes' => 'required_if:is_access,0|string|max:1000',
+            'is_access' => ['required', 'in:0,1'],
+            'access_mes' => 'nullable|required_if:is_access,0|string|max:1000',
         ]);
 
-        $user->is_access = $validated['is_access'];
-        $user->access_mes = $validated['is_access'] == 0 ? $validated['access_mes'] : null;
+        $user->is_access = $validated['is_access'] === '1';
+        $user->access_mes = $validated['is_access'] === '0' ? $validated['access_mes'] : null;
         $user->save();
 
         return redirect()->route('super-admin.branch-admins.index', $user)
