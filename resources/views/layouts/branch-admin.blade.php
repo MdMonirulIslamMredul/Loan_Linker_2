@@ -113,8 +113,11 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <h5 class="mb-0"><i class="bi bi-shop me-2"></i>Branch Officer</h5>
-            <small class="opacity-75">{{ auth()->user()->name }}</small>
+            <h5 class="mb-0"><i class="bi bi-shop me-2"></i>Bank Officer</h5>
+            <div class="mt-3">
+                <p class="mb-1 fw-semibold text-white">{{ auth()->user()->name }}</p>
+                <small class="d-block text-white-50">User ID: <span class="fw-semibold">#{{ auth()->user()->id }}</span></small>
+            </div>
         </div>
 
         <div class="sidebar-menu">
