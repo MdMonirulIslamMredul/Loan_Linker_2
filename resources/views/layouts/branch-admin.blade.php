@@ -29,6 +29,27 @@
             color: white;
         }
 
+        .sidebar-user-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .sidebar-user-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            background: #ffffff;
+        }
+
+        .sidebar-user-avatar .bi {
+            font-size: 1.2rem;
+        }
+
         .sidebar-menu {
             padding: 1rem 0;
         }
@@ -114,9 +135,18 @@
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h5 class="mb-0"><i class="bi bi-shop me-2"></i>Bank Officer</h5>
-            <div class="mt-3">
-                <p class="mb-1 fw-semibold text-white">{{ auth()->user()->name }}</p>
-                <small class="d-block text-white-50">User ID: <span class="fw-semibold">#{{ auth()->user()->id }}</span></small>
+            <div class="sidebar-user-badge">
+                @if(auth()->user()->officerDocument?->picture)
+                    <img src="{{ asset('storage/' . auth()->user()->officerDocument->picture) }}" alt="Officer picture" class="sidebar-user-avatar">
+                @else
+                    <span class="sidebar-user-avatar d-flex align-items-center justify-content-center text-muted">
+                        <i class="bi bi-person-fill"></i>
+                    </span>
+                @endif
+                <div>
+                    <p class="mb-1 fw-semibold text-white">{{ auth()->user()->name }}</p>
+                    <small class="d-block text-white-50">User ID: <span class="fw-semibold">#{{ auth()->user()->id }}</span></small>
+                </div>
             </div>
         </div>
 

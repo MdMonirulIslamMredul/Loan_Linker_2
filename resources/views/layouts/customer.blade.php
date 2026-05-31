@@ -157,8 +157,16 @@
                         @auth
                         <li class="nav-item">
                             @php
-                            $role = auth()->user()->role;
-                            $avatar = auth()->user()->profile_photo ?? auth()->user()->avatar ?? auth()->user()->image ?? null;
+                                $user = auth()->user();
+                                $role = $user->role;
+                                if ($role === 'customer') {
+                                    $avatar = $user->customerDocument?->picture ?? $user->profile_photo ?? $user->avatar ?? $user->image ?? null;
+                                } else {
+                                    $avatar = $user->profile_photo ?? $user->avatar ?? $user->image ?? null;
+                                }
+                                if ($avatar && !preg_match('/^(https?:)?\/\//i', $avatar)) {
+                                    $avatar = asset('storage/' . ltrim(preg_replace('#^(public/|storage/)#i', '', $avatar), '/'));
+                                }
                             @endphp
                             @if ($role === 'customer')
                             <a class="nav-link fw-medium" href="{{ url('customer/dashboard') }}">Dashboard</a>
@@ -176,7 +184,7 @@
                             <a class="nav-link d-flex align-items-center gap-2 dropdown-toggle" href="#" id="customerNavDropdown"
                                 role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 @if ($avatar)
-                                <img src="{{ asset('storage/' . $avatar) }}" alt="{{ auth()->user()->name }}"
+                                <img src="{{ $avatar }}" alt="{{ auth()->user()->name }}"
                                     class="rounded-circle" style="width: 34px; height: 34px; object-fit: cover;">
                                 @else
                                 <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white"
