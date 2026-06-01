@@ -168,10 +168,51 @@ class PackageOrderController extends Controller
     }
 
     /**
+     * Show all active branch admins eligible to receive gift packages.
+     */
+    public function giftEligibleOfficers(Request $request)
+    {
+        $query = User::where('role', 'branch_admin')
+            ->where('is_active', true)
+            ->where('is_access', true);
+
+        if ($request->filled('bank_id')) {
+            $query->where('bank_id', $request->bank_id);
+        }
+
+        if ($request->filled('branch_id')) {
+            $query->where('branch_id', $request->branch_id);
+        }
+
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query->with(['bank', 'branch'])
+            ->orderBy('name')
+            ->paginate(10)
+            ->withQueryString();
+
+        $banks = \App\Models\Bank::with('branches')->orderBy('name')->get();
+
+        return view('super-admin.package-orders.gift_eligible_officers', compact('users', 'banks'));
+    }
+
+    /**
      * Show available gift packages to assign to a specific officer.
      */
     public function showGiftPackages(User $user)
     {
+        if ($user->role !== 'branch_admin' || !$user->is_active || $user->is_access !== true) {
+            abort(404);
+        }
+
         $giftPackages = LeadPackage::where('type', 'gift')->orderBy('created_at', 'desc')->get();
 
         return view('super-admin.package-orders.gift_packages', compact('user', 'giftPackages'));
@@ -182,6 +223,10 @@ class PackageOrderController extends Controller
      */
     public function assignGift(Request $request, User $user)
     {
+        if ($user->role !== 'branch_admin' || !$user->is_active || $user->is_access !== true) {
+            abort(404);
+        }
+
         $validated = $request->validate([
             'lead_package_id' => 'required|exists:lead_packages,id',
         ]);

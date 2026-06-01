@@ -163,6 +163,7 @@ Route::middleware(['auth', 'super.admin'])->prefix('super-admin')->group(functio
     // Package Orders / Approvals
     Route::get('/package-orders', [PackageOrderController::class, 'index'])->name('super-admin.package-orders.index');
     Route::get('/officer-purchases', [PackageOrderController::class, 'officerPurchases'])->name('super-admin.package-orders.officer-purchases');
+    Route::get('/gift-eligible-officers', [PackageOrderController::class, 'giftEligibleOfficers'])->name('super-admin.package-orders.gift.eligible');
     Route::post('/package-orders/{order}/approve', [PackageOrderController::class, 'approve'])->name('super-admin.package-orders.approve');
     Route::post('/package-orders/{order}/reject', [PackageOrderController::class, 'reject'])->name('super-admin.package-orders.reject');
 

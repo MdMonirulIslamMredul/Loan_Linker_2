@@ -1,31 +1,27 @@
 @extends('layouts.admin')
 
-@section('title', 'Officer Purchases')
-@section('dashboard-title', 'Officer Purchases')
+@section('title', 'Gift Eligible Officers')
+@section('dashboard-title', 'Gift Eligible Officers')
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="mb-0">Officer Purchases</h4>
-        <a href="{{ route('super-admin.package-orders.gift.eligible') }}" class="btn btn-outline-primary">
-            Gift Eligible Officers
-        </a>
+        <h4 class="mb-0">Gift Eligible Officers</h4>
     </div>
 
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body p-3">
             <form method="GET" class="row g-2">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label small text-muted">Bank</label>
                     <select id="filter-bank" name="bank_id" class="form-select">
                         <option value="">All Banks</option>
                         @foreach ($banks as $b)
-                            <option value="{{ $b->id }}" {{ request('bank_id') == $b->id ? 'selected' : '' }}>
-                                {{ $b->name }}</option>
+                            <option value="{{ $b->id }}" {{ request('bank_id') == $b->id ? 'selected' : '' }}>{{ $b->name }}</option>
                         @endforeach
                     </select>
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label small text-muted">Branch</label>
                     <select id="filter-branch" name="branch_id" class="form-select">
                         <option value="">All Branches</option>
@@ -38,12 +34,15 @@
                     </select>
                 </div>
 
-                <div class="col-md-4 text-end align-self-end">
-                    <button class="btn btn-primary">Filter</button>
-                    <a href="{{ route('super-admin.package-orders.officer-purchases') }}"
-                        class="btn btn-outline-secondary ms-1">Reset</a>
+                <div class="col-md-4">
+                    <label class="form-label small text-muted">Search</label>
+                    <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Name, email or phone">
                 </div>
 
+                <div class="col-md-2 text-end align-self-end">
+                    <button class="btn btn-primary">Filter</button>
+                    <a href="{{ route('super-admin.package-orders.gift.eligible') }}" class="btn btn-outline-secondary ms-1">Reset</a>
+                </div>
             </form>
         </div>
     </div>
@@ -56,12 +55,9 @@
                         <th>Officer</th>
                         <th>Bank</th>
                         <th>Branch</th>
-                        <th>Orders</th>
-                        <th>Total Leads</th>
-                        <th>Total Spent</th>
-                        <th>Regular</th>
-                        <th>Premium</th>
-                        <th>Gift</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -71,26 +67,27 @@
                             <td>{{ $user->name }}</td>
                             <td>{{ optional($user->bank)->name }}</td>
                             <td>{{ optional($user->branch)->name }}</td>
-                            <td>{{ $user->orders_count ?? 0 }}</td>
-                            <td>{{ $user->total_leads ?? 0 }}</td>
-                            <td>৳{{ number_format($user->total_spent ?? 0, 2) }}</td>
-                            <td>{{ $user->regular_count ?? 0 }}</td>
-                            <td>{{ $user->premium_count ?? 0 }}</td>
-                            <td>{{ $user->gift_count ?? 0 }}</td>
+                            <td>{{ $user->email }}</td>
+                            <td>{{ $user->phone }}</td>
                             <td>
-                                <a href="{{ route('super-admin.package-orders.gift.show', $user) }}"
-                                    class="btn btn-sm btn-outline-primary">Gift Packages</a>
+                                <span class="badge bg-success">Active</span>
+                                <span class="badge bg-info ms-1">Access Granted</span>
                             </td>
-
+                            <td>
+                                <a href="{{ route('super-admin.package-orders.gift.show', $user) }}" class="btn btn-sm btn-outline-primary">
+                                    Gift Packages
+                                </a>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="text-center py-4">No officer purchases found.</td>
+                            <td colspan="7" class="text-center py-4">No eligible officers found.</td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+
         @if (method_exists($users, 'links'))
             <div class="card-footer bg-white border-top">
                 {{ $users->links() }}
@@ -100,7 +97,6 @@
 
     @push('scripts')
         <script>
-            // cascading branch options by bank
             document.addEventListener('DOMContentLoaded', function() {
                 const bankSelect = document.getElementById('filter-bank');
                 const branchSelect = document.getElementById('filter-branch');

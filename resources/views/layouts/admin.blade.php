@@ -355,6 +355,12 @@
                     <i class="bi bi-cart-check"></i>
                     <span>Officer Purchases</span>
                 </a>
+
+                <a href="{{ route('super-admin.package-orders.gift.eligible') }}"
+                    class="menu-item {{ request()->routeIs('super-admin.package-orders.gift.eligible') ? 'active' : '' }}">
+                    <i class="bi bi-gift"></i>
+                    <span>Gift Eligible Officers</span>
+                </a>
             </div>
 
              @php
