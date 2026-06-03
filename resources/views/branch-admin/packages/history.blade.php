@@ -1,4 +1,4 @@
-@extends('layouts.branch-admin')
+﻿@extends('layouts.branch-admin')
 
 @section('content')
     <div class="container-fluid py-4">
@@ -87,9 +87,10 @@
             </div>
             @if ($orders->hasPages())
                 <div class="card-footer bg-white border-top">
-                    {{ $orders->appends(request()->query())->links() }}
+                    {{ $orders->appends(request()->query())->links('pagination::bootstrap-5') }}
                 </div>
             @endif
         </div>
     </div>
 @endsection
+

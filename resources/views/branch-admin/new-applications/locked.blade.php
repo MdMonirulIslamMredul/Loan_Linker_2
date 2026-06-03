@@ -120,8 +120,8 @@
                         </table>
                     </div>
 
-                    <div class="mt-4">
-                        {{ $applications->withQueryString()->links() }}
+                    <div class="mt-4 d-flex justify-content-end">
+                        {{ $applications->withQueryString()->links('pagination::bootstrap-5') }}
                     </div>
                 @else
                     <div class="text-center py-5">

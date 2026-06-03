@@ -1,4 +1,4 @@
-@extends('layouts.branch-admin')
+﻿@extends('layouts.branch-admin')
 
 @section('content')
     <div class="container-fluid py-4">
@@ -137,7 +137,7 @@
                                         <td>{{ $application->email }}</td>
                                         <td>{{ $application->phone }}</td>
                                         <td>{{ $application->loan->name ?? 'N/A' }}</td>
-                                        <td><strong>৳{{ number_format($application->loan_amount, 2) }}</strong></td>
+                                        <td><strong>৳ {{ number_format($application->loan_amount, 2) }}</strong></td>
                                         <td>
                                             @if ($application->status == 'pending')
                                                 <span class="badge bg-warning">Pending</span>
@@ -195,7 +195,7 @@
 
                     <!-- Pagination -->
                     <div class="mt-4">
-                        {{ $applications->withQueryString()->links() }}
+                        {{ $applications->withQueryString()->links('pagination::bootstrap-5') }}
                     </div>
                 @else
                     <div class="text-center py-5">
@@ -207,3 +207,4 @@
         </div>
     </div>
 @endsection
+
