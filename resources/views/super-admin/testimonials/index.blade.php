@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Manage Testimonials')
 @section('dashboard-title', 'Manage Testimonials')
@@ -102,8 +102,9 @@
         </div>
         @if ($testimonials->hasPages())
             <div class="card-footer bg-white border-top">
-                {{ $testimonials->links() }}
+                {{ $testimonials->links('pagination::bootstrap-5') }}
             </div>
         @endif
     </div>
 @endsection
+

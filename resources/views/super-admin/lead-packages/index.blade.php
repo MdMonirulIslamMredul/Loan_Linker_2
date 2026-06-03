@@ -1,4 +1,4 @@
-<!-- Lead Packages index -->
+﻿<!-- Lead Packages index -->
 @extends('layouts.admin')
 
 @section('title', 'Manage Lead Packages')
@@ -109,8 +109,9 @@
         </div>
         @if ($packages->hasPages())
             <div class="card-footer bg-white border-top">
-                {{ $packages->links() }}
+                {{ $packages->links('pagination::bootstrap-5') }}
             </div>
         @endif
     </div>
 @endsection
+

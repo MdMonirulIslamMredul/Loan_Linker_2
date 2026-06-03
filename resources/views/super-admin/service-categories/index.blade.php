@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Service Categories')
 @section('dashboard-title', 'Super Admin - Service Categories')
@@ -64,9 +64,10 @@
                 </div>
 
                 <div class="mt-4">
-                    {{ $categories->links() }}
+                    {{ $categories->links('pagination::bootstrap-5') }}
                 </div>
             @endif
         </div>
     </div>
 @endsection
+

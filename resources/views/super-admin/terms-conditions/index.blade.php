@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Terms & Conditions Management')
 
@@ -60,7 +60,7 @@
                     </div>
 
                     <div class="mt-4">
-                        {{ $terms->links() }}
+                        {{ $terms->links('pagination::bootstrap-5') }}
                     </div>
                 @else
                     <div class="text-center py-5">
@@ -72,3 +72,4 @@
         </div>
     </div>
 @endsection
+

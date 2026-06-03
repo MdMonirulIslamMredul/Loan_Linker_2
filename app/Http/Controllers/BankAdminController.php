@@ -177,7 +177,7 @@ class BankAdminController extends Controller
         $loans = Loan::with('branch')
             ->whereHas('branch', function ($q) use ($bankId) {
                 $q->where('bank_id', $bankId);
-            })->latest()->paginate(15);
+            })->latest()->paginate(10);
 
         return view('bank-admin.loans.index', compact('loans'));
     }
@@ -322,7 +322,7 @@ class BankAdminController extends Controller
             $query->whereDate('created_at', '<=', $request->to_date);
         }
 
-        $applications = $query->paginate(15);
+        $applications = $query->paginate(10);
 
         // Provide branches and categories for filters
         $branches = Branch::where('bank_id', $bankId)->where('is_active', true)->get();

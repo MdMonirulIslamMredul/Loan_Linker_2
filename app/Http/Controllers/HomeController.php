@@ -77,7 +77,7 @@ class HomeController extends Controller
                     });
             })
             ->with(['branch.bank', 'category'])
-            ->paginate(12);
+            ->paginate(10);
 
         return view('search-results', compact('loans', 'query'));
     }
@@ -122,7 +122,7 @@ class HomeController extends Controller
             $loansQuery->where('name', 'like', '%' . $loanName . '%');
         }
 
-        $loans = $loansQuery->latest()->paginate(12);
+        $loans = $loansQuery->latest()->paginate(10);
 
         return view('all-loans', compact('loans', 'banks', 'categories', 'bankId', 'categoryId', 'loanName'));
     }
@@ -138,7 +138,7 @@ class HomeController extends Controller
                 $query->where('is_active', true);
             }])
             ->orderBy('name')
-            ->paginate(12);
+            ->paginate(10);
 
         return view('all-banks', compact('banks'));
     }
@@ -152,7 +152,7 @@ class HomeController extends Controller
             ->where('category_id', $category->id)
             ->with(['branch.bank', 'category'])
             ->latest()
-            ->paginate(12);
+            ->paginate(10);
 
         return view('loan-category', compact('category', 'loans'));
     }

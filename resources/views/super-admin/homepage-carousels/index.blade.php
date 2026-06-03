@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Manage Homepage Carousel')
 @section('dashboard-title', 'Manage Homepage Carousel')
@@ -106,8 +106,9 @@
         </div>
         @if ($carousels->hasPages())
             <div class="card-footer bg-white border-top">
-                {{ $carousels->links() }}
+                {{ $carousels->links('pagination::bootstrap-5') }}
             </div>
         @endif
     </div>
 @endsection
+

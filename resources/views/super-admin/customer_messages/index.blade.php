@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Customer Messages')
 
@@ -32,7 +32,7 @@
                             @forelse($messages as $msg)
                                 <tr class="{{ $msg->is_read ? '' : 'table-info' }}">
                                     <td>{{ $msg->id }}</td>
-                                    <td>{{ trim(($msg->first_name ?? '') . ' ' . ($msg->last_name ?? '')) ?: '—' }}</td>
+                                    <td>{{ trim(($msg->first_name ?? '') . ' ' . ($msg->last_name ?? '')) ?: 'â€”' }}</td>
                                     <td>{{ $msg->email }}</td>
                                     <td>{{ $msg->mobile }}</td>
                                     <td>{{ Str::limit($msg->message, 80) }}</td>
@@ -62,9 +62,10 @@
                 </div>
 
                 <div class="mt-3">
-                    {{ $messages->links() }}
+                    {{ $messages->links('pagination::bootstrap-5') }}
                 </div>
             </div>
         </div>
     </div>
 @endsection
+

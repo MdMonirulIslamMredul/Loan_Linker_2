@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Gift Eligible Officers')
 @section('dashboard-title', 'Gift Eligible Officers')
@@ -90,7 +90,7 @@
 
         @if (method_exists($users, 'links'))
             <div class="card-footer bg-white border-top">
-                {{ $users->links() }}
+                {{ $users->links('pagination::bootstrap-5') }}
             </div>
         @endif
     </div>
@@ -120,3 +120,4 @@
         </script>
     @endpush
 @endsection
+

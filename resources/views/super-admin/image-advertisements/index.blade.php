@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Manage Image Advertisements')
 @section('dashboard-title', 'Manage Image Advertisements')
@@ -101,8 +101,9 @@
         </div>
         @if ($advertisements->hasPages())
             <div class="card-footer bg-white border-top">
-                {{ $advertisements->links() }}
+                {{ $advertisements->links('pagination::bootstrap-5') }}
             </div>
         @endif
     </div>
 @endsection
+

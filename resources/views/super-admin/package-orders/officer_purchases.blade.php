@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Officer Purchases')
 @section('dashboard-title', 'Officer Purchases')
@@ -73,7 +73,7 @@
                             <td>{{ optional($user->branch)->name }}</td>
                             <td>{{ $user->orders_count ?? 0 }}</td>
                             <td>{{ $user->total_leads ?? 0 }}</td>
-                            <td>৳{{ number_format($user->total_spent ?? 0, 2) }}</td>
+                            <td>à§³{{ number_format($user->total_spent ?? 0, 2) }}</td>
                             <td>{{ $user->regular_count ?? 0 }}</td>
                             <td>{{ $user->premium_count ?? 0 }}</td>
                             <td>{{ $user->gift_count ?? 0 }}</td>
@@ -93,7 +93,7 @@
         </div>
         @if (method_exists($users, 'links'))
             <div class="card-footer bg-white border-top">
-                {{ $users->links() }}
+                {{ $users->links('pagination::bootstrap-5') }}
             </div>
         @endif
     </div>
@@ -124,3 +124,4 @@
         </script>
     @endpush
 @endsection
+

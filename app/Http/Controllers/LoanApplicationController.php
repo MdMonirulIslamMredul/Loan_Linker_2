@@ -122,7 +122,7 @@ class LoanApplicationController extends Controller
             $query->whereDate('created_at', '<=', $request->to_date);
         }
 
-        $applications = $query->paginate(15);
+        $applications = $query->paginate(10);
 
         // Provide filter lists
         $banks = Bank::orderBy('name')->get();
@@ -195,7 +195,7 @@ class LoanApplicationController extends Controller
             }
         }
 
-        $applications = $query->paginate(15);
+        $applications = $query->paginate(10);
 
         // Provide loans and categories for filters
         $loans = Loan::where('branch_id', $branchId)
@@ -235,7 +235,7 @@ class LoanApplicationController extends Controller
             $query->whereDate('created_at', '<=', $request->to_date);
         }
 
-        $applications = $query->paginate(15);
+        $applications = $query->paginate(10);
 
         $banks = Bank::orderBy('name')->get();
 
@@ -270,7 +270,7 @@ class LoanApplicationController extends Controller
             $query->whereDate('created_at', '<=', $request->to_date);
         }
 
-        $applications = $query->paginate(15);
+        $applications = $query->paginate(10);
         $banks = Bank::orderBy('name')->get();
 
         return view('branch-admin.new-applications.unlocked', compact('applications', 'banks'));
@@ -304,7 +304,7 @@ class LoanApplicationController extends Controller
             $query->whereDate('created_at', '<=', $request->to_date);
         }
 
-        $applications = $query->paginate(15);
+        $applications = $query->paginate(10);
         $banks = Bank::orderBy('name')->get();
         
 
@@ -340,7 +340,7 @@ class LoanApplicationController extends Controller
             $query->whereDate('created_at', '<=', $request->to_date);
         }
 
-        $applications = $query->paginate(15);
+        $applications = $query->paginate(10);
 
         $banks = Bank::orderBy('name')->get();
 
