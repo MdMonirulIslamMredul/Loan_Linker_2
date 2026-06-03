@@ -131,13 +131,26 @@
             font-size: 0.88rem;
         }
 
+        .pagination a,
+        .pagination span,
         .pagination .page-link {
-            padding: 0.35rem 0.75rem;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            width: auto !important;
+            padding: 0.35rem 0.75rem !important;
             min-width: 2.2rem;
             line-height: 1.2;
         }
 
+        .pagination li,
+        .pagination .page-item {
+            white-space: nowrap;
+        }
+
+        .pagination .page-item:first-child a,
         .pagination .page-item:first-child .page-link,
+        .pagination .page-item:last-child a,
         .pagination .page-item:last-child .page-link {
             border-radius: 0.35rem;
         }

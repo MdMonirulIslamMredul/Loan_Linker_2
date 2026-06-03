@@ -60,10 +60,23 @@ class PackageOrderController extends Controller
         $orders = $query->orderByRaw("status = 'pending' DESC")->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
 
         $packages = LeadPackage::orderBy('name')->get();
-        $users = User::orderBy('name')->get();
+        $users = User::where('role', 'branch_admin')
+            ->whereHas('packageOrders')
+            ->orderBy('name')
+            ->get();
+
+        $searchCandidates = $users->map(function ($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+            ];
+        });
+
         $banks = Bank::with('branches')->orderBy('name')->get();
 
-        return view('super-admin.package-orders.index', compact('orders', 'packages', 'users', 'banks'));
+        return view('super-admin.package-orders.index', compact('orders', 'packages', 'users', 'banks', 'searchCandidates'));
     }
 
     // Super-admin: approve order

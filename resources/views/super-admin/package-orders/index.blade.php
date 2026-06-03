@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Package Orders')
 @section('dashboard-title', 'Package Orders')
@@ -16,6 +16,16 @@
         <div class="card-body p-0">
             <div class="p-3 border-bottom bg-white shadow-sm rounded-bottom-0">
                 <form method="GET" class="row g-2">
+
+                    <div class="col-md-3 position-relative">
+                        <label class="form-label small text-muted">Search Officer</label>
+                        <input type="search" id="officer-search" name="search" class="form-control" value="{{ request('search') }}"
+                            placeholder="Search by name, email or phone" autocomplete="off">
+                        <input type="hidden" id="officer-id" name="officer_id" value="{{ request('officer_id') }}">
+                        <div id="officer-search-results" class="list-group position-absolute w-100 shadow-sm bg-white rounded overflow-auto"
+                            style="z-index: 10; display: none; max-height: 280px; top: 100%; left: 0;"></div>
+                    </div>
+
                     <div class="col-md-3">
                         <label class="form-label small text-muted">Bank</label>
                         <select id="filter-bank" name="bank_id" class="form-select">
@@ -36,18 +46,6 @@
                                     <option value="{{ $br->id }}" data-bank="{{ $b->id }}"
                                         {{ request('branch_id') == $br->id ? 'selected' : '' }}>{{ $br->name }}</option>
                                 @endforeach
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="col-md-3">
-                        <label class="form-label small text-muted">Officer</label>
-                        <select id="filter-officer" name="officer_id" class="form-select">
-                            <option value="">All Officers</option>
-                            @foreach ($users ?? [] as $u)
-                                <option value="{{ $u->id }}" data-branch="{{ $u->branch_id }}"
-                                    data-bank="{{ $u->bank_id }}"
-                                    {{ request('officer_id') == $u->id ? 'selected' : '' }}>{{ $u->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -111,7 +109,7 @@
                             <tr
                                 class="{{ $order->status === 'pending' ? 'table-warning' : ($order->status === 'approved' ? 'table-secondary' : '') }}">
                                 <td>
-                                    <a href="#" class="user-info" data-name="{{ e($order->user->name) }}"
+                                    <a href="#" class="user-info btn btn-sm btn-outline-success text-start" data-name="{{ e($order->user->name) }}"
                                         data-email="{{ e($order->user->email) }}"
                                         data-phone="{{ e($order->user->phone) }}" data-role="{{ e($order->user->role) }}"
                                         data-bank="{{ e(optional($order->user->bank)->name) }}"
@@ -120,7 +118,7 @@
                                 </td>
                                 <td>{{ $order->leadPackage->name }}</td>
                                 <td>{{ $order->number_of_leads }}</td>
-                                <td class="fw-semibold">৳{{ number_format($order->price, 2) }}</td>
+                                <td class="fw-semibold">à§³{{ number_format($order->price, 2) }}</td>
                                 <td>{{ $order->created_at ? $order->created_at->format('d M, Y') : '-' }}</td>
                                 <td>{{ $order->approved_at ? \Carbon\Carbon::parse($order->approved_at)->format('d M, Y') : 'Not approved' }}
                                 </td>
@@ -169,7 +167,7 @@
             </div>
         </div>
         <div class="card-footer bg-white border-top">
-            {{ $orders->appends(request()->query())->links() }}
+            {{ $orders->appends(request()->query())->links('pagination::bootstrap-5') }}
         </div>
     </div>
 
@@ -180,14 +178,33 @@
                 font-size: 0.75rem;
             }
 
-            .table thead th {
-                font-weight: 600;
-                border-bottom: 0;
+            .form-control#officer-search {
+                min-height: 42px;
             }
 
-            .table tbody tr.table-warning td {
-                background-color: #fff4e5;
+            .form-control#officer-search:focus {
+                box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+                border-color: #86b7fe;
             }
+
+            #officer-search-results {
+                padding: 0.75rem;
+                border-radius: 0.75rem;
+                border: 1px solid rgba(0, 0, 0, 0.08);
+                background: #fff;
+            }
+
+            #officer-search-results .list-group-item {
+                cursor: pointer;
+                border: none;
+                padding: 0.75rem 1rem;
+            }
+
+            #officer-search-results .list-group-item:hover,
+            #officer-search-results .list-group-item:focus {
+                background-color: #f8f9fa;
+            }
+
 
             /* make approved rows light grey */
             .table tbody tr.table-secondary td {
@@ -288,6 +305,68 @@
                     });
                 }
 
+                const officerSearchInput = document.getElementById('officer-search');
+                const officerSearchResults = document.getElementById('officer-search-results');
+                const officerHiddenInput = document.getElementById('officer-id');
+                const filterForm = officerSearchInput ? officerSearchInput.closest('form') : null;
+                const officerUsers = @json($searchCandidates);
+
+                function renderOfficerSearchResults(results) {
+                    if (!officerSearchResults) return;
+                    if (!results.length) {
+                        officerSearchResults.innerHTML = '<div class="list-group-item small text-muted">No matching branch admin found.</div>';
+                        officerSearchResults.style.display = 'block';
+                        return;
+                    }
+                    officerSearchResults.innerHTML = results.map(function(user) {
+                        return '<div class="list-group-item list-group-item-action text-start" role="button" data-officer-id="' + user.id + '" data-officer-email="' + user.email + '">' +
+                            '<div class="fw-semibold">' + user.name + '</div>' +
+                            '<div class="small text-muted">' + user.email + ' | ' + user.phone + '</div>' +
+                            '</div>';
+                    }).join('');
+                    officerSearchResults.style.display = 'block';
+                    officerSearchResults.querySelectorAll('[data-officer-id]').forEach(function(item) {
+                        item.addEventListener('click', function() {
+                            if (officerHiddenInput) {
+                                officerHiddenInput.value = this.dataset.officerId;
+                            }
+                            if (officerSearchInput) {
+                                officerSearchInput.value = this.dataset.officerEmail || officerSearchInput.value;
+                            }
+                            if (filterForm) {
+                                filterForm.submit();
+                            }
+                        });
+                    });
+                }
+
+                function updateOfficerSearchResults() {
+                    if (!officerSearchInput || !officerSearchResults) return;
+                    const term = (officerSearchInput.value || '').trim().toLowerCase();
+                    if (!term) {
+                        officerSearchResults.innerHTML = '';
+                        officerSearchResults.style.display = 'none';
+                        return;
+                    }
+
+                    const matched = officerUsers.filter(function(user) {
+                        return user.name.toLowerCase().includes(term)
+                            || user.email.toLowerCase().includes(term)
+                            || user.phone.toLowerCase().includes(term);
+                    });
+                    renderOfficerSearchResults(matched.slice(0, 10));
+                }
+
+                if (officerSearchInput) {
+                    officerSearchInput.addEventListener('input', updateOfficerSearchResults);
+                    officerSearchInput.addEventListener('focus', updateOfficerSearchResults);
+                    document.addEventListener('click', function(event) {
+                        if (officerSearchResults && !officerSearchResults.contains(event.target) && event.target !== officerSearchInput) {
+                            officerSearchResults.style.display = 'none';
+                        }
+                    });
+                }
+
                 // Cascading filters: bank -> branch -> officer
                 const bankSelect = document.getElementById('filter-bank');
                 const branchSelect = document.getElementById('filter-branch');
@@ -308,6 +387,7 @@
                 }
 
                 function filterOfficers() {
+                    if (!officerSelect) return;
                     const branchVal = branchSelect.value;
                     const bankVal = bankSelect.value;
                     Array.from(officerSelect.options).forEach(function(opt) {
@@ -331,6 +411,7 @@
                     // run once on load to apply current filters
                     filterBranches();
                 }
+
             });
         </script>
         <script>
@@ -374,3 +455,4 @@
         </script>
     @endpush
 @endsection
+
