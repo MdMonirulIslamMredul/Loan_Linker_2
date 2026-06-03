@@ -1,4 +1,4 @@
-@extends('layouts.bank-admin')
+﻿@extends('layouts.bank-admin')
 
 @section('title', 'All Loans')
 @section('dashboard-title', 'Bank Admin - Loan Management')
@@ -66,8 +66,8 @@
                                     </td>
                                     <td class="small">
                                         @if ($loan->min_amount || $loan->max_amount)
-                                            {{ $loan->min_amount ? '₹' . number_format($loan->min_amount) : 'N/A' }} -
-                                            {{ $loan->max_amount ? '₹' . number_format($loan->max_amount) : 'N/A' }}
+                                            {{ $loan->min_amount ? 'â‚¹' . number_format($loan->min_amount) : 'N/A' }} -
+                                            {{ $loan->max_amount ? 'â‚¹' . number_format($loan->max_amount) : 'N/A' }}
                                         @else
                                             N/A
                                         @endif
@@ -110,9 +110,10 @@
                 </div>
 
                 <div class="mt-4">
-                    {{ $loans->withQueryString()->links() }}
+                    {{ $loans->withQueryString()->links('pagination::bootstrap-5') }}
                 </div>
             @endif
         </div>
     </div>
 @endsection
+

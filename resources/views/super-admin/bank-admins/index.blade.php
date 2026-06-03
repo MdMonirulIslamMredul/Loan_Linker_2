@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Bank Admins')
 @section('dashboard-title', 'Bank Admins Management')
@@ -180,7 +180,7 @@
                                 {{ $bankAdmins->total() }} admins
                             </div>
                             <div>
-                                {{ $bankAdmins->links() }}
+                                {{ $bankAdmins->links('pagination::bootstrap-5') }}
                             </div>
                         </div>
                     </div>
@@ -200,3 +200,4 @@
         </div>
     </div>
 @endsection
+
