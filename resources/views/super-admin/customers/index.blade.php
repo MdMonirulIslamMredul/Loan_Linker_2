@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Customers')
 @section('dashboard-title', 'Customers Management')
@@ -79,9 +79,16 @@
                                         <td class="px-4"><span class="badge bg-secondary">#{{ $c->id }}</span></td>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <div class="bg-success bg-opacity-10 rounded-circle p-2 me-2">
-                                                    <i class="bi bi-person text-success"></i>
-                                                </div>
+                                                @if(optional($c->customerDocument)->picture)
+                                                    <img src="{{ asset('storage/' . optional($c->customerDocument)->picture) }}"
+                                                        alt="{{ $c->name }}"
+                                                        class="rounded-circle me-2"
+                                                        style="width: 40px; height: 40px; object-fit: cover;">
+                                                @else
+                                                    <div class="bg-success bg-opacity-10 rounded-circle p-2 me-2">
+                                                        <i class="bi bi-person text-success"></i>
+                                                    </div>
+                                                @endif
                                                 <strong>{{ $c->name }}</strong>
                                             </div>
                                         </td>
@@ -126,7 +133,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="text-muted small">Showing {{ $customers->firstItem() }} to
                                 {{ $customers->lastItem() }} of {{ $customers->total() }} customers</div>
-                            <div>{{ $customers->links() }}</div>
+                            <div>{{ $customers->links('pagination::bootstrap-5') }}</div>
                         </div>
                     </div>
                 @else
@@ -142,3 +149,4 @@
         </div>
     </div>
 @endsection
+

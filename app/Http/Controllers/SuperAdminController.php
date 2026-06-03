@@ -103,7 +103,7 @@ class SuperAdminController extends Controller
      */
     public function listBankAdmins()
     {
-        $bankAdmins = User::with('bank')->where('role', 'bank_admin')->paginate(15);
+        $bankAdmins = User::with('bank')->where('role', 'bank_admin')->paginate(10);
         return view('super-admin.bank-admins.index', compact('bankAdmins'));
     }
 
@@ -362,7 +362,7 @@ class SuperAdminController extends Controller
 
         $branchAdmins = (clone $filterQuery)
             ->with('branch', 'bank')
-            ->paginate(15)
+            ->paginate(10)
             ->appends($request->query());
 
         $stats = [
@@ -492,7 +492,7 @@ class SuperAdminController extends Controller
      */
     public function listCustomers()
     {
-        $customers = User::where('role', 'customer')->orderBy('created_at', 'desc')->paginate(15);
+        $customers = User::where('role', 'customer')->orderBy('created_at', 'desc')->paginate(10);
         return view('super-admin.customers.index', compact('customers'));
     }
 
@@ -574,7 +574,7 @@ class SuperAdminController extends Controller
 
         $ratingCount = (clone $ratingsQuery)->count();
         $averageRating = $ratingCount ? (clone $ratingsQuery)->avg('rating') : null;
-        $ratings = $ratingsQuery->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
+        $ratings = $ratingsQuery->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
 
         return view('super-admin.ratings.index', compact('ratings', 'ratingCount', 'averageRating', 'search', 'searchTarget'));
     }
@@ -605,7 +605,7 @@ class SuperAdminController extends Controller
 
         $ratingCount = (clone $ratingsQuery)->count();
         $averageRating = $ratingCount ? (clone $ratingsQuery)->avg('rating') : null;
-        $ratings = $ratingsQuery->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
+        $ratings = $ratingsQuery->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
 
         return view('super-admin.ratings.bank-officer-index', compact('ratings', 'ratingCount', 'averageRating', 'search'));
     }
@@ -630,7 +630,7 @@ class SuperAdminController extends Controller
 
         $ratingCount = (clone $ratingsQuery)->count();
         $averageRating = $ratingCount ? (clone $ratingsQuery)->avg('rating') : null;
-        $ratings = $ratingsQuery->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
+        $ratings = $ratingsQuery->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
 
         return view('super-admin.ratings.user-details', compact('type', 'user', 'ratings', 'ratingCount', 'averageRating'));
     }
@@ -658,7 +658,7 @@ class SuperAdminController extends Controller
      */
     public function customerMessages()
     {
-        $messages = CustomerMessage::orderBy('created_at', 'desc')->paginate(15);
+        $messages = CustomerMessage::orderBy('created_at', 'desc')->paginate(10);
         return view('super-admin.customer_messages.index', compact('messages'));
     }
 

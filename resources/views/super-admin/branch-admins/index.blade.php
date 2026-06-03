@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', ' Bank Officers Management')
 @section('dashboard-title', ' Bank Officers Management')
@@ -146,9 +146,16 @@
                                         </td>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <div class="bg-info bg-opacity-10 rounded-circle p-2 me-2">
-                                                    <i class="bi bi-person-plus text-info"></i>
-                                                </div>
+                                                @if (optional($admin->officerDocument)->picture)
+                                                    <img src="{{ asset('storage/' . optional($admin->officerDocument)->picture) }}"
+                                                        alt="{{ $admin->name }}"
+                                                        class="rounded-circle me-2"
+                                                        style="width: 40px; height: 40px; object-fit: cover;">
+                                                @else
+                                                    <div class="bg-info bg-opacity-10 rounded-circle p-2 me-2">
+                                                        <i class="bi bi-person-plus text-info"></i>
+                                                    </div>
+                                                @endif
                                                 <strong>{{ $admin->name }}</strong>
                                             </div>
                                         </td>
@@ -223,7 +230,7 @@
                                 {{ $branchAdmins->total() }} Bank Officers
                             </div>
                             <div>
-                                {{ $branchAdmins->links() }}
+                                {{ $branchAdmins->links('pagination::bootstrap-5') }}
                             </div>
                         </div>
                     </div>
@@ -243,3 +250,4 @@
         </div>
     </div>
 @endsection
+
