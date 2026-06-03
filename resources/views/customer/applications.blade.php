@@ -1,4 +1,4 @@
-@extends('layouts.customer')
+﻿@extends('layouts.customer')
 
 @section('customer-content')
     <div class="card">
@@ -24,8 +24,8 @@
                             <div class="row mt-3">
                                 <div class="col-md-6">
                                     <p><strong>Service Category:</strong> {{ ucfirst(str_replace('_', ' ', $app->service_category)) }}</p>
-                                    <p><strong>Service Type:</strong> {{ ucfirst(str_replace('_', ' ', $app->service_type)) }}</p>
-                                    <p><strong>Expected Amount:</strong> ৳{{ number_format($app->expected_amount, 2) }}</p>
+                                    <p><strong>Service Type:</strong> {{ ucfirst(str_replace('_', ' ', $app->service_type)) }}</p>৳
+                                    <p><strong>Expected Amount:</strong> ৳ {{ number_format($app->expected_amount, 2) }}</p>
                                     <p><strong>Tenure (months):</strong> {{ $app->tenure_months }}</p>
                                 </div>
                                 <div class="col-md-6">
@@ -50,8 +50,9 @@
                     </div>
                 @endforeach
 
-                {{ $applications->links() }}
+                {{ $applications->links('pagination::bootstrap-5') }}
             @endif
         </div>
     </div>
 @endsection
+

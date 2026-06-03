@@ -91,6 +91,39 @@
             box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
         }
 
+        /* Compact pagination for customer pages */
+        .pagination {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            margin-bottom: 0;
+            font-size: 0.88rem;
+        }
+
+        .pagination li,
+        .pagination .page-item {
+            white-space: nowrap;
+        }
+
+        .pagination a,
+        .pagination span,
+        .pagination .page-link {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            width: auto !important;
+            padding: 0.35rem 0.75rem !important;
+            min-width: 2.2rem;
+            line-height: 1.2;
+        }
+
+        .pagination .page-item:first-child a,
+        .pagination .page-item:first-child .page-link,
+        .pagination .page-item:last-child a,
+        .pagination .page-item:last-child .page-link {
+            border-radius: 0.35rem;
+        }
+
         @media (max-width: 991.98px) {
             .sidebar {
                 width: 100%;

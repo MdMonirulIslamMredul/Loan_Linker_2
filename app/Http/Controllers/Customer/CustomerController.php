@@ -154,7 +154,7 @@ class CustomerController extends Controller
         $applications = NewLoanApplication::with(['customer', 'leadAccesses.officer'])
             ->where('customer_id', $user->id)
             ->latest()
-            ->paginate(15);
+            ->paginate(10);
 
         return view('customer.new-application.index', compact('applications'));
     }
