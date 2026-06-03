@@ -18,16 +18,25 @@
 
                             <div class="mb-3">
                                 <label class="form-label">Payment Method</label>
-                                <select name="payment_method" id="payment-method" class="form-select" required>
+                                <select name="payment_method_id" id="payment-method" class="form-select" required>
                                     <option value="">Select method</option>
-                                    <option value="Bkash">Bkash</option>
-                                    <option value="Nagad">Nagad</option>
-                                    <option value="Rocket">Rocket</option>
-                                    <option value="Bank">Bank</option>
+                                    @foreach ($paymentMethods as $method)
+                                        <option value="{{ $method->id }}">{{ $method->name }}</option>
+                                    @endforeach
                                 </select>
-                                @error('payment_method')
+                                @error('payment_method_id')
                                     <div class="text-danger small">{{ $message }}</div>
                                 @enderror
+                            </div>
+
+                            <div id="payment-method-details" class="alert alert-light border rounded p-3 mb-3 d-none text-center">
+                                <div>
+                                    <div class="fw-bold mb-2 fs-5" id="payment-method-name"></div>
+                                    <div class="text-muted mb-3 fw-semibold fs-4" id="payment-method-number"></div>
+                                    <div class="d-flex justify-content-center">
+                                        <img id="payment-method-image" src="" alt="Payment Method" class="rounded mx-auto d-block" style="width:100%;max-width:560px;height:auto;object-fit:contain;display:none;" />
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="mb-3" id="txn-field">
@@ -82,44 +91,87 @@
         </div>
     </div>
 
+    @php
+        $paymentMethodsJson = $paymentMethods->map(function ($method) {
+            return [
+                'id' => $method->id,
+                'name' => $method->name,
+                'number' => $method->number,
+                'image' => $method->image,
+            ];
+        })->toArray();
+    @endphp
+
     @push('scripts')
         <script>
             (function() {
+                const paymentMethods = @json($paymentMethodsJson);
+                const imageBase = "{{ asset('storage') }}";
                 const pm = document.getElementById('payment-method');
                 const bankFields = document.querySelectorAll('.bank-only');
                 const txnField = document.getElementById('txn-field');
                 const txnInput = txnField ? txnField.querySelector('input[name="txn_number"]') : null;
+                const detailsPanel = document.getElementById('payment-method-details');
+                const detailsName = document.getElementById('payment-method-name');
+                const detailsNumber = document.getElementById('payment-method-number');
+                const detailsImage = document.getElementById('payment-method-image');
+
+                function updateDetails(method) {
+                    if (!method) {
+                        detailsPanel.classList.add('d-none');
+                        detailsName.textContent = '';
+                        detailsNumber.textContent = '';
+                        detailsImage.style.display = 'none';
+                        detailsImage.src = '';
+                        return;
+                    }
+
+                    detailsPanel.classList.remove('d-none');
+                    detailsName.textContent = method.name;
+                    detailsNumber.textContent = method.number ? method.number : '';
+
+                    if (method.number) {
+                        detailsNumber.parentElement.classList.remove('d-none');
+                    } else {
+                        detailsNumber.parentElement.classList.add('d-none');
+                    }
+
+                    if (method.image) {
+                        detailsImage.src = method.image.match(/^https?:\/\//) ? method.image : imageBase + '/' + method.image;
+                        detailsImage.style.display = 'block';
+                    } else {
+                        detailsImage.style.display = 'none';
+                    }
+                }
 
                 function toggleFields() {
                     if (!pm) return;
-                    if (pm.value === 'Bank') {
-                        bankFields.forEach(function(el) {
-                            el.classList.remove('d-none');
-                            el.querySelectorAll('input').forEach(function(i) {
-                                i.required = true;
-                            });
+
+                    const selectedMethod = paymentMethods.find(function(method) {
+                        return String(method.id) === String(pm.value);
+                    });
+
+                    updateDetails(selectedMethod);
+
+                    const isBank = selectedMethod && selectedMethod.name.toLowerCase() === 'bank';
+
+                    bankFields.forEach(function(el) {
+                        el.classList.toggle('d-none', !isBank);
+                        el.querySelectorAll('input').forEach(function(i) {
+                            i.required = isBank;
                         });
-                        if (txnInput) {
-                            txnInput.required = false;
-                            txnInput.value = ''; // clear any prefilled value when Bank selected
-                            txnField.classList.add('d-none');
-                        }
-                    } else {
-                        bankFields.forEach(function(el) {
-                            el.classList.add('d-none');
-                            el.querySelectorAll('input').forEach(function(i) {
-                                i.required = false;
-                            });
-                        });
-                        if (txnInput) {
-                            txnInput.required = true;
-                            txnField.classList.remove('d-none');
+                    });
+
+                    if (txnInput) {
+                        txnInput.required = !isBank;
+                        txnField.classList.toggle('d-none', isBank);
+                        if (isBank) {
+                            txnInput.value = '';
                         }
                     }
                 }
 
                 pm?.addEventListener('change', toggleFields);
-                // run once on load to set correct visibility/required state
                 toggleFields();
             })();
         </script>

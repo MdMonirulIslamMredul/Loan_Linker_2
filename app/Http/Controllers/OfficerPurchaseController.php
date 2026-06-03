@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\LeadPackage;
 use App\Models\PackageOrder;
+use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
 
 class OfficerPurchaseController extends Controller
@@ -20,7 +21,9 @@ class OfficerPurchaseController extends Controller
      */
     public function showPurchaseForm(LeadPackage $leadPackage)
     {
-        return view('branch-admin.packages.purchase', compact('leadPackage'));
+        $paymentMethods = PaymentMethod::orderBy('name')->get();
+
+        return view('branch-admin.packages.purchase', compact('leadPackage', 'paymentMethods'));
     }
 
     public function purchase(Request $request, LeadPackage $leadPackage)
@@ -28,7 +31,7 @@ class OfficerPurchaseController extends Controller
         $user = auth()->user();
 
         $validated = $request->validate([
-            'payment_method' => 'required|in:Bkash,Nagad,Rocket,Bank',
+            'payment_method_id' => 'required|exists:payment_methods,id',
             'txn_number' => 'nullable|string|max:255',
             'phone' => 'required|string|max:30',
             'bank_name' => 'nullable|string|max:255',
@@ -36,8 +39,10 @@ class OfficerPurchaseController extends Controller
             'screenshot' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
+        $paymentMethod = PaymentMethod::findOrFail($validated['payment_method_id']);
+
         // Conditional validation: if Bank selected require bank fields, otherwise require txn_number
-        if ($request->input('payment_method') === 'Bank') {
+        if (strtolower($paymentMethod->name) === 'bank') {
             $request->validate([
                 'bank_name' => 'required|string|max:255',
                 'account_no' => 'required|string|max:255',
@@ -59,7 +64,8 @@ class OfficerPurchaseController extends Controller
             'price' => $leadPackage->price,
             'number_of_leads' => $leadPackage->number_of_leads,
             'status' => 'pending',
-            'payment_method' => $validated['payment_method'],
+            'payment_method' => $paymentMethod->name,
+            'payment_method_id' => $paymentMethod->id,
             'txn_number' => $request->input('txn_number') ?? null,
             'bank_name' => $request->input('bank_name') ?? null,
             'account_no' => $request->input('account_no') ?? null,

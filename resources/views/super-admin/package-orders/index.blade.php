@@ -118,7 +118,7 @@
                                 </td>
                                 <td>{{ $order->leadPackage->name }}</td>
                                 <td>{{ $order->number_of_leads }}</td>
-                                <td class="fw-semibold">à§³{{ number_format($order->price, 2) }}</td>
+                                <td class="fw-semibold"> ৳ {{ number_format($order->price, 2) }}</td>
                                 <td>{{ $order->created_at ? $order->created_at->format('d M, Y') : '-' }}</td>
                                 <td>{{ $order->approved_at ? \Carbon\Carbon::parse($order->approved_at)->format('d M, Y') : 'Not approved' }}
                                 </td>
@@ -266,8 +266,6 @@
                     <div class="mb-2"><strong>Method:</strong> <span id="pi-method">-</span></div>
                     <div class="mb-2"><strong>Transaction #:</strong> <span id="pi-txn">-</span></div>
                     <div class="mb-2"><strong>Phone:</strong> <span id="pi-phone">-</span></div>
-                    <div class="mb-2"><strong>Bank:</strong> <span id="pi-bank">-</span></div>
-                    <div class="mb-2"><strong>Account #:</strong> <span id="pi-account">-</span></div>
                     <div class="mb-3"><strong>Screenshot:</strong>
                         <div id="pi-screenshot-container" class="mt-2">
                             <a id="pi-screenshot-link" href="#" target="_blank"><img id="pi-screenshot"
@@ -425,15 +423,11 @@
                             const method = btn.dataset.payment_method || '-';
                             const txn = btn.dataset.txn_number || '-';
                             const phone = btn.dataset.phone || '-';
-                            const bank = btn.dataset.bank_name || '-';
-                            const account = btn.dataset.account_no || '-';
                             const screenshotUrl = btn.dataset.screenshotUrl || '';
 
                             document.getElementById('pi-method').textContent = method;
                             document.getElementById('pi-txn').textContent = txn;
                             document.getElementById('pi-phone').textContent = phone;
-                            document.getElementById('pi-bank').textContent = bank;
-                            document.getElementById('pi-account').textContent = account;
 
                             const img = document.getElementById('pi-screenshot');
                             const link = document.getElementById('pi-screenshot-link');

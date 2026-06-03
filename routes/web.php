@@ -16,6 +16,7 @@ use App\Http\Controllers\AboutSettingController;
 use App\Http\Controllers\LeadPackageController;
 use App\Http\Controllers\PackageOrderController;
 use App\Http\Controllers\OfficerPurchaseController;
+use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\LeadAccessController;
 use App\Http\Controllers\HomepageCarouselController;
 use App\Http\Controllers\ImageAdvertisementController;
@@ -159,6 +160,14 @@ Route::middleware(['auth', 'super.admin'])->prefix('super-admin')->group(functio
     Route::get('/lead-packages/{leadPackage}/edit', [LeadPackageController::class, 'edit'])->name('super-admin.lead-packages.edit');
     Route::put('/lead-packages/{leadPackage}', [LeadPackageController::class, 'update'])->name('super-admin.lead-packages.update');
     Route::delete('/lead-packages/{leadPackage}', [LeadPackageController::class, 'destroy'])->name('super-admin.lead-packages.destroy');
+
+    // Payment Methods Management
+    Route::get('/payment-methods', [PaymentMethodController::class, 'index'])->name('super-admin.payment-methods.index');
+    Route::get('/payment-methods/create', [PaymentMethodController::class, 'create'])->name('super-admin.payment-methods.create');
+    Route::post('/payment-methods', [PaymentMethodController::class, 'store'])->name('super-admin.payment-methods.store');
+    Route::get('/payment-methods/{paymentMethod}/edit', [PaymentMethodController::class, 'edit'])->name('super-admin.payment-methods.edit');
+    Route::put('/payment-methods/{paymentMethod}', [PaymentMethodController::class, 'update'])->name('super-admin.payment-methods.update');
+    Route::delete('/payment-methods/{paymentMethod}', [PaymentMethodController::class, 'destroy'])->name('super-admin.payment-methods.destroy');
 
     // Package Orders / Approvals
     Route::get('/package-orders', [PackageOrderController::class, 'index'])->name('super-admin.package-orders.index');

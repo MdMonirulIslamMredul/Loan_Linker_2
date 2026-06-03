@@ -363,6 +363,12 @@
                     <span>Lead Packages</span>
                 </a>
 
+                <a href="{{ route('super-admin.payment-methods.index') }}"
+                    class="menu-item {{ request()->routeIs('super-admin.payment-methods.*') ? 'active' : '' }}">
+                    <i class="bi bi-credit-card"></i>
+                    <span>Payment Methods</span>
+                </a>
+
                 <a href="{{ route('super-admin.package-orders.officer-purchases') }}"
                     class="menu-item {{ request()->routeIs('super-admin.package-orders.officer-purchases') ? 'active' : '' }}">
                     <i class="bi bi-cart-check"></i>
