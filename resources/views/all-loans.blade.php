@@ -1,6 +1,6 @@
-@extends('layouts.landing')
+﻿@extends('layouts.landing')
 
-@section('title', 'All Loans - Loan Maker')
+@section('title', 'All Loans - Loan Linker')
 
 @section('content')
     <!-- Header -->
@@ -142,8 +142,8 @@
                                         @if ($loan->min_amount && $loan->max_amount)
                                             <div class="col-6">
                                                 <div class="text-muted">Amount Range</div>
-                                                <div class="fw-semibold">৳{{ number_format($loan->min_amount / 1000) }}K -
-                                                    ৳{{ number_format($loan->max_amount / 1000) }}K</div>
+                                                <div class="fw-semibold">à§³{{ number_format($loan->min_amount / 1000) }}K -
+                                                    à§³{{ number_format($loan->max_amount / 1000) }}K</div>
                                             </div>
                                         @endif
                                         @if ($loan->min_tenure_months && $loan->max_tenure_months)
@@ -172,7 +172,7 @@
                 <!-- Pagination -->
                 @if ($loans->hasPages())
                     <div class="d-flex justify-content-center">
-                        {{ $loans->appends(['bank' => $bankId, 'loan_name' => $loanName])->links() }}
+                        {{ $loans->appends(['bank' => $bankId, 'loan_name' => $loanName])->links('pagination::bootstrap-5') }}
                     </div>
                 @endif
             @else
@@ -219,3 +219,4 @@
         }
     </style>
 @endpush
+

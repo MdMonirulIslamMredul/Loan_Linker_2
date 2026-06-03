@@ -1,6 +1,6 @@
-@extends('layouts.landing')
+﻿@extends('layouts.landing')
 
-@section('title', 'All Banks - Loan Maker')
+@section('title', 'All Banks - Loan Linker')
 
 @section('content')
 <!-- Header -->
@@ -87,7 +87,7 @@
         <!-- Pagination -->
         @if($banks->hasPages())
         <div class="d-flex justify-content-center">
-            {{ $banks->links() }}
+            {{ $banks->links('pagination::bootstrap-5') }}
         </div>
         @endif
 
@@ -138,3 +138,4 @@
     }
 </style>
 @endpush
+

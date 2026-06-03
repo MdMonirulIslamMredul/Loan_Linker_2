@@ -1,6 +1,6 @@
-@extends('layouts.landing')
+﻿@extends('layouts.landing')
 
-@section('title', 'Search Results - ' . $query . ' - Loan Maker')
+@section('title', 'Search Results - ' . $query . ' - Loan Linker')
 
 @section('content')
     <!-- Search Header -->
@@ -93,8 +93,8 @@
                                         @if ($loan->min_amount && $loan->max_amount)
                                             <div class="col-6">
                                                 <div class="text-muted">Amount Range</div>
-                                                <div class="fw-semibold">৳{{ number_format($loan->min_amount / 1000) }}K -
-                                                    ৳{{ number_format($loan->max_amount / 1000) }}K</div>
+                                                <div class="fw-semibold">à§³{{ number_format($loan->min_amount / 1000) }}K -
+                                                    à§³{{ number_format($loan->max_amount / 1000) }}K</div>
                                             </div>
                                         @endif
                                         @if ($loan->min_tenure_months && $loan->max_tenure_months)
@@ -122,7 +122,7 @@
 
                 <!-- Pagination -->
                 <div class="d-flex justify-content-center">
-                    {{ $loans->links() }}
+                    {{ $loans->links('pagination::bootstrap-5') }}
                 </div>
             @else
                 <!-- No Results -->
@@ -163,3 +163,4 @@
         }
     </style>
 @endpush
+
