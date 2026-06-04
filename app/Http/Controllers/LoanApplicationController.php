@@ -8,6 +8,8 @@ use App\Models\NewLoanApplication;
 use App\Models\Bank;
 use App\Models\Branch;
 use App\Models\LoanCategory;
+use App\Models\ServiceCategory;
+use App\Models\District;
 use App\Models\CustomerRating;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -214,17 +216,28 @@ class LoanApplicationController extends Controller
             $query->where('status', $request->status);
         }
 
-        if ($request->filled('service_category')) {
+        if ($request->filled('service_category_id')) {
+            $query->where('service_category_id', $request->service_category_id);
+        } elseif ($request->filled('service_category')) {
             $query->where('service_category', $request->service_category);
         }
 
-        if ($request->filled('service_type')) {
+        if ($request->filled('service_type_id')) {
+            $query->where('service_type_id', $request->service_type_id);
+        } elseif ($request->filled('service_type')) {
             $query->where('service_type', $request->service_type);
         }
 
         if ($request->filled('bank_id')) {
             $bankId = (int) $request->bank_id;
             $query->whereJsonContains('bank_ids', $bankId);
+        }
+
+        if ($request->filled('district_id')) {
+            $districtId = (int) $request->district_id;
+            $query->whereHas('customer', function ($customerQuery) use ($districtId) {
+                $customerQuery->where('c_district_id', $districtId);
+            });
         }
 
         if ($request->filled('from_date')) {
@@ -238,8 +251,10 @@ class LoanApplicationController extends Controller
         $applications = $query->paginate(10);
 
         $banks = Bank::orderBy('name')->get();
+        $serviceCategories = ServiceCategory::with('serviceTypes')->where('is_active', true)->orderBy('name')->get();
+        $districts = District::orderBy('name')->get();
 
-        return view('branch-admin.new-applications.index', compact('applications', 'banks'));
+        return view('branch-admin.new-applications.index', compact('applications', 'banks', 'serviceCategories', 'districts'));
     }
 
     public function branchUnlockedNewApplications(Request $request)

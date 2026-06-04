@@ -122,7 +122,7 @@
                     </div>
                 </div>
 
-                <div class="row g-3">
+                {{-- <div class="row g-3">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Organization</label>
                         <input type="text" name="organization_name" value="{{ old('organization_name', $user->organization_name) }}" class="form-control">
@@ -131,13 +131,13 @@
                         <label class="form-label">Designation</label>
                         <input type="text" name="designation" value="{{ old('designation', $user->designation) }}" class="form-control">
                     </div>
-                </div>
+                </div> --}}
 
                 <div class="row g-3">
-                    <div class="col-md-6 mb-3">
+                    {{-- <div class="col-md-6 mb-3">
                         <label class="form-label">Date of Joining</label>
                         <input type="date" name="date_of_joining" value="{{ old('date_of_joining', optional($user->date_of_joining)->format('Y-m-d')) }}" class="form-control">
-                    </div>
+                    </div> --}}
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Working Experience</label>
                         <input type="text" name="total_working_experience" value="{{ old('total_working_experience', $user->total_working_experience) }}" class="form-control">

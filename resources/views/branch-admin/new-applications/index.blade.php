@@ -53,29 +53,43 @@
                     </div>
 
                     <div class="col-md-3">
-                        <label for="service_category" class="form-label">Service Category</label>
-                        <select name="service_category" id="service_category" class="form-select">
+                        <label for="service_category_id" class="form-label">Service Category</label>
+                        <select name="service_category_id" id="service_category_id" class="form-select">
                             <option value="">Any Category</option>
-                            <option value="credit_card" {{ request('service_category') == 'credit_card' ? 'selected' : '' }}>Credit Card</option>
-                            <option value="loan" {{ request('service_category') == 'loan' ? 'selected' : '' }}>Loan</option>
+                            @foreach($serviceCategories as $category)
+                                <option value="{{ $category->id }}" {{ request('service_category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                            @endforeach
                         </select>
                     </div>
 
                     <div class="col-md-3">
-                        <label for="service_type" class="form-label">Service Type</label>
-                        <select name="service_type" id="service_type" class="form-select">
+                        <label for="service_type_id" class="form-label">Service Type</label>
+                        <select name="service_type_id" id="service_type_id" class="form-select">
                             <option value="">Any Type</option>
-                            <option value="visa_credit_card" {{ request('service_type') == 'visa_credit_card' ? 'selected' : '' }}>Visa Credit Card</option>
-                            <option value="personal_loan" {{ request('service_type') == 'personal_loan' ? 'selected' : '' }}>Personal Loan</option>
+                            @foreach($serviceCategories as $category)
+                                @foreach($category->serviceTypes as $type)
+                                    <option value="{{ $type->id }}" data-category-id="{{ $category->id }}" {{ request('service_type_id') == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
+                                @endforeach
+                            @endforeach
                         </select>
                     </div>
 
-                    <div class="col-md-3">
+                    {{-- <div class="col-md-3">
                         <label for="bank_id" class="form-label">Bank</label>
                         <select name="bank_id" id="bank_id" class="form-select">
                             <option value="">Any Bank</option>
                             @foreach ($banks as $bank)
                                 <option value="{{ $bank->id }}" {{ request('bank_id') == $bank->id ? 'selected' : '' }}>{{ $bank->name }}</option>
+                            @endforeach
+                        </select>
+                    </div> --}}
+
+                    <div class="col-md-3">
+                        <label for="district_id" class="form-label">District</label>
+                        <select name="district_id" id="district_id" class="form-select">
+                            <option value="">Any District</option>
+                            @foreach ($districts as $district)
+                                <option value="{{ $district->id }}" {{ request('district_id') == $district->id ? 'selected' : '' }}>{{ $district->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -217,4 +231,42 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const categorySelect = document.getElementById('service_category_id');
+                const typeSelect = document.getElementById('service_type_id');
+                const typeOptions = Array.from(typeSelect.options);
+
+                function filterTypes() {
+                    const selectedCategory = categorySelect.value;
+
+                    typeOptions.forEach(function (option) {
+                        if (!option.value) {
+                            option.style.display = '';
+                            return;
+                        }
+
+                        const optionCategory = option.dataset.categoryId || '';
+                        const shouldShow = !selectedCategory || String(optionCategory) === String(selectedCategory);
+                        option.style.display = shouldShow ? '' : 'none';
+                    });
+
+                    if (selectedCategory) {
+                        const currentValue = typeSelect.value;
+                        const currentOption = typeSelect.querySelector('option[value="' + currentValue + '"]');
+                        if (currentValue && currentOption && currentOption.style.display === 'none') {
+                            typeSelect.value = '';
+                        }
+                    }
+                }
+
+                if (categorySelect && typeSelect) {
+                    categorySelect.addEventListener('change', filterTypes);
+                    filterTypes();
+                }
+            });
+        </script>
+    @endpush
 @endsection

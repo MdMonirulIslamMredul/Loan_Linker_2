@@ -57,7 +57,7 @@
                     <th>Profession</th>
                     <td>{{ $user->profession ?? '-' }}</td>
                 </tr>
-                <tr>
+                {{-- <tr>
                     <th>Organization</th>
                     <td>{{ $user->organization_name ?? '-' }}</td>
                 </tr>
@@ -68,15 +68,15 @@
                 <tr>
                     <th>Date of Joining</th>
                     <td>{{ $user->date_of_joining ? $user->date_of_joining->format('M d, Y') : '-' }}</td>
-                </tr>
+                </tr> --}}
                 <tr>
                     <th>Working Experience</th>
                     <td>{{ $user->total_working_experience ?? '-' }}</td>
                 </tr>
-                <tr>
+                {{-- <tr>
                     <th>Role</th>
                     <td>{{ $user->role }}</td>
-                </tr>
+                </tr> --}}
                 <tr>
                     <th>Joined</th>
                     <td>{{ $user->created_at->format('M d, Y') }}</td>
