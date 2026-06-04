@@ -6,15 +6,15 @@
 <div class="container py-5">
     <div class="row mb-4">
         <div class="col-lg-8 mx-auto text-center">
-            <h1 class="display-5 fw-bold">Loan Categories</h1>
-            <p class="lead text-muted">Browse all available loan categories and explore products tailored to your needs.</p>
+            <h1 class="display-5 fw-bold">Service Categories</h1>
+            <p class="lead text-muted">Browse all available service categories and explore products tailored to your needs.</p>
         </div>
     </div>
 
     @if($loanCategories->isEmpty())
         <div class="row">
             <div class="col-lg-8 mx-auto text-center">
-                <div class="alert alert-info">No loan categories are available at the moment.</div>
+                <div class="alert alert-info">No service categories are available at the moment.</div>
             </div>
         </div>
     @else

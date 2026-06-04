@@ -32,7 +32,7 @@
                                 </div>
                             @endif
 
-                            <div class="row g-3">
+                            {{-- <div class="row g-3">
                                 <div class="col-md-4">
                                     <div class="bg-white rounded-3 p-4 border">
                                         <h6 class="text-uppercase text-muted mb-2">Status</h6>
@@ -45,10 +45,10 @@
                                         <p class="mb-0">This page shows only category details and no loan products. Use the buttons below to view related loans or return to the category list.</p>
                                     </div>
                                 </div>
-                            </div>
+                            </div> --}}
 
                             <div class="mt-4 d-flex flex-wrap gap-2">
-                                <a href="{{ route('loans.category', $loanCategory) }}" class="btn btn-primary">Browse Loans in this Category</a>
+                                <a href="{{ route('customer.new_application.create') }}" class="btn btn-primary">Apply Now</a>
                                 <a href="{{ route('loan-categories.index') }}" class="btn btn-outline-secondary">Back to All Categories</a>
                             </div>
                         </div>

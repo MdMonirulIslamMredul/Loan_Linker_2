@@ -242,8 +242,8 @@
             <p class="lead mb-4 mx-auto" style="max-width: 600px;">Whether you're looking for a loan or managing customer
                 requests, we've got you covered</p>
             <div class="d-flex justify-content-center gap-3 flex-wrap">
-                <a href="{{ route('loans.all') }}" class="btn btn-light btn-lg shadow">
-                    <i class="bi bi-search me-2"></i>Browse Loans
+                <a href="{{ route('login') }}" class="btn btn-light btn-lg shadow">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Customer Login
                 </a>
                 <a href="{{ route('login') }}" class="btn btn-outline-light btn-lg">
                     <i class="bi bi-box-arrow-in-right me-2"></i>Officer Login

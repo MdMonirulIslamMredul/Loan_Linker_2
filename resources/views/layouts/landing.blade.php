@@ -68,7 +68,7 @@
                             <a class="nav-link fw-medium" href=  "{{ route('banks.all') }}">Banks</a>
                         </li> --}}
                         <li class="nav-item">
-                            <a class="nav-link fw-medium" href= "{{ route('loan-categories.index') }}">Loans</a>
+                            <a class="nav-link fw-medium" href= "{{ route('loan-categories.index') }}">Categories</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link fw-medium" href= "{{ route('contact') }}">Contact Us</a>

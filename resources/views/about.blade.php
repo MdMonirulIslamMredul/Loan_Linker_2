@@ -192,14 +192,18 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="py-5 text-white text-center" style="background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);">
+   <section class="py-5 text-white text-center" style="background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);">
         <div class="container">
-            <h2 class="display-5 fw-bold mb-3">Ready to Find Your Perfect Loan?</h2>
-            <p class="lead mb-4 mx-auto" style="max-width: 600px;">Start comparing loan offers from Bangladesh's top banks
-                today</p>
-            <div class="d-flex gap-3 justify-content-center flex-wrap">
-                <a href="{{ route('loans.all') }}" class="btn btn-light btn-lg shadow">Browse All Loans</a>
-                <a href="{{ route('search') }}" class="btn btn-outline-light btn-lg">Search Loans</a>
+            <h2 class="display-6 fw-bold mb-3">Ready to Get Started?</h2>
+            <p class="lead mb-4 mx-auto" style="max-width: 600px;">Whether you're looking for a loan or managing customer
+                requests, we've got you covered</p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="{{ route('login') }}" class="btn btn-light btn-lg shadow">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Customer Login
+                </a>
+                <a href="{{ route('login') }}" class="btn btn-outline-light btn-lg">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Officer Login
+                </a>
             </div>
         </div>
     </section>
