@@ -14,11 +14,67 @@
     left: -40px;
 }
 
+#heroCarousel {
+    height: 662px;
+}
+
+#heroCarousel .carousel-item {
+    background-position: center center;
+    background-size: contain;
+}
+
+.hero-slide-button {
+    font-size: 1rem;
+    padding: 0.9rem 1.6rem;
+}
+
+@media (max-width: 768px) {
+    #heroCarousel {
+        height: 300px;
+        min-height: 250px;
+        max-height: 250px;
+        padding-top: 0;
+    }
+
+    #heroCarousel .carousel-inner,
+    #heroCarousel .carousel-item {
+        height: 100%;
+    }
+
+    #heroCarousel .carousel-item {
+        background-size: 100% 100% !important;
+        background-position: center center !important;
+    }
+
+    #heroCarousel .carousel-item .container {
+        height: 100%;
+    }
+
+    #heroCarousel .display-3 {
+        font-size: 2rem;
+        line-height: 1.1;
+    }
+
+    #heroCarousel .lead {
+        font-size: 0.95rem;
+    }
+
+    .hero-slide-button {
+        font-size: 0.8rem;
+        padding: 0.6rem 0.95rem;
+    }
+     .carousel-control-prev,
+     .carousel-control-next {
+        display: none !important;
+    }
+}
+
 </style>
     <!-- Hero Section with Banner Slider -->
-    <section class="position-relative bg-primary text-white overflow-hidden"
-        style="background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);">
-        <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-25" style="pointer-events: none;"></div>
+  <section class="position-relative bg-primary text-white overflow-hidden"
+        style="background: #f9f9fd;">
+        <div class="position-absolute top-0 start-0 w-100 h-100 bg-white opacity-100" style="pointer-events: none;"></div>
+
 
         @if ($carouselSlides->count() > 0)
             <!-- Hero Slider -->
@@ -27,7 +83,7 @@
                     <div class="carousel-inner h-100">
                         @foreach ($carouselSlides as $index => $slide)
                             <div class="carousel-item h-100 {{ $index === 0 ? 'active' : '' }}"
-                                style="background: linear-gradient(rgba(0, 0, 0, 0.327), rgba(0, 0, 0, 0.242)){{ $slide->image ? ", url('" . asset('storage/' . $slide->image) . "')" : '' }}; background-size: cover; background-position: center;">
+                                style="background: linear-gradient(rgba(0, 0, 0, 0.127), rgba(0, 0, 0, 0.042)){{ $slide->image ? ", url('" . asset('storage/' . $slide->image) . "')" : '' }}; background-size: cover; background-repeat: no-repeat; background-position: center center;">
                                 <div class="container h-100">
                                     <div class="row h-100 align-items-center">
                                         <div class="col-lg-8">
@@ -36,7 +92,7 @@
 
                                             @if ($slide->button_name && $slide->button_url)
                                                 <a href="{{ $slide->button_url }}"
-                                                    class="btn btn-light btn-lg shadow position-relative"
+                                                    class="btn btn-light btn-lg shadow position-relative hero-slide-button"
                                                     style="z-index: 10;" target="_blank" rel="noopener">{{ $slide->button_name }}</a>
                                             @endif
                                         </div>
@@ -142,7 +198,7 @@
                                 @if ($advertisement->image)
                                     <img src="{{ asset('storage/' . $advertisement->image) }}"
                                         alt="{{ $advertisement->title ?? 'Advertisement' }}"
-                                        class="img-fluid w-100" style="min-height: 260px; max-height: 260px; object-fit: cover;">
+                                        class="img-fluid w-100" style="min-height: 260px; max-height: 260px; object-fit: contain; background: #f8f9fa;">
                                 @else
                                     <div class="bg-secondary bg-opacity-10 d-flex align-items-center justify-content-center"
                                         style="min-height: 260px;">
@@ -377,8 +433,8 @@
                                             <a href="{{ route('loan-categories.show', $category) }}"
                                                 class="card h-100 border shadow-sm hover-lift text-decoration-none text-dark">
                                                 @if($category->image)
-                                                    <div class="position-relative" style="height: 220px; overflow: hidden;">
-                                                        <img src="{{ asset('storage/' . $category->image) }}" class="w-100 h-100 object-fit-cover" alt="{{ $category->name }}">
+                                                    <div class="position-relative" style="height: 220px; overflow: hidden; background: #f8f9fa;">
+                                                        <img src="{{ asset('storage/' . $category->image) }}" class="w-100 h-100" style="object-fit: contain;" alt="{{ $category->name }}">
                                                     </div>
                                                 @else
                                                     <div class="card-body text-center py-5">
@@ -426,8 +482,8 @@
                                     <a href="{{ route('loans.category', $category) }}"
                                         class="card h-100 border shadow-sm hover-lift text-decoration-none text-dark">
                                         @if($category->image)
-                                            <div class="position-relative" style="height: 260px; overflow: hidden;">
-                                                <img src="{{ asset('storage/' . $category->image) }}" class="w-100 h-100 object-fit-cover" alt="{{ $category->name }}">
+                                            <div class="position-relative" style="height: 260px; overflow: hidden; background: #f8f9fa;">
+                                                <img src="{{ asset('storage/' . $category->image) }}" class="w-100 h-100" style="object-fit: contain;" alt="{{ $category->name }}">
                                             </div>
                                         @else
                                             <div class="card-body text-center py-5">

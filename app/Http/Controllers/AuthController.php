@@ -26,9 +26,17 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-
             $user = Auth::user();
+
+            if (!$user->is_active) {
+                Auth::logout();
+
+                return back()->withErrors([
+                    'email' => 'Your account is not active. Please contact support.',
+                ])->onlyInput('email');
+            }
+
+            $request->session()->regenerate();
 
             // Redirect based on user role
             if ($user->isSuperAdmin()) {
