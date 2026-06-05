@@ -29,11 +29,12 @@
                     </div>
 
                     <div class="col-md-3">
-                        <label for="service_type" class="form-label">Loan Type</label>
-                        <select name="service_type" id="service_type" class="form-select">
-                            <option value="">All Types</option>
-                            <option value="visa_credit_card" {{ request('service_type') == 'visa_credit_card' ? 'selected' : '' }}>Visa Credit Card</option>
-                            <option value="personal_loan" {{ request('service_type') == 'personal_loan' ? 'selected' : '' }}>Personal Loan</option>
+                        <label for="service_category_id" class="form-label">Service Category</label>
+                        <select name="service_category_id" id="service_category_id" class="form-select">
+                            <option value="">Any Category</option>
+                            @foreach($serviceCategories as $category)
+                                <option value="{{ $category->id }}" {{ request('service_category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                            @endforeach
                         </select>
                     </div>
 

@@ -273,6 +273,10 @@ class LoanApplicationController extends Controller
             $query->where('status', $request->status);
         }
 
+        if ($request->filled('service_category_id')) {
+            $query->where('service_category_id', $request->service_category_id);
+        }
+
         if ($request->filled('service_type')) {
             $query->where('service_type', $request->service_type);
         }
@@ -287,8 +291,9 @@ class LoanApplicationController extends Controller
 
         $applications = $query->paginate(10);
         $banks = Bank::orderBy('name')->get();
+        $serviceCategories = ServiceCategory::with('serviceTypes')->where('is_active', true)->orderBy('name')->get();
 
-        return view('branch-admin.new-applications.unlocked', compact('applications', 'banks'));
+        return view('branch-admin.new-applications.unlocked', compact('applications', 'banks', 'serviceCategories'));
     }
 
     public function branchLockedNewApplications(Request $request)
@@ -307,6 +312,10 @@ class LoanApplicationController extends Controller
             $query->where('status', $request->status);
         }
 
+        if ($request->filled('service_category_id')) {
+            $query->where('service_category_id', $request->service_category_id);
+        }
+
         if ($request->filled('service_type')) {
             $query->where('service_type', $request->service_type);
         }
@@ -321,9 +330,9 @@ class LoanApplicationController extends Controller
 
         $applications = $query->paginate(10);
         $banks = Bank::orderBy('name')->get();
-        
+        $serviceCategories = ServiceCategory::with('serviceTypes')->where('is_active', true)->orderBy('name')->get();
 
-        return view('branch-admin.new-applications.locked', compact('applications', 'banks'));
+        return view('branch-admin.new-applications.locked', compact('applications', 'banks', 'serviceCategories'));
     }
 
     public function newApplications(Request $request)
