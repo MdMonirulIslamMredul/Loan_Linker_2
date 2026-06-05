@@ -5,6 +5,29 @@
         <div class="card-body">
             <h3>New Loan Application</h3>
 
+            @php
+                $missingDocuments = $missingDocuments ?? [];
+            @endphp
+
+            @if ($errors->has('documents'))
+                <div class="alert alert-danger">
+                    {{ $errors->first('documents') }}
+                </div>
+            @endif
+
+            @if (!empty($missingDocuments))
+                <div class="alert alert-warning">
+                    <h5 class="mb-2">Required documents are missing</h5>
+                    <p>Please upload the following documents before applying for a new loan:</p>
+                    <ul class="mb-2">
+                        @foreach ($missingDocuments as $document)
+                            <li>{{ $document }}</li>
+                        @endforeach
+                    </ul>
+                    <a href="{{ route('customer.documents') }}" class="btn btn-sm btn-primary">Upload Documents</a>
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('customer.new_application.store') }}">
                 @csrf
 
@@ -94,7 +117,7 @@
                     @enderror
                 </div>
 
-                <button type="submit" class="btn btn-primary">Submit Application</button>
+                <button type="submit" class="btn btn-primary" {{ !empty($missingDocuments) ? 'disabled' : '' }}>Submit Application</button>
             </form>
         </div>
     </div>

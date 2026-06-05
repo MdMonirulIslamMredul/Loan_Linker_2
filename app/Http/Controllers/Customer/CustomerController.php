@@ -72,7 +72,19 @@ class CustomerController extends Controller
             $query->where('is_active', true)->orderBy('name');
         }])->where('is_active', true)->orderBy('name')->get();
 
-        return view('customer.new-application.create', compact('banks', 'serviceCategories'));
+        $requiredDocuments = [
+            'picture' => 'Picture',
+            'nid' => 'NID',
+            'tin_certificate' => 'TIN Certificate',
+            'pay_slip' => 'Pay Slip / Salary Certificate',
+        ];
+
+        $customerDocument = $user->customerDocument;
+        $missingDocuments = collect($requiredDocuments)
+            ->filter(fn ($label, $field) => !$customerDocument || !$customerDocument->{$field})
+            ->toArray();
+
+        return view('customer.new-application.create', compact('banks', 'serviceCategories', 'missingDocuments'));
     }
 
     protected function getLocationData(): array
@@ -236,6 +248,15 @@ class CustomerController extends Controller
 
         $payload = $request->all();
         $payload['bank_ids'] = array_values(array_filter($request->input('bank_ids', [])));
+
+        $requiredDocuments = ['picture', 'nid', 'tin_certificate', 'pay_slip'];
+        $customerDocument = $user->customerDocument;
+
+        if (!$customerDocument || collect($requiredDocuments)->contains(fn ($field) => !$customerDocument->{$field})) {
+            return back()
+                ->withErrors(['documents' => 'Please upload Picture, NID, TIN Certificate and Pay Slip before applying.'])
+                ->withInput();
+        }
 
         $data = Validator::make($payload, [
             'expected_amount' => ['required', 'numeric', 'min:0'],

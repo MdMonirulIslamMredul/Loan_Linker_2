@@ -9,7 +9,9 @@
                 <div class="col-lg-10">
                     <div class="card border-0 shadow-sm overflow-hidden">
                         @if($loanCategory->image)
-                            <img src="{{ asset('storage/' . $loanCategory->image) }}" class="card-img-top" alt="{{ $loanCategory->name }}" style="height: 360px; object-fit: cover;">
+                            <div class="bg-light" style="height: 360px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                <img src="{{ asset('storage/' . $loanCategory->image) }}" alt="{{ $loanCategory->name }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                            </div>
                         @endif
                         <div class="card-body p-5">
                             <div class="d-flex align-items-center justify-content-between mb-4">
