@@ -18,13 +18,16 @@
                     <div class="card-header bg-primary text-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <h4 class="mb-0"><i class="bi bi-file-earmark-plus me-2"></i>Request #{{ $newApplication->id }}</h4>
-                            @if ($newApplication->status === 'pending')
+                            @php
+                                $displayStatus = optional($officerAccess)->application_status ?? $newApplication->status;
+                            @endphp
+                            @if ($displayStatus === 'pending')
                                 <span class="badge bg-warning">Pending</span>
-                            @elseif ($newApplication->status === 'review')
+                            @elseif ($displayStatus === 'review')
                                 <span class="badge bg-info">Review</span>
-                            @elseif ($newApplication->status === 'approved')
+                            @elseif ($displayStatus === 'approved')
                                 <span class="badge bg-success">Approved</span>
-                            @elseif ($newApplication->status === 'rejected')
+                            @elseif ($displayStatus === 'rejected')
                                 <span class="badge bg-danger">Rejected</span>
                             @endif
                         </div>
@@ -322,10 +325,11 @@
                                 <div class="mb-3">
                                     <label for="status" class="form-label">Status</label>
                                     <select name="status" id="status" class="form-select @error('status') is-invalid @enderror" required>
-                                        <option value="pending" {{ $newApplication->status === 'pending' ? 'selected' : '' }}>Pending</option>
-                                        <option value="review" {{ $newApplication->status === 'review' ? 'selected' : '' }}>Review</option>
-                                        <option value="approved" {{ $newApplication->status === 'approved' ? 'selected' : '' }}>Approved</option>
-                                        <option value="rejected" {{ $newApplication->status === 'rejected' ? 'selected' : '' }}>Rejected</option>
+
+                                        <option value="pending" {{ old('status', optional($officerAccess)->application_status ?? $newApplication->status) === 'pending' ? 'selected' : '' }}>Pending</option>
+                                        <option value="review" {{ old('status', optional($officerAccess)->application_status ?? $newApplication->status) === 'review' ? 'selected' : '' }}>Reviewing</option>
+                                        <option value="approved" {{ old('status', optional($officerAccess)->application_status ?? $newApplication->status) === 'approved' ? 'selected' : '' }}>Approved</option>
+                                        <option value="rejected" {{ old('status', optional($officerAccess)->application_status ?? $newApplication->status) === 'rejected' ? 'selected' : '' }}>Rejected</option>
                                     </select>
                                     @error('status')
                                         <div class="invalid-feedback">{{ $message }}</div>

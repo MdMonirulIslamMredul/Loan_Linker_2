@@ -41,7 +41,7 @@
         <div class="card mb-4 border-0 shadow-sm">
             <div class="card-body">
                 <form method="GET" action="{{ route('branch-admin.new-applications.index') }}" class="row g-3">
-                    <div class="col-md-3">
+                    {{-- <div class="col-md-3">
                         <label for="status" class="form-label">Status</label>
                         <select name="status" id="status" class="form-select">
                             <option value="">All Status</option>
@@ -50,7 +50,7 @@
                             <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
                             <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
                         </select>
-                    </div>
+                    </div> --}}
 
                     <div class="col-md-3">
                         <label for="service_category_id" class="form-label">Service Category</label>
@@ -130,8 +130,9 @@
                                     <th>Tenure</th>
                                     <th>Category</th>
                                     <th>Type</th>
+                                    <th>District</th>
                                     {{-- <th>Banks</th> --}}
-                                    <th>Status</th>
+                                    {{-- <th>Status</th> --}}
                                     <th>Requested</th>
                                     <th>Actions</th>
                                 </tr>
@@ -158,6 +159,7 @@
                                         <td class="text-capitalize">{{ str_replace('_', ' ', $application->service_type) }}</td> --}}
                                         <td class="text-capitalize">{{ optional($application->serviceCategory)->name ?? 'N/A' }}</td>
                                         <td class="text-capitalize">{{ optional($application->serviceType)->name ?? 'N/A' }}</td>
+                                        <td class="text-capitalize">{{ optional($application->customer->contactDistrict)->name ?? 'N/A' }}</td>
                                         {{-- <td>
                                             @php
                                                 $bankNames = collect($application->bank_ids)->filter()->map(function ($bankId) use ($banks) {
@@ -166,7 +168,7 @@
                                             @endphp
                                             {{ $bankNames ?: 'N/A' }}
                                         </td> --}}
-                                        <td>
+                                        {{-- <td>
                                             @if ($application->status === 'pending')
                                                 <span class="badge bg-warning">Pending</span>
                                             @elseif ($application->status === 'review')
@@ -176,7 +178,7 @@
                                             @elseif ($application->status === 'rejected')
                                                 <span class="badge bg-danger">Rejected</span>
                                             @endif
-                                        </td>
+                                        </td> --}}
                                         <td>{{ $application->created_at->format('d M, Y') }}</td>
                                         <td>
                                             @php

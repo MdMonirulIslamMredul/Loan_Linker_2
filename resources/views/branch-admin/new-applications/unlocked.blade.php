@@ -71,8 +71,9 @@
                                     <th>Tenure</th>
                                     <th>Category</th>
                                     <th>Type</th>
+                                    <th>District</th>
                                     <th>Banks</th>
-                                    <th>Status</th>
+                                    {{-- <th>Status</th> --}}
                                     <th>Requested</th>
                                     <th>Actions</th>
                                 </tr>
@@ -87,6 +88,7 @@
                                         <td>{{ $application->tenure_months }} mo</td>
                                         <td class="text-capitalize">{{ optional($application->serviceCategory)->name ?? 'N/A' }}</td>
                                         <td class="text-capitalize">{{ optional($application->serviceType)->name ?? 'N/A' }}</td>
+                                        <td class="text-capitalize">{{ optional($application->customer->contactDistrict)->name ?? 'N/A' }}</td>
                                         <td>
                                             @php
                                                 $bankNames = collect($application->bank_ids)->filter()->map(function ($bankId) use ($banks) {
@@ -95,7 +97,7 @@
                                             @endphp
                                             {{ $bankNames ?: 'N/A' }}
                                         </td>
-                                        <td>
+                                        {{-- <td>
                                             @if ($application->status === 'pending')
                                                 <span class="badge bg-warning">Pending</span>
                                             @elseif ($application->status === 'review')
@@ -105,7 +107,7 @@
                                             @elseif ($application->status === 'rejected')
                                                 <span class="badge bg-danger">Rejected</span>
                                             @endif
-                                        </td>
+                                        </td> --}}
                                         <td>{{ $application->created_at->format('d M, Y') }}</td>
                                         <td>
                                             <a href="{{ route('branch-admin.new-applications.show', $application) }}" class="btn btn-sm btn-primary">

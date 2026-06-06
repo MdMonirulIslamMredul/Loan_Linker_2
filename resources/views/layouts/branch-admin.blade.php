@@ -251,7 +251,10 @@
                 <div class="menu-section-title">Applications</div>
 
                 @php
-                    $pendingNewRequestsQuery = \App\Models\NewLoanApplication::where('status', 'pending');
+                    $pendingNewRequestsQuery = \App\Models\NewLoanApplication::where('status', 'active')
+                        ->whereHas('customer', function ($customerQuery) {
+                            $customerQuery->where('is_active', 1);
+                        });
 
                     if (! auth()->user()->isSuperAdmin() && ! auth()->user()->isBankAdmin()) {
                         $unlockedNewLoanIds = \App\Models\LeadAccess::where('officer_id', auth()->id())

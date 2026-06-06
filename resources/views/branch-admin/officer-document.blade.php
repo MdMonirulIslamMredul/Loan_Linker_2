@@ -21,15 +21,25 @@
             <form method="POST" action="{{ route('branch-admin.officer-document.store') }}" enctype="multipart/form-data">
                 @csrf
 
-                @foreach ([
-                    'picture' => 'Picture',
-                    'nid' => 'NID',
-                    'office_id' => 'Office ID',
-                    'visiting_card' => 'Visiting Card',
-                ] as $field => $label)
+                @php
+                    $documentFields = [
+                        'picture' => 'Picture',
+                        'nid' => 'NID',
+                        'office_id' => 'Office ID',
+                        'visiting_card' => 'Visiting Card',
+                    ];
+                    $hasMissingDocument = collect($documentFields)->contains(fn ($label, $field) => !optional($officerDocument)->{$field});
+                @endphp
+
+                @if (!$hasMissingDocument)
+                    <div class="alert alert-info">
+                        All officer documents are already uploaded. If you need to change any uploaded document, please contact admin.
+                    </div>
+                @endif
+
+                @foreach ($documentFields as $field => $label)
                     <div class="mb-3">
                         <label class="form-label">{{ $label }}</label>
-                        <input type="file" name="{{ $field }}" class="form-control">
 
                         @php
                             $currentFile = optional($officerDocument)->{$field};
@@ -37,6 +47,14 @@
                             $isImage = $currentFile ? preg_match('/\.(jpg|jpeg|png|gif|svg)$/i', $currentFile) : false;
                             $isPdf = $currentFile ? preg_match('/\.pdf$/i', $currentFile) : false;
                         @endphp
+
+                        <input type="file" name="{{ $field }}" class="form-control" {{ $fileUrl ? 'disabled' : '' }}>
+
+                        @if ($fileUrl)
+                            <div class="form-text mt-1 text-warning">
+                                This document has already been uploaded and cannot be changed. Please contact admin if you need an update.
+                            </div>
+                        @endif
 
                         @if ($fileUrl)
                             <div class="form-text mt-1">
@@ -57,7 +75,7 @@
                     </div>
                 @endforeach
 
-                <button class="btn btn-primary" type="submit">Save Documents</button>
+                <button class="btn btn-primary" type="submit" {{ $hasMissingDocument ? '' : 'disabled' }}>Save Documents</button>
                 <a href="{{ route('branch-admin.profile') }}" class="btn btn-secondary ms-2">Cancel</a>
             </form>
         </div>

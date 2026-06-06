@@ -73,7 +73,7 @@
                                         <i class="bi bi-file-earmark-text fs-6"></i>
                                     </span>
                                 </div>
-                                <div class="text-uppercase text-info small mb-1">New Loan Requests</div>
+                                <div class="text-uppercase text-info small mb-1">New Loan Requests (last 7 days)</div>
                                 <div class="fs-4 fw-bold text-info">{{ $newRequestsCount }}</div>
                                 <div class="small mt-1 text-muted">View new customer requests</div>
                             </div>
@@ -92,7 +92,7 @@
         <div class="card border-0 shadow-sm mt-4">
         <div class="card-header bg-white border-bottom">
             <div class="d-flex justify-content-between align-items-center">
-                <h4 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>Recent Loan Applications</h4>
+                <h4 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>Recent Loan Applications (last 7 days)</h4>
                 <a href="{{ route('branch-admin.new-applications.index') }}" class="btn btn-sm btn-outline-primary">
                     View All <i class="bi bi-arrow-right ms-1"></i>
                 </a>
@@ -116,7 +116,8 @@
                                 <th>Tenure</th>
                                 <th>Category</th>
                                 <th>Type</th>
-                                <th>Status</th>
+                                <th>District</th>
+                                {{-- <th>Status</th> --}}
                                 <th>Requested</th>
                                 <th>Actions</th>
                             </tr>
@@ -141,7 +142,7 @@
                                     <td>{{ $application->tenure_months }} months</td>
                                     <td class="text-capitalize">{{ optional($application->serviceCategory)->name ?? 'N/A' }}</td>
                                     <td class="text-capitalize">{{ optional($application->serviceType)->name ?? 'N/A' }}</td>
-                                    <td>
+                                    {{-- <td>
                                         @if ($application->status === 'pending')
                                             <span class="badge bg-warning">Pending</span>
                                         @elseif($application->status === 'review')
@@ -153,7 +154,8 @@
                                         @else
                                             <span class="badge bg-secondary">{{ ucfirst($application->status ?? 'Unknown') }}</span>
                                         @endif
-                                    </td>
+                                    </td> --}}
+                                    <td class="text-capitalize">{{ optional($application->customer->contactDistrict)->name ?? 'N/A' }}</td>
                                     <td>{{ $application->created_at->format('d M, Y') }}</td>
                                     <td>
                                         @if ($canView)
