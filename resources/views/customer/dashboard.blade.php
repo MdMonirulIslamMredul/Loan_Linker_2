@@ -21,6 +21,15 @@
                         </div>
                     </div>
                 </div>
+                  <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Reviewing</h5>
+                            <p class="display-6 mb-0 text-warning">{{ $reviewApplications ?? 0 }}</p>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="col-md-3">
                     <div class="card text-center">
                         <div class="card-body">
@@ -37,14 +46,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h5 class="card-title">Pending</h5>
-                            <p class="display-6 mb-0 text-warning">{{ $pendingApplications ?? 0 }}</p>
-                        </div>
-                    </div>
-                </div>
+              
             </div>
 
             <h5 class="mb-3">Recent Applications</h5>
@@ -68,12 +70,20 @@
                                     <td>{{ $app->id }}</td>  
                                     <td>{{ ucfirst(str_replace('_', ' ', optional($app->serviceType)->name ?? $app->service_type)) }}</td>
                                     <td>৳{{ number_format($app->expected_amount, 2) }}</td>
-                                    <td>{{ ucfirst($app->status) }}</td>
+                                    @php
+                                        $dashboardStatus = $app->status;
+                                        $latestLeadAccess = $app->leadAccesses->sortByDesc('updated_at')->first();
+                                        if ($latestLeadAccess && $latestLeadAccess->application_status) {
+                                            $dashboardStatus = $latestLeadAccess->application_status;
+                                        }
+                                        $canEditApplication = in_array($dashboardStatus, ['pending', 'active'], true);
+                                    @endphp
+                                    <td>{{ ucfirst(str_replace('_', ' ', $dashboardStatus === 'active' ? 'Submitted' : ($dashboardStatus ?? 'pending'))) }}</td>
                                     <td>{{ $app->additional_notes ?? '-' }}</td>
                                     <td>{{ $app->created_at->format('M d, Y') }}</td>
                                     <td>
                                         <a href="{{ route('customer.application.show', $app->id) }}" class="btn btn-sm btn-outline-primary">View</a>
-                                        @if ($app->status === 'pending')
+                                        @if ($canEditApplication)
                                             <a href="{{ route('customer.application.edit', $app->id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
                                         @endif
                                         <a href="{{ route('customer.application.delete', $app->id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this application?');">Delete</a>

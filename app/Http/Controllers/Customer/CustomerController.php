@@ -36,17 +36,26 @@ class CustomerController extends Controller
             abort(403, 'Unauthorized.');
         }
 
-        // Application stats for dashboard
+        // Application stats for dashboard come from lead access statuses.
         $totalApplications = NewLoanApplication::where('customer_id', $user->id)->count();
-        $approvedApplications = NewLoanApplication::where('customer_id', $user->id)->where('status', 'approved')->count();
-        $rejectedApplications = NewLoanApplication::where('customer_id', $user->id)->where('status', 'rejected')->count();
-        $pendingApplications = NewLoanApplication::where('customer_id', $user->id)->whereIn('status', ['pending', 'review'])->count();
+        $approvedApplications = LeadAccess::whereHas('newLoanApplication', function ($query) use ($user) {
+                $query->where('customer_id', $user->id);
+            })->where('application_status', 'approved')->distinct()->count('newloan_id');
+        $rejectedApplications = LeadAccess::whereHas('newLoanApplication', function ($query) use ($user) {
+                $query->where('customer_id', $user->id);
+            })->where('application_status', 'rejected')->distinct()->count('newloan_id');
+        $pendingApplications = LeadAccess::whereHas('newLoanApplication', function ($query) use ($user) {
+                $query->where('customer_id', $user->id);
+            })->where('application_status', 'pending')->distinct()->count('newloan_id');
+        $reviewApplications = LeadAccess::whereHas('newLoanApplication', function ($query) use ($user) {
+                $query->where('customer_id', $user->id);
+            })->where('application_status', 'review')->distinct()->count('newloan_id');
 
-        $recentApplications = NewLoanApplication::with(['serviceType'])
+        $recentApplications = NewLoanApplication::with(['serviceType', 'leadAccesses'])
             ->withCount('leadAccesses')
             ->where('customer_id', $user->id)
             ->latest()
-            ->take(5)
+            ->take(10)
             ->get();
 
         return view('customer.dashboard', compact(
@@ -55,6 +64,7 @@ class CustomerController extends Controller
             'approvedApplications',
             'rejectedApplications',
             'pendingApplications',
+            'reviewApplications',
             'recentApplications'
         ));
     }
@@ -278,7 +288,7 @@ class CustomerController extends Controller
         $data['service_category'] = $category->slug;
         $data['service_type'] = $type->slug;
         $data['customer_id'] = $user->id;
-        $data['status'] = 'pending';
+        $data['status'] = 'active'; // default to active for now, can be changed by admin later
 
         NewLoanApplication::create($data);
 
@@ -293,7 +303,7 @@ class CustomerController extends Controller
             abort(403, 'Unauthorized.');
         }
 
-        $newApplication->load('bankOfficerRatings');
+        $newApplication->load(['customer', 'bankOfficerRatings', 'leadAccesses.officer']);
 
         $banks = Bank::whereIn('id', $newApplication->bank_ids ?? [])->get()->keyBy('id');
 
@@ -552,23 +562,31 @@ class CustomerController extends Controller
 
         $customerDocument = $user->customerDocument ?? new CustomerDocument();
 
-        foreach ([
-            'picture',
-            'nid',
-            'office_id',
-            'visiting_card',
-            'pay_slip',
-            'bank_statements',
-            'trade_license',
-            'tin_certificate',
-            'lend_document',
-            'other_document',
-        ] as $field) {
-            if ($request->hasFile($field)) {
-                if ($customerDocument->$field) {
-                    Storage::disk('public')->delete($customerDocument->$field);
-                }
+        $documentFields = [
+            'picture' => 'Picture',
+            'nid' => 'NID',
+            'office_id' => 'Office ID',
+            'visiting_card' => 'Visiting Card',
+            'pay_slip' => 'Pay Slip / Salary Certificate',
+            'bank_statements' => 'Bank Statements',
+            'trade_license' => 'Trade License (for Business Loan)',
+            'tin_certificate' => 'e-TIN Certificate',
+            'lend_document' => 'Lend Document (for Home Loan)',
+            'other_document' => 'Other Document',
+        ];
 
+        foreach ($documentFields as $field => $label) {
+            if ($request->hasFile($field) && $customerDocument->$field) {
+                return back()
+                    ->withErrors([
+                        $field => "The {$label} has already been uploaded and cannot be changed. Please contact admin to update this document.",
+                    ])
+                    ->withInput();
+            }
+        }
+
+        foreach (array_keys($documentFields) as $field) {
+            if ($request->hasFile($field) && !$customerDocument->$field) {
                 $customerDocument->$field = $request->file($field)->store('customer_documents', 'public');
             }
         }
