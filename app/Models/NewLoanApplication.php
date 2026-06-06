@@ -23,11 +23,15 @@ class NewLoanApplication extends Model
         'bank_ids',
         'additional_notes',
         'status',
+        'admin_view',
+        'branch_view',
     ];
 
     protected $casts = [
         'bank_ids' => 'array',
         'customer_id' => 'integer',
+        'admin_view' => 'boolean',
+        'branch_view' => 'boolean',
     ];
 
     public function customer()

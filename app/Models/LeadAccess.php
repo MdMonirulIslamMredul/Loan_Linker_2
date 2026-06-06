@@ -16,6 +16,7 @@ class LeadAccess extends Model
         'officer_id',
         'application_id',
         'newloan_id',
+        'application_status',
         'purchased_at',
     ];
 
