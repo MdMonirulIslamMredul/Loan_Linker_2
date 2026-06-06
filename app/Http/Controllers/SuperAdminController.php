@@ -8,11 +8,14 @@ use App\Models\District;
 use App\Models\Loan;
 use App\Models\LoanCategory;
 use App\Models\User;
+use App\Models\CustomerDocument;
 use App\Models\CustomerMessage;
 use App\Models\CustomerRating;
+use App\Models\OfficerDocument;
 use App\Models\BankOfficerRating;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class SuperAdminController extends Controller
 {
@@ -360,6 +363,15 @@ class SuperAdminController extends Controller
             $filterQuery->whereDate('created_at', '<=', $request->input('created_to'));
         }
 
+        if ($request->filled('search')) {
+            $search = trim($request->input('search'));
+            $filterQuery->where(function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
         $branchAdmins = (clone $filterQuery)
             ->with('branch', 'bank')
             ->paginate(10)
@@ -411,6 +423,11 @@ class SuperAdminController extends Controller
             'permanentDistrict',
         ]);
 
+        if (! $user->view) {
+            $user->view = true;
+            $user->save();
+        }
+
         return view('super-admin.branch-admins.show', ['admin' => $user]);
     }
 
@@ -448,6 +465,10 @@ class SuperAdminController extends Controller
             'password' => 'nullable|string|min:6|confirmed',
             'bank_id' => 'required|exists:banks,id',
             'is_active' => 'nullable',
+            'picture' => 'nullable|file|mimes:jpeg,jpg,png,gif,svg,pdf|max:5120',
+            'nid' => 'nullable|file|mimes:jpeg,jpg,png,gif,svg,pdf|max:5120',
+            'office_id' => 'nullable|file|mimes:jpeg,jpg,png,gif,svg,pdf|max:5120',
+            'visiting_card' => 'nullable|file|mimes:jpeg,jpg,png,gif,svg,pdf|max:5120',
         ]);
 
         $user->name = $validated['name'];
@@ -460,6 +481,29 @@ class SuperAdminController extends Controller
         // Only update password if provided
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
+        }
+
+        $officerDocument = $user->officerDocument;
+        $officerDocumentChanged = false;
+
+        foreach (['picture', 'nid', 'office_id', 'visiting_card'] as $field) {
+            if ($request->hasFile($field)) {
+                if (!$officerDocument) {
+                    $officerDocument = new OfficerDocument();
+                }
+
+                if ($officerDocument->{$field}) {
+                    Storage::disk('public')->delete($officerDocument->{$field});
+                }
+
+                $officerDocument->{$field} = $request->file($field)->store('officer_documents', 'public');
+                $officerDocumentChanged = true;
+            }
+        }
+
+        if ($officerDocumentChanged) {
+            $officerDocument->save();
+            $user->officer_document_id = $officerDocument->id;
         }
 
         $user->save();
@@ -490,10 +534,35 @@ class SuperAdminController extends Controller
     /**
      * Display a listing of customers.
      */
-    public function listCustomers()
+    public function listCustomers(Request $request)
     {
-        $customers = User::where('role', 'customer')->orderBy('created_at', 'desc')->paginate(10);
-        return view('super-admin.customers.index', compact('customers'));
+        $query = User::where('role', 'customer');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($subQuery) use ($search) {
+                $subQuery->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('c_district_id')) {
+            $query->where('c_district_id', $request->c_district_id);
+        }
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->to_date);
+        }
+
+        $customers = $query->orderBy('created_at', 'desc')->paginate(10);
+        $districts = District::orderBy('name')->get();
+
+        return view('super-admin.customers.index', compact('customers', 'districts'));
     }
 
     /**
@@ -530,6 +599,68 @@ class SuperAdminController extends Controller
 
         return redirect()->route('super-admin.customers.show', $user->id)
             ->with('success', "Customer account has been {$statusLabel}.");
+    }
+
+    /**
+     * Update the customer's uploaded documents.
+     */
+    public function updateCustomerDocuments(Request $request, User $user)
+    {
+        if (!$user->isCustomer()) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'picture' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
+            'nid' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
+            'office_id' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
+            'visiting_card' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
+            'pay_slip' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
+            'bank_statements' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
+            'trade_license' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
+            'tin_certificate' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
+            'lend_document' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
+            'other_document' => ['nullable', 'file', 'mimes:jpeg,jpg,png,gif,svg,pdf', 'max:5120'],
+        ]);
+
+        $customerDocument = $user->customerDocument ?? new CustomerDocument();
+        $updated = false;
+
+        foreach ([
+            'picture',
+            'nid',
+            'office_id',
+            'visiting_card',
+            'pay_slip',
+            'bank_statements',
+            'trade_license',
+            'tin_certificate',
+            'lend_document',
+            'other_document',
+        ] as $field) {
+            if ($request->hasFile($field)) {
+                $updated = true;
+
+                if ($customerDocument->$field) {
+                    Storage::disk('public')->delete($customerDocument->$field);
+                }
+
+                $customerDocument->$field = $request->file($field)->store('customer_documents', 'public');
+            }
+        }
+
+        if (! $updated) {
+            return redirect()->route('super-admin.customers.show', $user->id)
+                ->with('info', 'No documents were uploaded.');
+        }
+
+        $customerDocument->save();
+
+        $user->customer_document_id = $customerDocument->id;
+        $user->save();
+
+        return redirect()->route('super-admin.customers.show', $user->id)
+            ->with('success', 'Customer documents updated successfully.');
     }
 
     /**

@@ -211,6 +211,7 @@ Route::middleware(['auth', 'super.admin'])->prefix('super-admin')->group(functio
     Route::get('/customers', [SuperAdminController::class, 'listCustomers'])->name('super-admin.customers.index');
     Route::get('/customers/{user}', [SuperAdminController::class, 'showCustomer'])->name('super-admin.customers.show');
     Route::post('/customers/{user}/status', [SuperAdminController::class, 'updateCustomerStatus'])->name('super-admin.customers.updateStatus');
+    Route::post('/customers/{user}/documents', [SuperAdminController::class, 'updateCustomerDocuments'])->name('super-admin.customers.documents.update');
     Route::get('/ratings', [SuperAdminController::class, 'ratingsIndex'])->name('super-admin.ratings.index');
     Route::get('/ratings/bank-officer', [SuperAdminController::class, 'bankOfficerRatingsIndex'])->name('super-admin.ratings.bank-officer');
     Route::get('/ratings/{type}/{user}', [SuperAdminController::class, 'ratingUserDetails'])->name('super-admin.ratings.user.details');

@@ -39,6 +39,7 @@ class LeadAccessController extends Controller
         LeadAccess::create([
             'officer_id' => $user->id,
             'application_id' => $application->id,
+            'application_status' => 'pending',
             'purchased_at' => now(),
         ]);
 
@@ -71,6 +72,7 @@ class LeadAccessController extends Controller
         LeadAccess::create([
             'officer_id' => $user->id,
             'newloan_id' => $newApplication->id,
+            'application_status' => 'pending',
             'purchased_at' => now(),
         ]);
 

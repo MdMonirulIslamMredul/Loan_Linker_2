@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Loan;
 use App\Models\LoanApplication;
 use App\Models\NewLoanApplication;
+use App\Models\LeadAccess;
 use App\Models\Bank;
 use App\Models\Branch;
 use App\Models\LoanCategory;
@@ -210,7 +211,12 @@ class LoanApplicationController extends Controller
 
     public function branchNewApplications(Request $request)
     {
-        $query = NewLoanApplication::with('customer')->latest();
+        $query = NewLoanApplication::with(['customer.contactDistrict'])
+            ->whereHas('customer', function ($customerQuery) {
+                $customerQuery->where('is_active', true);
+            })
+            ->where('status', 'active')
+            ->latest();
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -265,8 +271,11 @@ class LoanApplicationController extends Controller
             ->whereNotNull('newloan_id')
             ->pluck('newloan_id');
 
-        $query = NewLoanApplication::with('customer')
+        $query = NewLoanApplication::with(['customer.contactDistrict'])
             ->whereIn('id', $unlockedIds)
+            // ->whereHas('customer', function ($customerQuery) {
+            //     $customerQuery->where('is_active', true);
+            // })
             ->latest();
 
         if ($request->filled('status')) {
@@ -304,8 +313,12 @@ class LoanApplicationController extends Controller
             ->whereNotNull('newloan_id')
             ->pluck('newloan_id');
 
-        $query = NewLoanApplication::with('customer')
+        $query = NewLoanApplication::with(['customer.contactDistrict'])
             ->whereNotIn('id', $unlockedIds)
+            ->whereHas('customer', function ($customerQuery) {
+                $customerQuery->where('is_active', true);
+            })
+            ->where('status', 'active')
             ->latest();
 
         if ($request->filled('status')) {
@@ -337,7 +350,11 @@ class LoanApplicationController extends Controller
 
     public function newApplications(Request $request)
     {
-        $query = NewLoanApplication::with('customer')->latest();
+        $query = NewLoanApplication::with('customer')
+            ->whereHas('customer', function ($customerQuery) {
+                $customerQuery->where('is_active', true);
+            })
+            ->latest();
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -381,15 +398,22 @@ class LoanApplicationController extends Controller
             'serviceType',
         ]);
 
+        if (! $newApplication->customer || ! $newApplication->customer->is_active) {
+            return redirect()->route('branch-admin.new-applications.index')
+                ->with('error', 'This request is not available.');
+        }
+
         $user = auth()->user();
         $hasAccess = false;
+        $officerAccess = null;
 
         if ($user->isSuperAdmin() || $user->isBankAdmin()) {
             $hasAccess = true;
         } else {
-            $hasAccess = \App\Models\LeadAccess::where('officer_id', $user->id)
+            $officerAccess = \App\Models\LeadAccess::where('officer_id', $user->id)
                 ->where('newloan_id', $newApplication->id)
-                ->exists();
+                ->first();
+            $hasAccess = (bool) $officerAccess;
         }
 
         $customerAverageRating = null;
@@ -406,7 +430,15 @@ class LoanApplicationController extends Controller
 
         $banks = Bank::orderBy('name')->get();
 
-        return view('branch-admin.new-applications.show', compact('newApplication', 'banks', 'hasAccess', 'customerAverageRating', 'customerRatingCount', 'customerAverageStars'));
+        return view('branch-admin.new-applications.show', compact(
+            'newApplication',
+            'banks',
+            'hasAccess',
+            'customerAverageRating',
+            'customerRatingCount',
+            'customerAverageStars',
+            'officerAccess'
+        ));
     }
 
     public function branchCustomerRatings(NewLoanApplication $newApplication)
@@ -481,8 +513,16 @@ class LoanApplicationController extends Controller
 
     public function newApplicationShow(NewLoanApplication $newApplication)
     {
-        $newApplication->load('customer');
+        $newApplication->load(['customer', 'leadAccesses.officer']);
 
+        if (! $newApplication->customer || ! $newApplication->customer->is_active) {
+            return redirect()->route('super-admin.new-applications.index')
+                ->with('error', 'This request is not available.');
+        }
+        if (! $newApplication->admin_view) {
+            $newApplication->admin_view = true;
+            $newApplication->save();
+        }
         $banks = Bank::orderBy('name')->get();
 
         return view('super-admin.new-applications.show', compact('newApplication', 'banks'));
@@ -491,13 +531,33 @@ class LoanApplicationController extends Controller
     public function updateNewLoanApplicationStatus(Request $request, NewLoanApplication $newApplication)
     {
         $validated = $request->validate([
-            'status' => 'required|in:pending,review,approved,rejected',
+            'status' => 'required|in:active,inactive,pending,review,approved,rejected',
         ]);
 
-        $newApplication->update($validated);
+        $user = auth()->user();
+
+        if ($user->isBranchAdmin()) {
+            $updated = LeadAccess::where('newloan_id', $newApplication->id)
+                ->where('officer_id', $user->id)
+                ->update(['application_status' => $validated['status']]);
+
+            if (! $updated) {
+                return redirect()->back()->with('error', 'You do not have access to update this request status.');
+            }
+
+            return redirect()->back()->with('success', 'Request status updated successfully for your unlocked lead.');
+        }
+
+        $newApplication->update(['status' => $validated['status']]);
+
+        // Persist the current request status in all lead access records for this request.
+        LeadAccess::where('newloan_id', $newApplication->id)
+            ->update(['application_status' => $validated['status']]);
 
         return redirect()->back()->with('success', 'Request status updated successfully!');
     }
+
+    //add new logic for branch admin to update new loan application status to review, approved, rejected , status will be update in lead_acces table only for branch officer who have access to that lead
 
     public function branch_show(LoanApplication $application)
     {
@@ -537,7 +597,7 @@ class LoanApplicationController extends Controller
     public function updateStatus(Request $request, LoanApplication $application)
     {
         $validated = $request->validate([
-            'status' => 'required|in:pending,under_review,approved,rejected',
+            'status' => 'required|in:active,inactive,pending,under_review,approved,rejected',
             'admin_notes' => 'nullable|string',
         ]);
 

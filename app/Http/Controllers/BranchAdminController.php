@@ -34,19 +34,44 @@ class BranchAdminController extends Controller
         //     ->paginate(10);
 
            
-        $newApplications = NewLoanApplication::with(['serviceCategory', 'serviceType'])
-        ->where('status', 'pending')
-        ->orderBy('created_at', 'desc')
-        ->paginate(10);
+        $newApplications = NewLoanApplication::with(['serviceCategory', 'serviceType', 'customer.contactDistrict'])
+            ->whereIn('status', ['pending', 'active'])
+            ->whereHas('customer', function ($customerQuery) {
+                $customerQuery->where('is_active', true);
+            })
+            ->where('created_at', '>=', now()->subDays(7))
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
-        $newRequestsCount = NewLoanApplication::where('status', 'pending')->count();
+        $newRequestsCount = NewLoanApplication::whereIn('status', ['pending', 'active'])
+            ->whereHas('customer', function ($customerQuery) {
+                $customerQuery->where('is_active', true);
+            })
+            ->where('created_at', '>=', now()->subDays(7))
+            ->count();
 
         $unlockedCount = LeadAccess::where('officer_id', $user->id)
+            //  ->whereHas('newLoanApplication.customer', function ($customerQuery) {
+            //     $customerQuery->where('is_active', true);
+            //  })
             ->whereNotNull('newloan_id')
             ->count();
 
-        $totalNewApplications = NewLoanApplication::count();
-        $lockedCount = max(0, $totalNewApplications - $unlockedCount);
+        $unlockedCount2 = LeadAccess::where('officer_id', $user->id)
+            ->whereNotNull('newloan_id')
+            ->whereHas('newLoanApplication', function ($query) {
+                $query->where('status', 'active')
+                    ->whereHas('customer', function ($customerQuery) {
+                        $customerQuery->where('is_active', true);
+                    });
+            })
+            ->count();
+
+        $totalNewApplications = NewLoanApplication::where('status', 'active')
+            ->whereHas('customer', function ($customerQuery) {
+                $customerQuery->where('is_active', true);
+            })->count();
+        $lockedCount = max(0, $totalNewApplications - $unlockedCount2);
 
         // Get loan applications for this branch's loans
         $applications = \App\Models\LoanApplication::whereHas('loan', function ($query) use ($user) {
@@ -254,12 +279,25 @@ class BranchAdminController extends Controller
 
         $officerDocument = $user->officerDocument ?? new OfficerDocument();
 
-        foreach (['picture', 'nid', 'office_id', 'visiting_card'] as $field) {
-            if ($request->hasFile($field)) {
-                if ($officerDocument->{$field}) {
-                    Storage::disk('public')->delete($officerDocument->{$field});
-                }
+        $documentFields = [
+            'picture' => 'Picture',
+            'nid' => 'NID',
+            'office_id' => 'Office ID',
+            'visiting_card' => 'Visiting Card',
+        ];
 
+        foreach ($documentFields as $field => $label) {
+            if ($request->hasFile($field) && $officerDocument->{$field}) {
+                return back()
+                    ->withErrors([
+                        $field => "The {$label} has already been uploaded and cannot be changed. Please contact admin to update this document.",
+                    ])
+                    ->withInput();
+            }
+        }
+
+        foreach (array_keys($documentFields) as $field) {
+            if ($request->hasFile($field) && !$officerDocument->{$field}) {
                 $officerDocument->{$field} = $request->file($field)->store('officer_documents', 'public');
             }
         }
