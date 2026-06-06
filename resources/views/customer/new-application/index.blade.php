@@ -21,7 +21,27 @@
                                     <small class="text-muted">Submitted {{ $app->created_at->format('M d, Y') }}</small>
                                 </div>
                                 <div>
-                                    <span class="badge bg-secondary">{{ ucfirst($app->status) }}</span>
+                                    @php
+                                        $appStatus = $app->status;
+                                        $appStatusClass = 'bg-secondary';
+                                        if ($appStatus) {
+                                            switch (strtolower($appStatus)) {
+                                                case 'pending':
+                                                    $appStatusClass = 'bg-warning text-dark';
+                                                    break;
+                                                case 'review':
+                                                    $appStatusClass = 'bg-info text-dark';
+                                                    break;
+                                                case 'approved':
+                                                    $appStatusClass = 'bg-success';
+                                                    break;
+                                                case 'rejected':
+                                                    $appStatusClass = 'bg-danger';
+                                                    break;
+                                            }
+                                        }
+                                    @endphp
+                                    {{-- <span class="badge {{ $appStatusClass }}">{{ ucfirst(str_replace('_', ' ', $appStatus)) }}</span> --}}
                                 </div>
                             </div>
 
@@ -61,17 +81,45 @@
                                                     <th class="ps-3">Officer Name</th>
                                                     <th>Email</th>
                                                     <th>Phone</th>
+                                                    <th>Application Status</th>
                                                     <th class="text-end pe-3">Action</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 @foreach ($app->leadAccesses as $access)
+                                                    @php
+                                                        $rawStatus = $access->application_status ?? null;
+                                                        $statusClass = 'text-muted';
+                                                        if ($rawStatus) {
+                                                            switch (strtolower($rawStatus)) {
+                                                                case 'pending':
+                                                                    $statusClass = 'badge bg-warning text-dark';
+                                                                    break;
+                                                                case 'review':
+                                                                    $statusClass = 'badge bg-info text-dark';
+                                                                    break;
+                                                                case 'approved':
+                                                                    $statusClass = 'badge bg-success';
+                                                                    break;
+                                                                case 'rejected':
+                                                                    $statusClass = 'badge bg-danger';
+                                                                    break;
+                                                            }
+                                                        }
+                                                    @endphp
                                                     <tr>
                                                         <td class="ps-3 fw-medium">
                                                             {{ optional($access->officer)->name ?? 'Unknown Officer' }}
                                                         </td>
                                                         <td>{{ optional($access->officer)->email ?? 'N/A' }}</td>
                                                         <td>{{ optional($access->officer)->phone ?? 'N/A' }}</td>
+                                                        <td>
+                                                            @if ($rawStatus)
+                                                                <span class="{{ $statusClass }}">{{ ucfirst(str_replace('_', ' ', $rawStatus)) }}</span>
+                                                            @else
+                                                                <span class="text-muted">N/A</span>
+                                                            @endif
+                                                        </td>
                                                         <td class="text-end pe-3">
                                                             <a href="{{ route('customer.new_application.officer_details', ['newApplication' => $app, 'officer' => $access->officer_id]) }}" class="btn btn-sm btn-primary rounded-pill px-3">
                                                                 <i class="bi bi-eye me-1"></i> View

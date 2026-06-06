@@ -49,40 +49,79 @@
                 </div>
             </div>
 
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h6 class="mb-3">Officer Unlocks</h6>
-                    @if ($newApplication->leadAccesses->isNotEmpty())
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead class="table-light">
+            <div class="mt-4">
+                <h6><i class="bi bi-unlock-fill text-primary me-2"></i>Officer Unlock Details</h6>
+                @if ($newApplication->leadAccesses->isNotEmpty())
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm align-middle mt-2 border-top">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Officer Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Application Status</th>
+                                    <th class="text-end pe-3">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($newApplication->leadAccesses as $access)
+                                    @php
+                                        $rawStatus = $access->application_status ?? null;
+                                        $statusClass = 'text-muted';
+                                        if ($rawStatus) {
+                                            switch (strtolower($rawStatus)) {
+                                                case 'pending':
+                                                    $statusClass = 'badge bg-warning text-dark';
+                                                    break;
+                                                case 'review':
+                                                    $statusClass = 'badge bg-info text-dark';
+                                                    break;
+                                                case 'approved':
+                                                    $statusClass = 'badge bg-success';
+                                                    break;
+                                                case 'rejected':
+                                                    $statusClass = 'badge bg-danger';
+                                                    break;
+                                                case 'active':
+                                                    $statusClass = 'badge bg-success';
+                                                    break;
+                                                case 'inactive':
+                                                    $statusClass = 'badge bg-secondary';
+                                                    break;
+                                            }
+                                        }
+                                    @endphp
                                     <tr>
-                                        <th>Officer</th>
-                                        <th>Email</th>
-                                        <th>Phone</th>
-                                        <th>Unlocked</th>
-                                        <th class="text-end">Action</th>
+                                        <td class="ps-3 fw-medium">
+                                            {{ optional($access->officer)->name ?? 'Unknown Officer' }}
+                                        </td>
+                                        <td>{{ optional($access->officer)->email ?? 'N/A' }}</td>
+                                        <td>{{ optional($access->officer)->phone ?? 'N/A' }}</td>
+                                        <td>
+                                            @if ($rawStatus)
+                                                <span class="{{ $statusClass }}">{{ ucfirst(str_replace('_', ' ', $rawStatus)) }}</span>
+                                            @else
+                                                <span class="text-muted">N/A</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-end pe-3">
+                                            <a href="{{ route('customer.new_application.officer_details', ['newApplication' => $newApplication, 'officer' => $access->officer_id]) }}" class="btn btn-sm btn-primary rounded-pill px-3">
+                                                <i class="bi bi-eye me-1"></i> View
+                                            </a>
+                                            <a href="{{ route('chat.index', ['user_id' => $access->officer_id, 'user_name' => optional($access->officer)->name, 'user_role' => optional($access->officer)->role]) }}" class="btn btn-sm btn-success rounded-pill px-3 ms-1">
+                                                <i class="bi bi-chat-dots me-1"></i> Chat
+                                            </a>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($newApplication->leadAccesses as $access)
-                                        <tr>
-                                            <td>{{ optional($access->officer)->name ?? 'Unknown' }}</td>
-                                            <td>{{ optional($access->officer)->email ?? 'N/A' }}</td>
-                                            <td>{{ optional($access->officer)->phone ?? 'N/A' }}</td>
-                                            <td>{{ optional($access->purchased_at)->format('M d, Y') ?? optional($access->created_at)->format('M d, Y') }}</td>
-                                            <td class="text-end">
-                                                <a href="{{ route('customer.new_application.officer_details', ['newApplication' => $newApplication, 'officer' => $access->officer_id]) }}" class="btn btn-sm btn-primary">View</a>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @else
-                        <div class="alert alert-info mb-0">No officer details are available yet. Unlock an officer to view contact and official details.</div>
-                    @endif
-                </div>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="p-3 bg-light rounded text-muted">
+                        <i class="bi bi-info-circle me-2"></i> Not unlocked by any officer yet.
+                    </div>
+                @endif
             </div>
 
             @if ($newApplication->bankOfficerRatings->isNotEmpty())
