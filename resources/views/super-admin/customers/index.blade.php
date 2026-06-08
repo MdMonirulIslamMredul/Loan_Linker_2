@@ -18,6 +18,10 @@
                                     <h2 class="mb-1 fw-bold text-dark">Customers</h2>
                                     <p class="mb-0 text-muted">List of registered customers</p>
                                 </div>
+
+                                <div class="badge bg-primary rounded-pill px-3 py-2">
+                                    <span class="fw-bold">{{ $customers->total() }}</span> Customers
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -25,16 +29,44 @@
             </div>
         </div>
 
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-check-circle-fill me-2 fs-5"></i>
-                    <div>{{ session('success') }}</div>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <form method="GET" action="{{ route('super-admin.customers.index') }}" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="search" class="form-label">Search</label>
+                        <input type="text" name="search" id="search" class="form-control" placeholder="Name, email, or phone" value="{{ request('search') }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="c_district_id" class="form-label">District</label>
+                        <select name="c_district_id" id="c_district_id" class="form-select">
+                            <option value="">All Districts</option>
+                            @foreach($districts as $district)
+                                <option value="{{ $district->id }}" {{ request('c_district_id') == $district->id ? 'selected' : '' }}>{{ $district->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="from_date" class="form-label">From Date</label>
+                        <input type="date" name="from_date" id="from_date" class="form-control" value="{{ request('from_date') }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="to_date" class="form-label">To Date</label>
+                        <input type="date" name="to_date" id="to_date" class="form-control" value="{{ request('to_date') }}">
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-funnel me-1"></i>Filter
+                        </button>
+                    </div>
+                    <div class="col-12 text-end">
+                        <a href="{{ route('super-admin.customers.index') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-x-circle me-1"></i>Clear Filters
+                        </a>
+                    </div>
+                </form>
             </div>
-        @endif
-
+        </div>
+{{-- 
         <div class="row g-4 mb-4">
             <div class="col-md-4">
                 <div class="card border-0 shadow-sm h-100">
@@ -51,7 +83,17 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
+
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                    <div>{{ session('success') }}</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
 
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
@@ -111,8 +153,9 @@
                                         <td>
                                             <div class="d-flex gap-2">
                                                 <a href="{{ route('super-admin.customers.show', $c->id) }}" class="btn btn-sm btn-outline-secondary">
-                                                    <i class="bi bi-eye"></i> View
+                                                    <i class="bi bi-eye"></i> View and Update Documents
                                                 </a>
+
                                                 <form action="{{ route('super-admin.customers.reset-password', $c->id) }}"
                                                     method="POST"
                                                     onsubmit="return confirm('Reset password to default for this customer?');">

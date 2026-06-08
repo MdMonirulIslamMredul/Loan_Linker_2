@@ -54,6 +54,10 @@
                                 <strong>{{ $admin->is_access === true ? 'Allowed' : ($admin->is_access === false ? 'Not Allowed' : 'Pending') }}</strong>
                             </div>
                             <div class="col-md-6 mb-3">
+                                <small class="text-muted d-block">Viewed</small>
+                                <strong>{{ $admin->view ? 'Yes' : 'No' }}</strong>
+                            </div>
+                            <div class="col-md-6 mb-3">
                                 <small class="text-muted d-block">Bank Official ID</small>
                                 <strong>{{ $admin->bank_official_id ?? 'N/A' }}</strong>
                             </div>

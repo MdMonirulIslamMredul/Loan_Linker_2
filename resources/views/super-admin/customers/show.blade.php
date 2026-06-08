@@ -208,15 +208,39 @@
                                     'pay_slip' => 'Pay Slip',
                                     'bank_statements' => 'Bank Statements',
                                     'trade_license' => 'Trade License',
+                                    'tin_certificate' => 'TIN Certificate',
                                     'lend_document' => 'Loan Document',
                                     'other_document' => 'Other Document',
                                 ] as $field => $label)
-                                    @if($customer->customerDocument->{$field})
-                                        <div class="col-md-6 mb-3">
+                                    @php
+                                        $filePath = $customer->customerDocument->{$field};
+                                        $fileUrl = $filePath ? asset('storage/' . $filePath) : null;
+                                        $isImage = $filePath ? preg_match('/\.(jpg|jpeg|png|gif|svg)$/i', $filePath) : false;
+                                        $isPdf = $filePath ? preg_match('/\.pdf$/i', $filePath) : false;
+                                    @endphp
+
+                                    @if($filePath)
+                                        <div class="col-md-6 mb-4">
                                             <small class="text-muted d-block">{{ $label }}</small>
-                                            <a href="{{ asset('storage/' . $customer->customerDocument->{$field}) }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                                View {{ $label }}
-                                            </a>
+
+                                            <div class="mb-2 d-flex flex-column gap-2">
+                                                <div class="d-flex flex-wrap gap-2 align-items-center">
+                                                    <a href="{{ $fileUrl }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                        Open {{ $label }}
+                                                    </a>
+                                                    <span class="badge bg-secondary">{{ basename($filePath) }}</span>
+                                                </div>
+
+                                                @if($isImage)
+                                                    <img src="{{ $fileUrl }}" alt="{{ $label }}" class="img-fluid rounded shadow-sm" style="max-height: 320px; width: auto;" />
+                                                @elseif($isPdf)
+                                                    <div class="ratio ratio-4x3">
+                                                        <iframe src="{{ $fileUrl }}" frameborder="0"></iframe>
+                                                    </div>
+                                                @else
+                                                    <div class="small text-muted">Preview not available for this file type.</div>
+                                                @endif
+                                            </div>
                                         </div>
                                     @endif
                                 @endforeach
@@ -224,6 +248,59 @@
                         @else
                             <p class="text-muted mb-0">No documents uploaded for this customer.</p>
                         @endif
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="bi bi-upload me-2"></i>Update Documents</h5>
+                    </div>
+                    <div class="card-body">
+                        @if ($errors->any())
+                            <div class="alert alert-danger">
+                                <ul class="mb-0">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
+                        <form action="{{ route('super-admin.customers.documents.update', $customer->id) }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+
+                            @foreach([
+                                'picture' => 'Profile Picture',
+                                'nid' => 'NID Document',
+                                'office_id' => 'Office ID Document',
+                                'visiting_card' => 'Visiting Card',
+                                'pay_slip' => 'Pay Slip',
+                                'bank_statements' => 'Bank Statements',
+                                'trade_license' => 'Trade License',
+                                'tin_certificate' => 'TIN Certificate',
+                                'lend_document' => 'Loan Document',
+                                'other_document' => 'Other Document',
+                            ] as $field => $label)
+                                @php
+                                    $currentFile = optional($customer->customerDocument)->{$field};
+                                @endphp
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">{{ $label }}</label>
+                                    @if($currentFile)
+                                        <div class="mb-2 small text-muted">
+                                            Current file: <a href="{{ asset('storage/' . $currentFile) }}" target="_blank">{{ basename($currentFile) }}</a>
+                                        </div>
+                                    @else
+                                        <div class="mb-2 small text-danger">
+                                            No {{ strtolower($label) }} uploaded yet.
+                                        </div>
+                                    @endif
+                                    <input type="file" name="{{ $field }}" class="form-control">
+                                </div>
+                            @endforeach
+
+                            <button type="submit" class="btn btn-primary">Save Documents</button>
+                        </form>
                     </div>
                 </div>
             </div>

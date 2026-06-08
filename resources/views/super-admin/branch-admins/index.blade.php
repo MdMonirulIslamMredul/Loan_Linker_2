@@ -60,6 +60,10 @@
                 <form method="GET" action="{{ route('super-admin.branch-admins.index') }}">
                     <div class="row g-3 align-items-end">
                         <div class="col-md-4">
+                            <label class="form-label">Search</label>
+                            <input type="text" name="search" class="form-control" placeholder="Name, email, or phone" value="{{ request('search') }}">
+                        </div>
+                        <div class="col-md-4">
                             <label class="form-label">Access Status</label>
                             <select name="is_access" class="form-select">
                                 <option value="" {{ request('is_access') === null ? 'selected' : '' }}>All</option>
@@ -85,11 +89,11 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label class="form-label">Created From</label>
                             <input type="date" name="created_from" class="form-control" value="{{ request('created_from') }}">
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label class="form-label">Created To</label>
                             <input type="date" name="created_to" class="form-control" value="{{ request('created_to') }}">
                         </div>
@@ -198,6 +202,7 @@
                                             @endif
 
                                         </td>
+                                     
                                         <td>
                                             <small class="text-muted">
                                                 <i
@@ -207,8 +212,8 @@
                                         <td class="px-4">
 
                                             <a href="{{ route('super-admin.branch-admins.show', $admin) }}"
-                                                class="btn btn-sm btn-outline-primary">
-                                                <i class="bi bi-eye me-1"></i>View 
+                                                class="btn btn-sm {{ $admin->view ? 'btn-success' : 'btn-outline-primary' }}">
+                                                <i class="bi bi-eye me-1"></i>{{ $admin->view ? 'Viewed' : 'View' }}
                                             </a> 
 
                                             <a href="{{ route('super-admin.branch-admins.edit', $admin) }}"

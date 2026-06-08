@@ -99,6 +99,7 @@
                                     <th>Type</th>
                                     <th>Banks</th>
                                     <th>Status</th>
+                                    <th>Lead Access</th>
                                     <th>Requested</th>
                                     <th>Actions</th>
                                 </tr>
@@ -140,12 +141,23 @@
                                                 <span class="badge bg-success">Approved</span>
                                             @elseif ($application->status === 'rejected')
                                                 <span class="badge bg-danger">Rejected</span>
+                                            @elseif ($application->status === 'active')
+                                                <span class="badge bg-primary">Active</span>
+                                            @elseif ($application->status === 'inactive')
+                                                <span class="badge bg-secondary">Inactive</span>
                                             @endif
+                                        </td>
+                                        <td>
+                                           
+                                            @php
+                                                $unlockCount = $application->leadAccesses()->count();
+                                            @endphp
+                                            <span class="badge bg-warning">{{ $unlockCount }} Unlock{{ $unlockCount !== 1 ? 's' : '' }}</span>
                                         </td>
                                         <td>{{ $application->created_at->format('d M, Y') }}</td>
                                         <td>
-                                            <a href="{{ route('super-admin.new-applications.show', $application) }}" class="btn btn-sm btn-primary">
-                                                <i class="bi bi-eye me-1"></i>View
+                                            <a href="{{ route('super-admin.new-applications.show', $application) }}" class="btn btn-sm {{ $application->admin_view ? 'btn-success' : 'btn-primary' }}">
+                                                <i class="bi bi-eye me-1"></i>{{ $application->admin_view ? 'Viewed' : 'View' }}
                                             </a>
                                         </td>
                                     </tr>

@@ -23,7 +23,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('super-admin.branch-admins.update', $user) }}">
+            <form method="POST" action="{{ route('super-admin.branch-admins.update', $user) }}" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -99,6 +99,102 @@
                     </label>
                     <input type="password" name="password_confirmation" id="password_confirmation" class="form-control"
                         placeholder="Confirm new password">
+                </div>
+
+                <hr class="my-4">
+
+                <h5 class="mb-3">Officer Documents</h5>
+
+                @php
+                    $officerDocument = $user->officerDocument;
+                    $documentStatus = [
+                        'picture' => optional($officerDocument)->picture,
+                        'nid' => optional($officerDocument)->nid,
+                        'office_id' => optional($officerDocument)->office_id,
+                        'visiting_card' => optional($officerDocument)->visiting_card,
+                    ];
+                    $isDocumentImage = fn($file) => $file && preg_match('/\.(jpg|jpeg|png|gif|svg)$/i', $file);
+                @endphp
+
+                <div class="row mb-4">
+                    @foreach ($documentStatus as $field => $file)
+                        <div class="col-sm-6 col-lg-3 mb-3">
+                            <div class="border rounded p-3 h-100">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <strong>{{ ucwords(str_replace('_', ' ', $field)) }}</strong>
+                                    <span class="badge {{ $file ? 'bg-success' : 'bg-secondary' }}">
+                                        {{ $file ? 'Uploaded' : 'Not uploaded' }}
+                                    </span>
+                                </div>
+
+                                @if ($file)
+                                    @if ($isDocumentImage($file))
+                                        <img src="{{ asset('storage/' . $file) }}" alt="{{ $field }} preview" class="img-fluid rounded mb-2" style="max-height: 120px; object-fit: cover; width: 100%;">
+                                    @else
+                                        <div class="small text-muted mb-2">Uploaded file available.</div>
+                                    @endif
+
+                                    <a href="{{ asset('storage/' . $file) }}" target="_blank" class="btn btn-sm btn-outline-primary w-100">
+                                        Preview
+                                    </a>
+                                @else
+                                    <div class="small text-muted">No document uploaded yet.</div>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="mb-3">
+                    <label for="picture" class="form-label fw-semibold">Picture</label>
+                    <input type="file" name="picture" id="picture" class="form-control">
+                    @if(optional($officerDocument)->picture)
+                        <div class="form-text mt-1">
+                            Current file: <a href="{{ asset('storage/' . $officerDocument->picture) }}" target="_blank">View</a>
+                        </div>
+                    @endif
+                    @error('picture')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label for="nid" class="form-label fw-semibold">NID</label>
+                    <input type="file" name="nid" id="nid" class="form-control">
+                    @if(optional($officerDocument)->nid)
+                        <div class="form-text mt-1">
+                            Current file: <a href="{{ asset('storage/' . $officerDocument->nid) }}" target="_blank">View</a>
+                        </div>
+                    @endif
+                    @error('nid')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label for="office_id" class="form-label fw-semibold">Office ID</label>
+                    <input type="file" name="office_id" id="office_id" class="form-control">
+                    @if(optional($officerDocument)->office_id)
+                        <div class="form-text mt-1">
+                            Current file: <a href="{{ asset('storage/' . $officerDocument->office_id) }}" target="_blank">View</a>
+                        </div>
+                    @endif
+                    @error('office_id')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label for="visiting_card" class="form-label fw-semibold">Visiting Card</label>
+                    <input type="file" name="visiting_card" id="visiting_card" class="form-control">
+                    @if(optional($officerDocument)->visiting_card)
+                        <div class="form-text mt-1">
+                            Current file: <a href="{{ asset('storage/' . $officerDocument->visiting_card) }}" target="_blank">View</a>
+                        </div>
+                    @endif
+                    @error('visiting_card')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="mb-4">

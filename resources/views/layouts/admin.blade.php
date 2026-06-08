@@ -383,7 +383,7 @@
             </div>
 
              @php
-                $pendingBranchAdmins = \App\Models\User::where('role', 'branch_admin')->whereNull('is_access')->count();
+                $pendingBranchAdmins = \App\Models\User::where('role', 'branch_admin')->where('view', 0)->count();
             @endphp
 
             <a href="{{ route('super-admin.branch-admins.index') }}"
@@ -404,8 +404,12 @@
 
             @php
                 $pendingOrders = \App\Models\PackageOrder::where('status', 'pending')->count();
-                $pendingNewRequests = \App\Models\NewLoanApplication::where('status', 'pending')->count();
-               
+                $pendingNewRequests = \App\Models\NewLoanApplication::whereIn('status', ['pending', 'active'])
+                    ->whereHas('customer', function ($customerQuery) {
+                        $customerQuery->where('is_active', 1);
+                    })
+                    ->where('admin_view', 0)
+                    ->count();
             @endphp
             <a href="{{ route('super-admin.package-orders.index') }}"
                 class="menu-item {{ request()->routeIs('super-admin.package-orders.index') ? 'active' : '' }}">
