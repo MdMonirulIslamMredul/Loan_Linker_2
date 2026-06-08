@@ -50,15 +50,10 @@
                                     <img src="{{ asset('storage/' . $settings->header_logo) }}" alt="Header Logo"
                                         style="max-width: 200px; max-height: 100px;" class="img-fluid">
                                     <div class="mt-2">
-                                        <form action="{{ route('super-admin.logo-settings.delete', 'header_logo') }}"
-                                            method="POST" class="d-inline"
-                                            onsubmit="return confirm('Are you sure you want to delete this logo?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="bi bi-trash"></i> Delete
-                                            </button>
-                                        </form>
+                                        <button type="button" class="btn btn-sm btn-danger delete-logo-btn"
+                                            data-action="{{ route('super-admin.logo-settings.delete', 'header_logo') }}">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
                                     </div>
                                 </div>
                             @endif
@@ -78,15 +73,10 @@
                                     <img src="{{ asset('storage/' . $settings->footer_logo) }}" alt="Footer Logo"
                                         style="max-width: 200px; max-height: 100px;" class="img-fluid">
                                     <div class="mt-2">
-                                        <form action="{{ route('super-admin.logo-settings.delete', 'footer_logo') }}"
-                                            method="POST" class="d-inline"
-                                            onsubmit="return confirm('Are you sure you want to delete this logo?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="bi bi-trash"></i> Delete
-                                            </button>
-                                        </form>
+                                        <button type="button" class="btn btn-sm btn-danger delete-logo-btn"
+                                            data-action="{{ route('super-admin.logo-settings.delete', 'footer_logo') }}">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
                                     </div>
                                 </div>
                             @endif
@@ -106,15 +96,10 @@
                                     <img src="{{ asset('storage/' . $settings->favicon) }}" alt="Favicon"
                                         style="max-width: 64px; max-height: 64px;" class="img-fluid">
                                     <div class="mt-2">
-                                        <form action="{{ route('super-admin.logo-settings.delete', 'favicon') }}"
-                                            method="POST" class="d-inline"
-                                            onsubmit="return confirm('Are you sure you want to delete this favicon?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="bi bi-trash"></i> Delete
-                                            </button>
-                                        </form>
+                                        <button type="button" class="btn btn-sm btn-danger delete-logo-btn"
+                                            data-action="{{ route('super-admin.logo-settings.delete', 'favicon') }}">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
                                     </div>
                                 </div>
                             @endif
@@ -133,6 +118,11 @@
                         </button>
                         <a href="{{ route('super-admin.dashboard') }}" class="btn btn-secondary">Cancel</a>
                     </div>
+                </form>
+
+                <form id="deleteLogoForm" method="POST" style="display: none;">
+                    @csrf
+                    @method('DELETE')
                 </form>
             </div>
         </div>
@@ -182,4 +172,27 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const deleteButtons = document.querySelectorAll('.delete-logo-btn');
+                const deleteForm = document.getElementById('deleteLogoForm');
+
+                deleteButtons.forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        if (!confirm('Are you sure you want to delete this logo?')) {
+                            return;
+                        }
+
+                        if (deleteForm && button.dataset.action) {
+                            deleteForm.action = button.dataset.action;
+                            deleteForm.submit();
+                        }
+                    });
+                });
+            });
+        </script>
+    @endpush
+</div>
 @endsection

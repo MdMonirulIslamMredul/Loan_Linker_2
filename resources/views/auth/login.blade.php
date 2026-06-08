@@ -5,10 +5,13 @@
 @section('content')
     <div class="min-h-screen flex items-center justify-center">
         <div class="max-w-md w-full bg-white rounded-lg shadow-md p-8">
+            
             @if ($logoSettings->header_logo)
                 <div class="flex justify-center mb-4">
-                    <img src="{{ asset('storage/' . $logoSettings->header_logo) }}"
-                        alt="{{ $logoSettings->site_name ?? 'Loan Linker' }}" class="h-24 max-h-32 w-auto object-contain">
+                    <a href="{{ route('home') }}">
+                        <img src="{{ asset('storage/' . $logoSettings->header_logo) }}"
+                            alt="{{ $logoSettings->site_name ?? 'Loan Linker' }}" class="h-24 max-h-32 w-auto object-contain">
+                    </a>
                 </div>
             @else
                 <h2 class="text-2xl font-bold text-center mb-6">Loan Linker Login</h2>
