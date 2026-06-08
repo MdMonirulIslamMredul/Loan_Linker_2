@@ -54,6 +54,28 @@ class NewLoanApplication extends Model
         return $this->hasMany(LeadAccess::class, 'newloan_id');
     }
 
+    public function isEditableByCustomer(): bool
+    {
+        if ($this->status === 'pending') {
+            return true;
+        }
+
+        if ($this->status === 'active') {
+            if ($this->relationLoaded('leadAccesses')) {
+                $leadAccesses = $this->leadAccesses;
+                return $leadAccesses->isEmpty() || $leadAccesses->contains('application_status', 'pending');
+            }
+
+            if ($this->leadAccesses()->where('application_status', 'pending')->exists()) {
+                return true;
+            }
+
+            return ! $this->leadAccesses()->exists();
+        }
+
+        return false;
+    }
+
     public function customerRatings()
     {
         return $this->hasMany(CustomerRating::class, 'new_loan_application_id');

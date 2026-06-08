@@ -22,31 +22,39 @@
             <div class="card-body">
                 <form method="GET" action="{{ route('super-admin.new-applications.index') }}" class="row g-3">
                     <div class="col-md-3">
+                        <label for="search" class="form-label">Search</label>
+                        <input type="text" name="search" id="search" class="form-control" placeholder="Name, email, or phone" value="{{ request('search') }}">
+                    </div>
+
+                   
+                    <div class="col-md-3">
                         <label for="status" class="form-label">Status</label>
                         <select name="status" id="status" class="form-select">
                             <option value="">All Status</option>
-                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="review" {{ request('status') == 'review' ? 'selected' : '' }}>Review</option>
-                            <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
-                            <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
+                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+                            <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
                         </select>
                     </div>
 
                     <div class="col-md-3">
-                        <label for="service_category" class="form-label">Service Category</label>
-                        <select name="service_category" id="service_category" class="form-select">
+                        <label for="service_category_id" class="form-label">Service Category</label>
+                        <select name="service_category_id" id="service_category_id" class="form-select">
                             <option value="">Any Category</option>
-                            <option value="credit_card" {{ request('service_category') == 'credit_card' ? 'selected' : '' }}>Credit Card</option>
-                            <option value="loan" {{ request('service_category') == 'loan' ? 'selected' : '' }}>Loan</option>
+                            @foreach($serviceCategories as $category)
+                                <option value="{{ $category->id }}" {{ request('service_category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                            @endforeach
                         </select>
                     </div>
 
                     <div class="col-md-3">
-                        <label for="service_type" class="form-label">Service Type</label>
-                        <select name="service_type" id="service_type" class="form-select">
+                        <label for="service_type_id" class="form-label">Service Type</label>
+                        <select name="service_type_id" id="service_type_id" class="form-select">
                             <option value="">Any Type</option>
-                            <option value="visa_credit_card" {{ request('service_type') == 'visa_credit_card' ? 'selected' : '' }}>Visa Credit Card</option>
-                            <option value="personal_loan" {{ request('service_type') == 'personal_loan' ? 'selected' : '' }}>Personal Loan</option>
+                            @foreach($serviceCategories as $category)
+                                @foreach($category->serviceTypes as $type)
+                                    <option value="{{ $type->id }}" data-category-id="{{ $category->id }}" {{ request('service_type_id') == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
+                                @endforeach
+                            @endforeach
                         </select>
                     </div>
 
@@ -91,8 +99,8 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>Customer</th>
-                                    <th>Email</th>
-                                    <th>Phone</th>
+                                    <th>Email/Phone</th>
+                                    {{-- <th>Phone</th> --}}
                                     <th>Amount</th>
                                     <th>Tenure</th>
                                     <th>Category</th>
@@ -118,8 +126,8 @@
                                                 Guest
                                             @endif
                                         </td>
-                                        <td>{{ optional($application->customer)->email ?? 'N/A' }}</td>
-                                        <td>{{ optional($application->customer)->phone ?? 'N/A' }}</td>
+                                        <td>{{ optional($application->customer)->email ?? 'N/A' }}   {{ optional($application->customer)->phone ?? 'N/A' }}</td>
+                                        {{-- <td>{{ optional($application->customer)->phone ?? 'N/A' }}</td> --}}
                                         <td><strong>৳{{ number_format($application->expected_amount, 2) }}</strong></td>
                                         <td>{{ $application->tenure_months }} mo</td>
                                         <td class="text-capitalize">{{ str_replace('_', ' ', $application->service_category) }}</td>
@@ -152,7 +160,7 @@
                                             @php
                                                 $unlockCount = $application->leadAccesses()->count();
                                             @endphp
-                                            <span class="badge bg-warning">{{ $unlockCount }} Unlock{{ $unlockCount !== 1 ? 's' : '' }}</span>
+                                            <span class="badge bg-warning">{{ $unlockCount }} Officer{{ $unlockCount !== 1 ? 's' : '' }}</span>
                                         </td>
                                         <td>{{ $application->created_at->format('d M, Y') }}</td>
                                         <td>
@@ -178,4 +186,42 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const categorySelect = document.getElementById('service_category_id');
+                const typeSelect = document.getElementById('service_type_id');
+                const typeOptions = Array.from(typeSelect.options);
+
+                function filterTypes() {
+                    const selectedCategory = categorySelect.value;
+
+                    typeOptions.forEach(function (option) {
+                        if (!option.value) {
+                            option.style.display = '';
+                            return;
+                        }
+
+                        const optionCategory = option.dataset.categoryId || '';
+                        const shouldShow = !selectedCategory || String(optionCategory) === String(selectedCategory);
+                        option.style.display = shouldShow ? '' : 'none';
+                    });
+
+                    if (selectedCategory) {
+                        const currentValue = typeSelect.value;
+                        const currentOption = typeSelect.querySelector('option[value="' + currentValue + '"]');
+                        if (currentValue && currentOption && currentOption.style.display === 'none') {
+                            typeSelect.value = '';
+                        }
+                    }
+                }
+
+                if (categorySelect && typeSelect) {
+                    categorySelect.addEventListener('change', filterTypes);
+                    filterTypes();
+                }
+            });
+        </script>
+    @endpush
 @endsection

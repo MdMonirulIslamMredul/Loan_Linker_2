@@ -235,8 +235,12 @@ class LoanApplicationController extends Controller
         }
 
         if ($request->filled('bank_id')) {
-            $bankId = (int) $request->bank_id;
-            $query->whereJsonContains('bank_ids', $bankId);
+            $bankId = $request->bank_id;
+
+            $query->where(function ($query) use ($bankId) {
+                $query->whereJsonContains('bank_ids', (int) $bankId)
+                    ->orWhereJsonContains('bank_ids', $bankId);
+            });
         }
 
         if ($request->filled('district_id')) {
@@ -360,17 +364,34 @@ class LoanApplicationController extends Controller
             $query->where('status', $request->status);
         }
 
-        if ($request->filled('service_category')) {
+        if ($request->filled('search')) {
+            $search = '%' . $request->search . '%';
+            $query->whereHas('customer', function ($customerQuery) use ($search) {
+                $customerQuery->where('name', 'like', $search)
+                    ->orWhere('email', 'like', $search)
+                    ->orWhere('phone', 'like', $search);
+            });
+        }
+
+        if ($request->filled('service_category_id')) {
+            $query->where('service_category_id', $request->service_category_id);
+        } elseif ($request->filled('service_category')) {
             $query->where('service_category', $request->service_category);
         }
 
-        if ($request->filled('service_type')) {
+        if ($request->filled('service_type_id')) {
+            $query->where('service_type_id', $request->service_type_id);
+        } elseif ($request->filled('service_type')) {
             $query->where('service_type', $request->service_type);
         }
 
         if ($request->filled('bank_id')) {
-            $bankId = (int) $request->bank_id;
-            $query->whereJsonContains('bank_ids', $bankId);
+            $bankId = $request->bank_id;
+
+            $query->where(function ($query) use ($bankId) {
+                $query->whereJsonContains('bank_ids', (int) $bankId)
+                    ->orWhereJsonContains('bank_ids', $bankId);
+            });
         }
 
         if ($request->filled('from_date')) {
@@ -384,8 +405,9 @@ class LoanApplicationController extends Controller
         $applications = $query->paginate(10);
 
         $banks = Bank::orderBy('name')->get();
+        $serviceCategories = ServiceCategory::with('serviceTypes')->where('is_active', true)->orderBy('name')->get();
 
-        return view('super-admin.new-applications.index', compact('applications', 'banks'));
+        return view('super-admin.new-applications.index', compact('applications', 'banks', 'serviceCategories'));
     }
 
     public function branchNewApplicationShow(NewLoanApplication $newApplication)
