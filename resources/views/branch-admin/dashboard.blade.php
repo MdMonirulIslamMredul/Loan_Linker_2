@@ -164,9 +164,9 @@
                                             </a>
                                         @else
                                             @if ((int) ($user->lead_balance ?? 0) > 0)
-                                                <form action="{{ route('branch-admin.new-applications.unlock', $application) }}" method="POST" class="d-inline">
+                                                <form action="{{ route('branch-admin.new-applications.unlock', $application) }}" method="POST" class="d-inline unlock-form">
                                                     @csrf
-                                                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary unlock-confirm-btn">
                                                         <i class="bi bi-unlock me-1"></i>Unlock to View (1)
                                                     </button>
                                                 </form>
@@ -223,6 +223,24 @@
         </div>
     @endif
 
+    <div class="modal fade" id="unlockConfirmModal" tabindex="-1" aria-labelledby="unlockConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="unlockConfirmModalLabel">Confirm Unlock</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to unlock this application?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-primary" id="unlockConfirmYes">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @push('styles')
         <style>
             .hover-lift {
@@ -235,5 +253,40 @@
             }
 
         </style>
+    @endpush
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                let activeUnlockForm = null;
+                const unlockModalElement = document.getElementById('unlockConfirmModal');
+                const unlockButtons = document.querySelectorAll('.unlock-confirm-btn');
+                const confirmYesButton = document.getElementById('unlockConfirmYes');
+                let unlockModal = null;
+
+                if (typeof bootstrap !== 'undefined' && unlockModalElement) {
+                    unlockModal = new bootstrap.Modal(unlockModalElement);
+                }
+
+                unlockButtons.forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        activeUnlockForm = this.closest('form.unlock-form');
+                        if (unlockModal) {
+                            unlockModal.show();
+                        } else if (activeUnlockForm) {
+                            activeUnlockForm.submit();
+                        }
+                    });
+                });
+
+                if (confirmYesButton) {
+                    confirmYesButton.addEventListener('click', function () {
+                        if (activeUnlockForm) {
+                            activeUnlockForm.submit();
+                        }
+                    });
+                }
+            });
+        </script>
     @endpush
 @endsection
