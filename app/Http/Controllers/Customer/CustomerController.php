@@ -85,7 +85,7 @@ class CustomerController extends Controller
         $requiredDocuments = [
             'picture' => 'Picture',
             'nid' => 'NID',
-            'tin_certificate' => 'TIN Certificate',
+            // 'tin_certificate' => 'TIN Certificate',
             'pay_slip' => 'Pay Slip / Salary Certificate',
         ];
 
@@ -383,8 +383,8 @@ class CustomerController extends Controller
             abort(403, 'Unauthorized.');
         }
 
-        if ($newApplication->status !== 'pending') {
-            return redirect()->route('customer.applications')->with('error', 'Only pending applications can be edited.');
+        if (! $newApplication->isEditableByCustomer()) {
+            return redirect()->route('customer.applications')->with('error', 'Only applications that are pending or active without unlocks can be edited.');
         }
 
         $banks = Bank::where('is_active', true)->orderBy('name')->get();
@@ -403,8 +403,8 @@ class CustomerController extends Controller
             abort(403, 'Unauthorized.');
         }
 
-        if ($newApplication->status !== 'pending') {
-            return redirect()->route('customer.applications')->with('error', 'Only pending applications can be updated.');
+        if (! $newApplication->isEditableByCustomer()) {
+            return redirect()->route('customer.applications')->with('error', 'Only applications that are pending or active without unlocks can be updated.');
         }
 
         $payload = $request->all();

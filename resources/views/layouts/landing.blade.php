@@ -250,6 +250,12 @@
                                 <i class="bi bi-instagram fs-5"></i>
                             </a>
                         @endif
+                        @if ($aboutSettings->youtube_url)
+                            <a href="{{ $aboutSettings->youtube_url }}" target="_blank"
+                                class="text-white-50 hover-link" title="YouTube">
+                                <i class="bi bi-youtube fs-5"></i>
+                            </a>
+                        @endif
                     </div>
                 </div>
             </div>
