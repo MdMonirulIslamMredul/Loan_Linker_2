@@ -184,7 +184,7 @@
 
                                 <div class="col-md-6 mb-3">
                                     <label for="instagram_url" class="form-label">
-                                        <i class="bi bi-instagram text-danger me-2"></i>Instagram URL
+                                        <i class="bi bi-instagram text-danger me-2"></i>Instagram URL s
                                     </label>
                                     <input type="url"
                                         class="form-control @error('instagram_url') is-invalid @enderror"
@@ -195,6 +195,23 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
+
+                               
+                                <div class="col-md-6 mb-3">
+                                    <label for="youtube_url" class="form-label">
+                                        <i class="bi bi-youtube text-danger me-2"></i>YouTube URL
+                                    </label>
+                                    <input type="url"
+                                        class="form-control @error('youtube_url') is-invalid @enderror"
+                                        id="youtube_url" name="youtube_url"
+                                        value="{{ old('youtube_url', $settings->youtube_url) }}"
+                                        placeholder="https://youtube.com/yourchannel">
+                                    @error('youtube_url')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+
                             </div>
                         </div>
                     </div>

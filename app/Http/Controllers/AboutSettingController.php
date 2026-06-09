@@ -32,6 +32,7 @@ class AboutSettingController extends Controller
             'twitter_url' => 'nullable|url|max:255',
             'linkedin_url' => 'nullable|url|max:255',
             'instagram_url' => 'nullable|url|max:255',
+            'youtube_url' => 'nullable|url|max:255',
         ]);
 
         $settings = AboutSetting::settings();
@@ -50,6 +51,7 @@ class AboutSettingController extends Controller
             'twitter_url' => $request->twitter_url,
             'linkedin_url' => $request->linkedin_url,
             'instagram_url' => $request->instagram_url,
+            'youtube_url' => $request->youtube_url,
         ]);
 
         return redirect()->route('super-admin.about-settings.index')

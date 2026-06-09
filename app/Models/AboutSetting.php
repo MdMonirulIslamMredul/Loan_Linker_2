@@ -25,6 +25,7 @@ class AboutSetting extends Model
         'twitter_url',
         'linkedin_url',
         'instagram_url',
+        'youtube_url',
     ];
 
     /**
@@ -48,6 +49,7 @@ class AboutSetting extends Model
                 'twitter_url' => 'https://twitter.com',
                 'linkedin_url' => 'https://linkedin.com',
                 'instagram_url' => 'https://instagram.com',
+                'youtube_url' => 'https://youtube.com/yourchannel',
             ]
         );
     }
