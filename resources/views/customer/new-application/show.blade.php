@@ -136,8 +136,10 @@
 
             <div class="mt-4 d-flex gap-2 flex-wrap">
                 <a href="{{ route('customer.applications') }}" class="btn btn-outline-secondary">Back to Applications</a>
-                @if ($newApplication->status === 'pending')
+                @if ($newApplication->isEditableByCustomer())
                     <a href="{{ route('customer.application.edit', $newApplication->id) }}" class="btn btn-outline-primary">Edit Application</a>
+                @endif
+                @if ($newApplication->status === 'pending')
                     <a href="{{ route('customer.application.delete', $newApplication->id) }}" class="btn btn-outline-danger" onclick="return confirm('Are you sure you want to delete this application?');">Delete Application</a>
                 @endif
             </div>

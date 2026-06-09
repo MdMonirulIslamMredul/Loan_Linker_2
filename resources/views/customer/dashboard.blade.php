@@ -76,7 +76,8 @@
                                         if ($latestLeadAccess && $latestLeadAccess->application_status) {
                                             $dashboardStatus = $latestLeadAccess->application_status;
                                         }
-                                        $canEditApplication = in_array($dashboardStatus, ['pending', 'active'], true);
+                                        $canEditApplication = $app->isEditableByCustomer();
+                                        $canDeleteApplication = $app->status === 'pending';
                                     @endphp
                                     <td>{{ ucfirst(str_replace('_', ' ', $dashboardStatus === 'active' ? 'Submitted' : ($dashboardStatus ?? 'pending'))) }}</td>
                                     <td>{{ $app->additional_notes ?? '-' }}</td>
@@ -86,7 +87,9 @@
                                         @if ($canEditApplication)
                                             <a href="{{ route('customer.application.edit', $app->id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
                                         @endif
-                                        <a href="{{ route('customer.application.delete', $app->id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this application?');">Delete</a>
+                                        @if ($canDeleteApplication)
+                                            <a href="{{ route('customer.application.delete', $app->id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this application?');">Delete</a>
+                                        @endif
                                         @if ($app->lead_accesses_count > 0)
                                             <div class="d-flex flex-column align-items-start">
                                                 <a href="{{ route('customer.new_application.officer_details', ['newApplication' => $app, 'officer' => null]) }}" class="btn btn-sm btn-outline-success mb-1">
