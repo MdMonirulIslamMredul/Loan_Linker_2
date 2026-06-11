@@ -11,26 +11,12 @@
                 @method('PUT')
 
                 <div class="row mb-4">
-                    <div class="col-md-6 mb-3">
-                        <label for="expected_amount" class="form-label">Expected Amount</label>
-                        <input type="number" step="0.01" min="0" name="expected_amount" id="expected_amount" value="{{ old('expected_amount', $newApplication->expected_amount) }}" class="form-control @error('expected_amount') is-invalid @enderror" required>
-                        @error('expected_amount')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="tenure_months" class="form-label">Tenure (Months)</label>
-                        <input type="number" min="1" name="tenure_months" id="tenure_months" value="{{ old('tenure_months', $newApplication->tenure_months) }}" class="form-control @error('tenure_months') is-invalid @enderror" required>
-                        @error('tenure_months')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="col-md-6 mb-3">
+                     <div class="col-md-6 mb-3">
                         <label for="service_category_id" class="form-label">Service Category</label>
                         <select name="service_category_id" id="service_category_id" class="form-select @error('service_category_id') is-invalid @enderror" required>
                             <option value="">Select category</option>
                             @foreach($serviceCategories as $category)
-                                <option value="{{ $category->id }}" {{ old('service_category_id', $newApplication->service_category_id) == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                                <option value="{{ $category->id }}" data-slug="{{ $category->slug }}" {{ old('service_category_id', $newApplication->service_category_id) == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
                             @endforeach
                         </select>
                         @error('service_category_id')
@@ -51,6 +37,28 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
+
+
+                    <div class="col-md-6 mb-3">
+                        <label for="expected_amount" class="form-label">Expected Amount</label>
+                        <input type="number" step="0.01" min="0" name="expected_amount" id="expected_amount" value="{{ old('expected_amount', $newApplication->expected_amount) }}" class="form-control @error('expected_amount') is-invalid @enderror" required>
+                        @error('expected_amount')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    @php
+                        $selectedCategoryId = old('service_category_id', $newApplication->service_category_id);
+                        $selectedCategory = $serviceCategories->firstWhere('id', $selectedCategoryId);
+                        $showTenure = $selectedCategory && $selectedCategory->slug !== 'credit_card';
+                    @endphp
+                    <div id="tenure-section" class="col-md-6 mb-3" style="{{ $showTenure ? '' : 'display:none;' }}">
+                        <label for="tenure_months" class="form-label">Tenure (Months)</label>
+                        <input type="number" min="1" name="tenure_months" id="tenure_months" value="{{ old('tenure_months', $newApplication->tenure_months) }}" class="form-control @error('tenure_months') is-invalid @enderror">
+                        @error('tenure_months')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                   
                 </div>
 
                 <div class="row mb-4 border border-3 rounded m-1 p-4">
@@ -109,6 +117,24 @@
                 const categorySelect = document.querySelector('#service_category_id');
                 const typeSelect = document.querySelector('#service_type_id');
                 const typeOptions = Array.from(typeSelect.options);
+                const tenureSection = document.querySelector('#tenure-section');
+                const tenureInput = document.querySelector('#tenure_months');
+
+                function updateTenureVisibility() {
+                    const selectedOption = categorySelect.selectedOptions[0];
+                    const selectedSlug = selectedOption?.dataset?.slug || '';
+                    const shouldShowTenure = selectedSlug && selectedSlug !== 'credit_card';
+
+                    if (tenureSection) {
+                        tenureSection.style.display = shouldShowTenure ? '' : 'none';
+                    }
+                    if (tenureInput) {
+                        tenureInput.required = shouldShowTenure;
+                        if (!shouldShowTenure) {
+                            tenureInput.value = '';
+                        }
+                    }
+                }
 
                 function refreshOptions() {
                     const selectedValues = selects.map(select => select.value).filter(Boolean);
@@ -151,6 +177,7 @@
 
                 categorySelect.addEventListener('change', function () {
                     refreshTypeOptions();
+                    updateTenureVisibility();
                 });
 
                 selects.forEach(select => {
