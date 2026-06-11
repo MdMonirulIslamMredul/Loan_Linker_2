@@ -259,27 +259,38 @@ class CustomerController extends Controller
         $payload = $request->all();
         $payload['bank_ids'] = array_values(array_filter($request->input('bank_ids', [])));
 
-        $requiredDocuments = ['picture', 'nid', 'tin_certificate', 'pay_slip'];
+        $requiredDocuments = ['picture', 'nid', 'pay_slip'];
         $customerDocument = $user->customerDocument;
 
         if (!$customerDocument || collect($requiredDocuments)->contains(fn ($field) => !$customerDocument->{$field})) {
             return back()
-                ->withErrors(['documents' => 'Please upload Picture, NID, TIN Certificate and Pay Slip before applying.'])
+                ->withErrors(['documents' => 'Please upload Picture, NID and Pay Slip before applying.'])
                 ->withInput();
         }
 
-        $data = Validator::make($payload, [
+        $validator = Validator::make($payload, [
             'expected_amount' => ['required', 'numeric', 'min:0'],
-            'tenure_months' => ['required', 'integer', 'min:1'],
+            'tenure_months' => ['nullable', 'integer', 'min:1'],
             'service_category_id' => ['required', 'exists:service_categories,id'],
             'service_type_id' => ['required', 'exists:service_types,id'],
             'bank_ids' => ['array', 'max:5'],
             'bank_ids.*' => ['required', Rule::exists('banks', 'id')->where('is_active', true)],
             'additional_notes' => ['nullable', 'string', 'max:2000'],
-        ])->validate();
+        ]);
+
+        $validator->sometimes('tenure_months', ['required'], function ($input) {
+            $category = ServiceCategory::find($input->service_category_id);
+            return $category && $category->slug !== 'credit_card';
+        });
+
+        $data = $validator->validate();
 
         $category = ServiceCategory::find($data['service_category_id']);
         $type = ServiceType::find($data['service_type_id']);
+
+        if ($category && $category->slug === 'credit_card') {
+            $data['tenure_months'] = null;
+        }
 
         if (!$category || !$type || (int) $type->service_category_id !== (int) $category->id) {
             return back()->withErrors(['service_type_id' => 'The selected service type does not belong to the selected category.'])->withInput();
@@ -410,18 +421,29 @@ class CustomerController extends Controller
         $payload = $request->all();
         $payload['bank_ids'] = array_values(array_filter($request->input('bank_ids', [])));
 
-        $data = Validator::make($payload, [
+        $validator = Validator::make($payload, [
             'expected_amount' => ['required', 'numeric', 'min:0'],
-            'tenure_months' => ['required', 'integer', 'min:1'],
+            'tenure_months' => ['nullable', 'integer', 'min:1'],
             'service_category_id' => ['required', 'exists:service_categories,id'],
             'service_type_id' => ['required', 'exists:service_types,id'],
             'bank_ids' => ['array', 'max:5'],
             'bank_ids.*' => ['required', Rule::exists('banks', 'id')->where('is_active', true)],
             'additional_notes' => ['nullable', 'string', 'max:2000'],
-        ])->validate();
+        ]);
+
+        $validator->sometimes('tenure_months', ['required'], function ($input) {
+            $category = ServiceCategory::find($input->service_category_id);
+            return $category && $category->slug !== 'credit_card';
+        });
+
+        $data = $validator->validate();
 
         $category = ServiceCategory::find($data['service_category_id']);
         $type = ServiceType::find($data['service_type_id']);
+
+        if ($category && $category->slug === 'credit_card') {
+            $data['tenure_months'] = null;
+        }
 
         if (!$category || !$type || (int) $type->service_category_id !== (int) $category->id) {
             return back()->withErrors(['service_type_id' => 'The selected service type does not belong to the selected category.'])->withInput();
