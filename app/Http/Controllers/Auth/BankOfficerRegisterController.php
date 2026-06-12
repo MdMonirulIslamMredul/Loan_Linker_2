@@ -52,9 +52,9 @@ class BankOfficerRegisterController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'dob' => 'required|date',
-            'phone' => 'required|string|max:50',
+            'phone' => ['required', 'string', 'regex:/^01[0-9]{9}$/'],
             'nid_number' => 'required|string|max:255',
-            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
+            'email' => ['required', 'email', 'max:255', 'regex:/^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.(com)$/i', Rule::unique('users', 'email')],
             'bank_id' => 'nullable|integer|exists:banks,id',
             'c_division_id' => ['required', 'integer', Rule::in(array_keys($divisions))],
             'c_district_id' => ['required', 'integer'],

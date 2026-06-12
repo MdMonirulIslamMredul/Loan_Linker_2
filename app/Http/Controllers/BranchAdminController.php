@@ -143,8 +143,9 @@ class BranchAdminController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'phone' => 'nullable|string|max:20',
+            // 'email' => 'required|email|unique:users,email,' . $user->id,
+            'email' => ['required', 'email', 'max:255', 'regex:/^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.(com)$/i', Rule::unique('users', 'email')->ignore($user->id)],
+            'phone' => ['required', 'string', 'regex:/^01[0-9]{9}$/', Rule::unique('users', 'phone')->ignore($user->id)],
             'dob' => 'nullable|date',
             'nid_number' => 'nullable|string|max:255',
             'bank_id' => 'nullable|integer|exists:banks,id',
