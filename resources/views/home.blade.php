@@ -773,6 +773,119 @@
         </div>
     </section>
 
+    <section class="py-5" id="calculator">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-xl-8 col-lg-10">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-5">
+                            <div class="text-center mb-4">
+                                <h2 class="display-6 fw-bold">Loan Calculator</h2>
+                                <p class="text-muted mb-0">Estimate your monthly installment, total payment, and total interest.</p>
+                            </div>
+
+                            <form id="loanCalculatorForm" class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="loanAmount" class="form-label">Loan Amount (Tk.)</label>
+                                    <input type="number" min="0" step="0.01" id="loanAmount" class="form-control" placeholder="0" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="interestRate" class="form-label">Interest Rate</label>
+                                    <div class="input-group">
+                                        <input type="number" min="0" step="0.01" id="interestRate" class="form-control" placeholder="%" />
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="loanPeriod" class="form-label">Loan Period (Years)</label>
+                                    <input type="number" min="1" step="1" id="loanPeriod" class="form-control" placeholder="Years" />
+                                </div>
+
+                                <div class="col-12 d-flex gap-2">
+                                    <button type="button" id="calculateLoan" class="btn btn-primary px-4">
+                                        Calculate
+                                    </button>
+                                    <button type="button" id="resetLoanCalculator" class="btn btn-outline-secondary px-4">
+                                        Reset
+                                    </button>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label for="monthlyInstalment" class="form-label">Monthly Instalment (Tk.)</label>
+                                    <input type="text" id="monthlyInstalment" class="form-control" readonly />
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="totalPayment" class="form-label">Total Payment (Tk.)</label>
+                                    <input type="text" id="totalPayment" class="form-control" readonly />
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="totalInterest" class="form-label">Total Interest (Tk.)</label>
+                                    <input type="text" id="totalInterest" class="form-control" readonly />
+                                </div>
+                            </form>
+
+                            <p class="text-danger mt-4 mb-0">
+                               Please Note: This calculation is an estimate for informational purposes. The final monthly installment and overall terms are subject to change based on individual bank criteria, the approval date, and the commencement of the repayment cycle.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const loanAmountInput = document.getElementById('loanAmount');
+            const interestRateInput = document.getElementById('interestRate');
+            const loanPeriodInput = document.getElementById('loanPeriod');
+            const monthlyInstalmentInput = document.getElementById('monthlyInstalment');
+            const totalPaymentInput = document.getElementById('totalPayment');
+            const totalInterestInput = document.getElementById('totalInterest');
+            const calculateButton = document.getElementById('calculateLoan');
+            const resetButton = document.getElementById('resetLoanCalculator');
+
+            const formatCurrency = (value) => {
+                return value.toLocaleString('en-BD', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            };
+
+            const clearResults = () => {
+                monthlyInstalmentInput.value = '';
+                totalPaymentInput.value = '';
+                totalInterestInput.value = '';
+            };
+
+            const calculateLoan = () => {
+                const principal = parseFloat(loanAmountInput.value) || 0;
+                const annualRate = parseFloat(interestRateInput.value) || 0;
+                const years = parseInt(loanPeriodInput.value, 10) || 0;
+
+                if (principal <= 0 || annualRate <= 0 || years <= 0) {
+                    clearResults();
+                    return;
+                }
+
+                const monthlyRate = annualRate / 100 / 12;
+                const totalMonths = years * 12;
+                const monthlyPayment = (principal * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -totalMonths));
+                const totalPayment = monthlyPayment * totalMonths;
+                const totalInterest = totalPayment - principal;
+
+                monthlyInstalmentInput.value = formatCurrency(monthlyPayment);
+                totalPaymentInput.value = formatCurrency(totalPayment);
+                totalInterestInput.value = formatCurrency(totalInterest);
+            };
+
+            calculateButton.addEventListener('click', calculateLoan);
+            resetButton.addEventListener('click', function () {
+                loanAmountInput.value = '';
+                interestRateInput.value = '';
+                loanPeriodInput.value = '';
+                clearResults();
+            });
+        });
+    </script>
+
     <!-- Testimonials Section -->
     @if ($testimonials->count() > 0)
         <section class="py-5 position-relative overflow-hidden"
