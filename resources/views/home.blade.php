@@ -707,71 +707,7 @@
         </section>
     @endif --}}
 
-    <!-- Why Choose Us Section -->
-    <section id="about" class="py-5" style="background: linear-gradient(135deg, #E0F2FE 0%, #EDE9FE 100%);">
-        <div class="container">
-            <div class="text-center mb-5">
-                <h2 class="display-5 fw-bold mb-3">Why Choose Loan Linker?</h2>
-                <p class="lead text-muted mx-auto" style="max-width: 800px;">Loan Linker connects customers with verified
-                    banking professionals to ensure safe, transparent, and hassle-free loan processing.</p>
-            </div>
 
-            <div class="row g-4">
-                <div class="col-lg-3 col-md-6">
-                    <div class="card h-100 text-center border-0 shadow-sm">
-                        <div class="card-body">
-                            <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                                style="width: 70px; height: 70px;">
-                                <i class="bi bi-check-circle-fill text-success fs-1"></i>
-                            </div>
-                            <h5 class="fw-bold mb-2">100% Commission Free</h5>
-                            <p class="text-muted small">No brokers. No middlemen.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <div class="card h-100 text-center border-0 shadow-sm">
-                        <div class="card-body">
-                            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                                style="width: 70px; height: 70px;">
-                                <i class="bi bi-rocket-takeoff text-primary fs-1"></i>
-                            </div>
-                            <h5 class="fw-bold mb-2">Faster Loan Approval</h5>
-                            <p class="text-muted small">Get matched with authorized officers.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <div class="card h-100 text-center border-0 shadow-sm">
-                        <div class="card-body">
-                            <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                                style="width: 70px; height: 70px;">
-                                <i class="bi bi-buildings text-info fs-1"></i>
-                            </div>
-                            <h5 class="fw-bold mb-2">Multiple Banks. One Platform.</h5>
-                            <p class="text-muted small">Compare offers and choose the best deal.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <div class="card h-100 text-center border-0 shadow-sm">
-                        <div class="card-body">
-                            <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                                style="width: 70px; height: 70px;">
-                                <i class="bi bi-shield-check text-warning fs-1"></i>
-                            </div>
-                            <h5 class="fw-bold mb-2">Secure Data Protection</h5>
-                            <p class="text-muted small">Your personal information stays hidden until a verified officer
-                                accepts your request.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <section class="py-5" id="calculator">
         <div class="container">
@@ -780,7 +716,7 @@
                     <div class="card border-0 shadow-sm">
                         <div class="card-body p-5">
                             <div class="text-center mb-4">
-                                <h2 class="display-6 fw-bold">Loan Calculator</h2>
+                                <h2 class="display-6 fw-bold">EMI Calculator</h2>
                                 <p class="text-muted mb-0">Estimate your monthly installment, total payment, and total interest.</p>
                             </div>
 
@@ -885,6 +821,77 @@
             });
         });
     </script>
+
+
+
+
+    <!-- Why Choose Us Section -->
+    <section id="about" class="py-5" style="background: linear-gradient(135deg, #E0F2FE 0%, #EDE9FE 100%);">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold mb-3">Why Choose Loan Linker?</h2>
+                <p class="lead text-muted mx-auto" style="max-width: 800px;">Loan Linker connects customers with verified
+                    banking professionals to ensure safe, transparent, and hassle-free loan processing.</p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-3 col-md-6">
+                    <div class="card h-100 text-center border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                                style="width: 70px; height: 70px;">
+                                <i class="bi bi-check-circle-fill text-success fs-1"></i>
+                            </div>
+                            <h5 class="fw-bold mb-2">100% Commission Free</h5>
+                            <p class="text-muted small">No brokers. No middlemen.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="card h-100 text-center border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                                style="width: 70px; height: 70px;">
+                                <i class="bi bi-rocket-takeoff text-primary fs-1"></i>
+                            </div>
+                            <h5 class="fw-bold mb-2">Faster Loan Approval</h5>
+                            <p class="text-muted small">Get matched with authorized officers.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="card h-100 text-center border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                                style="width: 70px; height: 70px;">
+                                <i class="bi bi-buildings text-info fs-1"></i>
+                            </div>
+                            <h5 class="fw-bold mb-2">Multiple Banks. One Platform.</h5>
+                            <p class="text-muted small">Compare offers and choose the best deal.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="card h-100 text-center border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                                style="width: 70px; height: 70px;">
+                                <i class="bi bi-shield-check text-warning fs-1"></i>
+                            </div>
+                            <h5 class="fw-bold mb-2">Secure Data Protection</h5>
+                            <p class="text-muted small">Your personal information stays hidden until a verified officer
+                                accepts your request.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
 
     <!-- Testimonials Section -->
     @if ($testimonials->count() > 0)
