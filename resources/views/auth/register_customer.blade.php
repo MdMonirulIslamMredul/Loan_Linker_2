@@ -183,6 +183,22 @@
                                 </div>
                             </div>
 
+                            <div class="row gx-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Contact Thana</label>
+                                    <div class="input-group has-validation">
+                                        <span class="input-group-text"><i class="bi bi-signpost-2-fill"></i></span>
+                                        <select name="c_thana_id" id="c_thana_id"
+                                            class="form-select @error('c_thana_id') is-invalid @enderror" required>
+                                            <option value="">Select thana</option>
+                                        </select>
+                                        @error('c_thana_id')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Contact Address</label>
                                 <div class="input-group has-validation">
@@ -237,6 +253,22 @@
                                 </div>
                             </div>
 
+                            <div class="row gx-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Permanent Thana</label>
+                                    <div class="input-group has-validation">
+                                        <span class="input-group-text"><i class="bi bi-signpost-2-fill"></i></span>
+                                        <select name="p_thana_id" id="p_thana_id"
+                                            class="form-select @error('p_thana_id') is-invalid @enderror" required>
+                                            <option value="">Select thana</option>
+                                        </select>
+                                        @error('p_thana_id')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Permanent Address</label>
                                 <textarea name="permanent_address" id="permanent_address" placeholder="Enter permanent address" rows="3"
@@ -249,6 +281,11 @@
 
                             <script>
                                 const districtsByDivision = @json($districts);
+                                const thanasByDistrict = @json($thanas);
+                                const oldContactDistrict = @json(old('c_district_id'));
+                                const oldContactThana = @json(old('c_thana_id'));
+                                const oldPermanentDistrict = @json(old('p_district_id'));
+                                const oldPermanentThana = @json(old('p_thana_id'));
 
                                 function fillDistrictOptions(divisionSelectId, districtSelectId, selectedValue) {
                                     const divisionSelect = document.getElementById(divisionSelectId);
@@ -272,21 +309,46 @@
                                     });
                                 }
 
+                                function fillThanaOptions(districtSelectId, thanaSelectId, selectedValue) {
+                                    const districtSelect = document.getElementById(districtSelectId);
+                                    const thanaSelect = document.getElementById(thanaSelectId);
+                                    const districtId = parseInt(districtSelect.value, 10);
+
+                                    thanaSelect.innerHTML = '<option value="">Select thana</option>';
+
+                                    if (! thanasByDistrict[districtId]) {
+                                        return;
+                                    }
+
+                                    Object.entries(thanasByDistrict[districtId]).forEach(([thanaId, thanaName]) => {
+                                        const option = document.createElement('option');
+                                        option.value = thanaId;
+                                        option.textContent = thanaName;
+                                        if (selectedValue && selectedValue.toString() === thanaId.toString()) {
+                                            option.selected = true;
+                                        }
+                                        thanaSelect.appendChild(option);
+                                    });
+                                }
+
                                 function copyContactToPermanent() {
                                     const sameAsContact = document.getElementById('same_as_contact').checked;
                                     const cDivision = document.getElementById('c_division_id').value;
                                     const cDistrict = document.getElementById('c_district_id').value;
+                                    const cThana = document.getElementById('c_thana_id').value;
                                     const cAddress = document.querySelector('[name="contact_address"]').value;
 
                                     if (sameAsContact) {
                                         document.getElementById('p_division_id').value = cDivision;
                                         fillDistrictOptions('p_division_id', 'p_district_id', cDistrict);
+                                        fillThanaOptions('p_district_id', 'p_thana_id', cThana);
                                         document.getElementById('permanent_address').value = cAddress;
                                     }
                                 }
 
                                 document.getElementById('c_division_id').addEventListener('change', () => {
                                     fillDistrictOptions('c_division_id', 'c_district_id', null);
+                                    fillThanaOptions('c_district_id', 'c_thana_id', null);
                                     if (document.getElementById('same_as_contact').checked) {
                                         copyContactToPermanent();
                                     }
@@ -294,12 +356,20 @@
 
                                 document.getElementById('p_division_id').addEventListener('change', () => {
                                     fillDistrictOptions('p_division_id', 'p_district_id', null);
+                                    fillThanaOptions('p_district_id', 'p_thana_id', null);
                                 });
 
                                 document.getElementById('c_district_id').addEventListener('change', () => {
+                                    document.getElementById('c_thana_id').innerHTML = '<option value="">Select thana</option>';
+                                    fillThanaOptions('c_district_id', 'c_thana_id', null);
                                     if (document.getElementById('same_as_contact').checked) {
                                         copyContactToPermanent();
                                     }
+                                });
+
+                                document.getElementById('p_district_id').addEventListener('change', () => {
+                                    document.getElementById('p_thana_id').innerHTML = '<option value="">Select thana</option>';
+                                    fillThanaOptions('p_district_id', 'p_thana_id', null);
                                 });
 
                                 document.getElementById('same_as_contact').addEventListener('change', () => {
@@ -309,8 +379,11 @@
                                 });
 
                                 document.addEventListener('DOMContentLoaded', function () {
-                                    fillDistrictOptions('c_division_id', 'c_district_id', '{{ old('c_district_id') }}');
-                                    fillDistrictOptions('p_division_id', 'p_district_id', '{{ old('p_district_id') }}');
+                                    fillDistrictOptions('c_division_id', 'c_district_id', oldContactDistrict);
+                                    fillThanaOptions('c_district_id', 'c_thana_id', oldContactThana);
+
+                                    fillDistrictOptions('p_division_id', 'p_district_id', oldPermanentDistrict);
+                                    fillThanaOptions('p_district_id', 'p_thana_id', oldPermanentThana);
 
                                     if (document.getElementById('same_as_contact').checked) {
                                         copyContactToPermanent();
@@ -340,6 +413,13 @@
                                     togglePasswordVisibility('togglePasswordConfirmation', 'password_confirmation');
                                 });
                             </script>
+
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Reference Number</label>
+                                <input type="text" name="reference" placeholder="Enter reference number " class="form-control" value="{{ old('reference') }}">
+                                <div class="form-text text-muted">Leave blank if you do not have one.</div>
+                            </div>
 
                             <div class="mb-3">
                                 <label class="form-label">Password</label>
