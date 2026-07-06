@@ -43,11 +43,11 @@
                 </tr>
                 <tr>
                     <th>Contact Address</th>
-                    <td>{{ $user->contactDivision->name ?? '-' }} , {{ $user->contactDistrict->name ?? '-' }} , {{ $user->contact_address ?? '-' }}</td>
+                    <td>{{ $user->contactDivision->name ?? '-' }} , {{ $user->contactDistrict->name ?? '-' }} ,  {{ $user->contactThana->name ?? '-' }} , {{ $user->contact_address ?? '-' }}</td>
                 </tr>
                 <tr>
                     <th>Permanent Address</th>
-                    <td>{{ $user->permanentDivision->name ?? '-' }} , {{ $user->permanentDistrict->name ?? '-' }} , {{ $user->permanent_address ?? '-' }}</td>
+                    <td>{{ $user->permanentDivision->name ?? '-' }} , {{ $user->permanentDistrict->name ?? '-' }} ,  {{ $user->permanentThana->name ?? '-' }} , {{ $user->permanent_address ?? '-' }}</td>
                 </tr>
                 <tr>
                     <th>Education</th>

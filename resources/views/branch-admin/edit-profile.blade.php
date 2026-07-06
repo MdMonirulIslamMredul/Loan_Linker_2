@@ -72,6 +72,27 @@
                     </div>
                 </div>
 
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Contact Upazila</label>
+                        <select name="c_upazila_id" id="c_upazila_id" class="form-select @error('c_upazila_id') is-invalid @enderror">
+                            <option value="">Select upazila</option>
+                        </select>
+                        @error('c_upazila_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Contact Thana</label>
+                        <select name="c_thana_id" id="c_thana_id" class="form-select @error('c_thana_id') is-invalid @enderror">
+                            <option value="">Select thana</option>
+                        </select>
+                        @error('c_thana_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
                 <div class="mb-3">
                     <label class="form-label">Contact Address</label>
                     <textarea name="contact_address" rows="3" class="form-control">{{ old('contact_address', $user->contact_address) }}</textarea>
@@ -101,6 +122,27 @@
                             <option value="">Select district</option>
                         </select>
                         @error('p_district_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Permanent Upazila</label>
+                        <select name="p_upazila_id" id="p_upazila_id" class="form-select @error('p_upazila_id') is-invalid @enderror">
+                            <option value="">Select upazila</option>
+                        </select>
+                        @error('p_upazila_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Permanent Thana</label>
+                        <select name="p_thana_id" id="p_thana_id" class="form-select @error('p_thana_id') is-invalid @enderror">
+                            <option value="">Select thana</option>
+                        </select>
+                        @error('p_thana_id')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
@@ -146,8 +188,15 @@
 
                 <script>
                     const districtsByDivision = @json($districts);
+                    const upazilasByDistrict = @json($upazilas);
+                    const thanasByDistrict = @json($thanas);
+                    const upazilaToDistrict = @json($upazilaToDistrict);
                     const oldContactDistrict = @json(old('c_district_id', $user->c_district_id));
+                    const oldContactUpazila = @json(old('c_upazila_id', $user->c_upazila_id));
+                    const oldContactThana = @json(old('c_thana_id', $user->c_thana_id));
                     const oldPermanentDistrict = @json(old('p_district_id', $user->p_district_id));
+                    const oldPermanentUpazila = @json(old('p_upazila_id', $user->p_upazila_id));
+                    const oldPermanentThana = @json(old('p_thana_id', $user->p_thana_id));
 
                     function fillDistrictOptions(divisionSelectId, districtSelectId, selectedOption) {
                         const divisionSelect = document.getElementById(divisionSelectId);
@@ -155,7 +204,7 @@
                         const divisionId = parseInt(divisionSelect.value, 10);
                         districtSelect.innerHTML = '<option value="">Select district</option>';
 
-                        if (! districtsByDivision[divisionId]) {
+                        if (!districtsByDivision[divisionId]) {
                             return;
                         }
 
@@ -170,6 +219,53 @@
                         });
                     }
 
+                    function fillUpazilaOptions(districtSelectId, upazilaSelectId, selectedOption) {
+                        const districtSelect = document.getElementById(districtSelectId);
+                        const upazilaSelect = document.getElementById(upazilaSelectId);
+                        const districtId = parseInt(districtSelect.value, 10);
+                        upazilaSelect.innerHTML = '<option value="">Select upazila</option>';
+
+                        if (!upazilasByDistrict[districtId]) {
+                            return;
+                        }
+
+                        Object.entries(upazilasByDistrict[districtId]).forEach(([upazilaId, upazilaName]) => {
+                            const option = document.createElement('option');
+                            option.value = upazilaId;
+                            option.textContent = upazilaName;
+                            if (selectedOption && selectedOption.toString() === upazilaId.toString()) {
+                                option.selected = true;
+                            }
+                            upazilaSelect.appendChild(option);
+                        });
+                    }
+
+                    function fillThanaOptions(sourceSelectId, thanaSelectId, selectedOption) {
+                        const sourceSelect = document.getElementById(sourceSelectId);
+                        const thanaSelect = document.getElementById(thanaSelectId);
+                        let districtId = parseInt(sourceSelect.value, 10);
+
+                        if (sourceSelectId === 'c_upazila_id' || sourceSelectId === 'p_upazila_id') {
+                            districtId = upazilaToDistrict[districtId] ?? null;
+                        }
+
+                        thanaSelect.innerHTML = '<option value="">Select thana</option>';
+
+                        if (!districtId || !thanasByDistrict[districtId]) {
+                            return;
+                        }
+
+                        Object.entries(thanasByDistrict[districtId]).forEach(([thanaId, thanaName]) => {
+                            const option = document.createElement('option');
+                            option.value = thanaId;
+                            option.textContent = thanaName;
+                            if (selectedOption && selectedOption.toString() === thanaId.toString()) {
+                                option.selected = true;
+                            }
+                            thanaSelect.appendChild(option);
+                        });
+                    }
+
                     function copyContactToPermanent() {
                         const sameAsContact = document.getElementById('same_as_contact').checked;
                         if (!sameAsContact) {
@@ -178,15 +274,21 @@
 
                         const contactDivision = document.getElementById('c_division_id').value;
                         const contactDistrict = document.getElementById('c_district_id').value;
+                        const contactUpazila = document.getElementById('c_upazila_id').value;
+                        const contactThana = document.getElementById('c_thana_id').value;
                         const contactAddress = document.getElementsByName('contact_address')[0].value;
 
                         document.getElementById('p_division_id').value = contactDivision;
                         fillDistrictOptions('p_division_id', 'p_district_id', contactDistrict);
+                        fillUpazilaOptions('p_district_id', 'p_upazila_id', contactUpazila);
+                        fillThanaOptions('p_upazila_id', 'p_thana_id', contactThana);
                         document.getElementById('permanent_address').value = contactAddress;
                     }
 
                     document.getElementById('c_division_id').addEventListener('change', () => {
                         fillDistrictOptions('c_division_id', 'c_district_id', null);
+                        fillUpazilaOptions('c_district_id', 'c_upazila_id', null);
+                        fillThanaOptions('c_district_id', 'c_thana_id', null);
                         if (document.getElementById('same_as_contact').checked) {
                             copyContactToPermanent();
                         }
@@ -194,12 +296,32 @@
 
                     document.getElementById('p_division_id').addEventListener('change', () => {
                         fillDistrictOptions('p_division_id', 'p_district_id', null);
+                        fillUpazilaOptions('p_district_id', 'p_upazila_id', null);
+                        fillThanaOptions('p_district_id', 'p_thana_id', null);
                     });
 
                     document.getElementById('c_district_id').addEventListener('change', () => {
+                        fillUpazilaOptions('c_district_id', 'c_upazila_id', null);
+                        document.getElementById('c_thana_id').innerHTML = '<option value="">Select thana</option>';
                         if (document.getElementById('same_as_contact').checked) {
                             copyContactToPermanent();
                         }
+                    });
+
+                    document.getElementById('c_upazila_id').addEventListener('change', () => {
+                        fillThanaOptions('c_upazila_id', 'c_thana_id', null);
+                        if (document.getElementById('same_as_contact').checked) {
+                            copyContactToPermanent();
+                        }
+                    });
+
+                    document.getElementById('p_district_id').addEventListener('change', () => {
+                        fillUpazilaOptions('p_district_id', 'p_upazila_id', null);
+                        document.getElementById('p_thana_id').innerHTML = '<option value="">Select thana</option>';
+                    });
+
+                    document.getElementById('p_upazila_id').addEventListener('change', () => {
+                        fillThanaOptions('p_upazila_id', 'p_thana_id', null);
                     });
 
                     document.getElementById('same_as_contact').addEventListener('change', () => {
@@ -208,7 +330,11 @@
 
                     document.addEventListener('DOMContentLoaded', () => {
                         fillDistrictOptions('c_division_id', 'c_district_id', oldContactDistrict);
+                        fillUpazilaOptions('c_district_id', 'c_upazila_id', oldContactUpazila);
+                        fillThanaOptions('c_upazila_id', 'c_thana_id', oldContactThana);
                         fillDistrictOptions('p_division_id', 'p_district_id', oldPermanentDistrict);
+                        fillUpazilaOptions('p_district_id', 'p_upazila_id', oldPermanentUpazila);
+                        fillThanaOptions('p_upazila_id', 'p_thana_id', oldPermanentThana);
 
                         if (document.getElementById('same_as_contact').checked) {
                             copyContactToPermanent();
