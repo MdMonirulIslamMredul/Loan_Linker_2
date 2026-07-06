@@ -68,14 +68,13 @@
                             <tr>
                                 <th class="px-4 py-3">Branch Name</th>
                                 <th class="py-3">Code</th>
-                                <th class="py-3">City</th>
+                                <th class="py-3">District ID</th>
                                 <th class="py-3">Users</th>
                                 <th class="py-3">Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($branches as $branch)
-                                <tr>
                                     <td class="px-4">
                                         <div class="d-flex align-items-center">
                                             <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
@@ -85,7 +84,7 @@
                                         </div>
                                     </td>
                                     <td><span class="badge bg-secondary">{{ $branch->code }}</span></td>
-                                    <td><span class="text-muted">{{ $branch->city ?? 'N/A' }}</span></td>
+                                    <td><span class="text-muted">{{ $branch->districts_id ?? 'N/A' }}</span></td>
                                     <td><span class="text-muted">{{ $branch->users_count }}</span></td>
                                     <td>
                                         @if ($branch->is_active)

@@ -21,7 +21,7 @@
                                 <th>ID</th>
                                 <th>Branch Name</th>
                                 <th>Code</th>
-                                <th>City</th>
+                                <th>District ID</th>
                                 <th>Phone</th>
                                 <th>Users</th>
                                 <th>Status</th>
@@ -34,7 +34,7 @@
                                     <td>{{ $branch->id }}</td>
                                     <td class="fw-semibold">{{ $branch->name }}</td>
                                     <td>{{ $branch->code }}</td>
-                                    <td>{{ $branch->city ?? 'N/A' }}</td>
+                                    <td>{{ $branch->districts_id ?? 'N/A' }}</td>
                                     <td>{{ $branch->phone ?? 'N/A' }}</td>
                                     <td>{{ $branch->users_count }}</td>
                                     <td>

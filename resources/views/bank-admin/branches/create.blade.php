@@ -24,8 +24,7 @@
 
                 <div class="mb-3">
                     <label for="code" class="form-label fw-semibold">Branch Code</label>
-                    <input type="text" name="code" id="code" value="{{ old('code') }}" class="form-control"
-                        required>
+                    <input type="text" name="code" id="code" value="{{ old('code') }}" class="form-control">
                     @error('code')
                         <div class="text-danger small mt-1">{{ $message }}</div>
                     @enderror
@@ -41,19 +40,31 @@
 
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
-                        <label for="city" class="form-label fw-semibold">City</label>
-                        <input type="text" name="city" id="city" value="{{ old('city') }}"
-                            class="form-control">
-                        @error('city')
+                        <label for="districts_id" class="form-label fw-semibold">District</label>
+                        <select name="districts_id" id="districts_id" class="form-select">
+                            <option value="">Select a district</option>
+                            @foreach ($districts as $district)
+                                <option value="{{ $district->id }}" {{ old('districts_id') == $district->id ? 'selected' : '' }}>
+                                    {{ $district->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('districts_id')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <div class="col-md-6">
-                        <label for="state" class="form-label fw-semibold">State</label>
-                        <input type="text" name="state" id="state" value="{{ old('state') }}"
-                            class="form-control">
-                        @error('state')
+                        <label for="thana_id" class="form-label fw-semibold">Thana</label>
+                        <select name="thana_id" id="thana_id" class="form-select">
+                            <option value="">Select a thana</option>
+                            @foreach ($thanas as $thana)
+                                <option value="{{ $thana->id }}" data-district-id="{{ $thana->district_id }}" {{ old('thana_id') == $thana->id ? 'selected' : '' }}>
+                                    {{ $thana->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('thana_id')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
                     </div>
@@ -90,4 +101,44 @@
             </form>
         </div>
     </div>
-@endsection
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const districtSelect = document.getElementById('districts_id');
+            const thanaSelect = document.getElementById('thana_id');
+            if (!districtSelect || !thanaSelect) return;
+
+            const allThanas = Array.from(thanaSelect.options).map(option => ({
+                value: option.value,
+                text: option.textContent,
+                districtId: option.dataset.districtId || '',
+            }));
+
+            function updateThanaOptions() {
+                const selectedDistrict = districtSelect.value;
+                const currentValue = thanaSelect.value;
+                thanaSelect.innerHTML = '<option value="">Select a thana</option>';
+
+                allThanas.forEach(option => {
+                    if (!option.value) return;
+                    if (selectedDistrict === '' || option.districtId === selectedDistrict) {
+                        const opt = document.createElement('option');
+                        opt.value = option.value;
+                        opt.textContent = option.text;
+                        opt.dataset.districtId = option.districtId;
+                        if (option.value === currentValue) {
+                            opt.selected = true;
+                        }
+                        thanaSelect.appendChild(opt);
+                    }
+                });
+
+                if (selectedDistrict === '') {
+                    thanaSelect.value = '';
+                }
+            }
+
+            districtSelect.addEventListener('change', updateThanaOptions);
+            updateThanaOptions();
+        });
+    </script>
