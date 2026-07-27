@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin')
+@extends('layouts.admin')
 
 @section('title', 'Customers')
 @section('dashboard-title', 'Customers Management')
@@ -107,6 +107,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th class="px-4 py-3">ID</th>
+                                    <th class="py-3">Reference</th>
                                     <th class="py-3">Name</th>
                                     <th class="py-3">Email</th>
                                     <th class="py-3">Phone</th>
@@ -119,7 +120,16 @@
                                 @foreach ($customers as $c)
                                     <tr>
                                         <td class="px-4"><span class="badge bg-secondary">#{{ $c->id }}</span></td>
+
                                         <td>
+                                            <span class="badge bg-primary">
+                                                <i class="bi bi-person-badge me-1"></i>{{ $c->reference ?? 'N/A' }}
+                                            </span>
+                                        </td>
+
+                                        
+                                        <td>
+                                            
                                             <div class="d-flex align-items-center">
                                                 @if(optional($c->customerDocument)->picture)
                                                     <img src="{{ asset('storage/' . optional($c->customerDocument)->picture) }}"
@@ -151,11 +161,15 @@
                                                     class="bi bi-calendar3 me-1"></i>{{ $c->created_at->format('d M, Y') }}</small>
                                         </td>
                                         <td>
+                                            @php
+                                                $canManageCustomers = auth()->user()->isSuperAdmin() || auth()->user()->hasPermissionTo('customers.manage', 'web');
+                                            @endphp
                                             <div class="d-flex gap-2">
                                                 <a href="{{ route('super-admin.customers.show', $c->id) }}" class="btn btn-sm btn-outline-secondary">
                                                     <i class="bi bi-eye"></i> View and Update Documents
                                                 </a>
 
+                                                @if ($canManageCustomers)
                                                 <form action="{{ route('super-admin.customers.reset-password', $c->id) }}"
                                                     method="POST"
                                                     onsubmit="return confirm('Reset password to default for this customer?');">
@@ -164,6 +178,7 @@
                                                         <i class="bi bi-key"></i> Reset Password
                                                     </button>
                                                 </form>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>
