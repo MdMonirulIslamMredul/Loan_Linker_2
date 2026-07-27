@@ -7,15 +7,19 @@ use App\Models\Branch;
 use App\Models\District;
 use App\Models\Loan;
 use App\Models\LoanCategory;
+use App\Models\Thana;
 use App\Models\User;
 use App\Models\CustomerDocument;
 use App\Models\CustomerMessage;
 use App\Models\CustomerRating;
 use App\Models\OfficerDocument;
+use App\Models\Badge;
 use App\Models\BankOfficerRating;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
+use Spatie\Permission\Models\Permission;
 
 class SuperAdminController extends Controller
 {
@@ -102,6 +106,101 @@ class SuperAdminController extends Controller
     }
 
     /**
+     * Show the form for creating a new super admin-managed user.
+     */
+    public function createAdmin()
+    {
+        $roles = $this->adminRoleOptions();
+        return view('super-admin.admins.create', compact('roles'));
+    }
+
+    /**
+     * Store a newly created super admin-managed user.
+     */
+    public function storeAdmin(Request $request)
+    {
+        $roles = array_keys($this->adminRoleOptions());
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users',
+            'phone' => 'nullable|string|max:20',
+            'password' => 'required|string|min:6|confirmed',
+            'role' => ['required', Rule::in($roles)],
+        ]);
+
+        User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+            'password' => Hash::make($validated['password']),
+            'role' => $validated['role'],
+        ]);
+
+        return redirect()->route('super-admin.admins.index')->with('success', 'Admin user created successfully.');
+    }
+
+    /**
+     * Display a listing of all super-admin managed admins.
+     */
+    public function listAdmins()
+    {
+        $roles = array_keys($this->adminRoleOptions());
+
+        $admins = User::whereIn('role', $roles)
+            ->paginate(15);
+
+        return view('super-admin.admins.index', compact('admins'));
+    }
+
+    /**
+     * Show the form for editing a super-admin managed admin.
+     */
+    public function editAdmin(User $user)
+    {
+        if (! in_array($user->role, array_keys($this->adminRoleOptions()), true)) {
+            abort(404);
+        }
+
+        $roles = $this->adminRoleOptions();
+
+        return view('super-admin.admins.edit', compact('user', 'roles'));
+    }
+
+    /**
+     * Update the specified super-admin managed admin.
+     */
+    public function updateAdmin(Request $request, User $user)
+    {
+        if (! in_array($user->role, array_keys($this->adminRoleOptions()), true)) {
+            abort(404);
+        }
+
+        $roles = array_keys($this->adminRoleOptions());
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20',
+            'password' => 'nullable|string|min:6|confirmed',
+            'role' => ['required', Rule::in($roles)],
+        ]);
+
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+        $user->phone = $validated['phone'] ?? null;
+        $user->role = $validated['role'];
+
+        if (! empty($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        }
+
+        $user->save();
+
+        return redirect()->route('super-admin.admins.index')->with('success', 'Admin user updated successfully.');
+    }
+
+    /**
      * Display a listing of all bank admins.
      */
     public function listBankAdmins()
@@ -154,7 +253,9 @@ class SuperAdminController extends Controller
      */
     public function listBanks()
     {
-        $banks = Bank::withCount('branches', 'users')->get();
+
+
+        $banks = Bank::withCount('branches', 'users')->paginate(10);
         return view('super-admin.banks.index', compact('banks'));
     }
 
@@ -215,7 +316,9 @@ class SuperAdminController extends Controller
     public function createBranch()
     {
         $banks = Bank::where('is_active', true)->get();
-        return view('super-admin.branches.create', compact('banks'));
+        $districts = District::orderBy('name')->get();
+        $thanas = Thana::orderBy('name')->get();
+        return view('super-admin.branches.create', compact('banks', 'districts', 'thanas'));
     }
 
     /**
@@ -226,10 +329,10 @@ class SuperAdminController extends Controller
         $validated = $request->validate([
             'bank_id' => 'required|exists:banks,id',
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:50|unique:branches',
+            'code' => 'nullable|string|max:50',
             'address' => 'nullable|string',
-            'city' => 'nullable|string|max:100',
-            'state' => 'nullable|string|max:100',
+            'districts_id' => 'nullable|integer|exists:districts,id',
+            'thana_id' => 'nullable|integer|exists:thanas,id',
             'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email',
         ]);
@@ -242,10 +345,34 @@ class SuperAdminController extends Controller
     /**
      * Display a listing of all branches.
      */
-    public function listBranches()
+    public function listBranches(Request $request)
     {
-        $branches = Branch::with('bank')->withCount('users')->get();
-        return view('super-admin.branches.index', compact('branches'));
+        $query = Branch::query()->with('bank')->withCount('users');
+
+        if ($request->filled('bank_id')) {
+            $query->where('bank_id', $request->input('bank_id'));
+        }
+
+        if ($request->filled('district_id')) {
+            $query->where('districts_id', $request->input('district_id'));
+        }
+
+        if ($request->filled('thana_id')) {
+            $query->where('thana_id', $request->input('thana_id'));
+        }
+
+        $branches = $query->paginate(10)->appends($request->only(['bank_id', 'district_id', 'thana_id']));
+        $banks = Bank::orderBy('name')->get();
+        $districts = District::orderBy('name')->get();
+        $selectedDistrictId = $request->input('district_id');
+        $thanas = Thana::query()
+            ->when($selectedDistrictId, function ($query) use ($selectedDistrictId) {
+                $query->where('district_id', $selectedDistrictId);
+            })
+            ->orderBy('name')
+            ->get();
+
+        return view('super-admin.branches.index', compact('branches', 'banks', 'districts', 'thanas'));
     }
 
     /**
@@ -254,7 +381,9 @@ class SuperAdminController extends Controller
     public function editBranch(Branch $branch)
     {
         $banks = Bank::where('is_active', true)->get();
-        return view('super-admin.branches.edit', compact('branch', 'banks'));
+        $districts = District::orderBy('name')->get();
+        $thanas = Thana::orderBy('name')->get();
+        return view('super-admin.branches.edit', compact('branch', 'banks', 'districts', 'thanas'));
     }
 
     /**
@@ -265,10 +394,10 @@ class SuperAdminController extends Controller
         $validated = $request->validate([
             'bank_id' => 'required|exists:banks,id',
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:50|unique:branches,code,' . $branch->id,
+            'code' => 'nullable|string|max:50',
             'address' => 'nullable|string',
-            'city' => 'nullable|string|max:100',
-            'state' => 'nullable|string|max:100',
+            'districts_id' => 'nullable|integer|exists:districts,id',
+            'thana_id' => 'nullable|integer|exists:thanas,id',
             'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email',
             'is_active' => 'boolean',
@@ -289,13 +418,100 @@ class SuperAdminController extends Controller
     }
 
     /**
+     * Display a listing of all badges.
+     */
+    public function listBadges()
+    {
+        $badges = Badge::orderBy('name')->paginate(15);
+        return view('super-admin.badges.index', compact('badges'));
+    }
+
+    /**
+     * Show the form for creating a new badge.
+     */
+    public function createBadge()
+    {
+        return view('super-admin.badges.create');
+    }
+
+    /**
+     * Store a newly created badge in storage.
+     */
+    public function storeBadge(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'logo' => 'nullable|image|max:2048',
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        if ($request->hasFile('logo')) {
+            $logoName = time() . '_badge_' . $request->file('logo')->getClientOriginalName();
+            $request->file('logo')->move(public_path('uploads/badges'), $logoName);
+            $validated['logo'] = 'uploads/badges/' . $logoName;
+        }
+
+        $validated['is_active'] = $request->boolean('is_active');
+
+        Badge::create($validated);
+
+        return redirect()->route('super-admin.badges.index')->with('success', 'Badge created successfully.');
+    }
+
+    /**
+     * Show the form for editing a badge.
+     */
+    public function editBadge(Badge $badge)
+    {
+        return view('super-admin.badges.edit', compact('badge'));
+    }
+
+    /**
+     * Update the specified badge in storage.
+     */
+    public function updateBadge(Request $request, Badge $badge)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'logo' => 'nullable|image|max:2048',
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        if ($request->hasFile('logo')) {
+            $logoName = time() . '_badge_' . $request->file('logo')->getClientOriginalName();
+            $request->file('logo')->move(public_path('uploads/badges'), $logoName);
+            $validated['logo'] = 'uploads/badges/' . $logoName;
+        }
+
+        $validated['is_active'] = $request->boolean('is_active');
+
+        $badge->update($validated);
+
+        return redirect()->route('super-admin.badges.index')->with('success', 'Badge updated successfully.');
+    }
+
+    /**
+     * Remove the specified badge from storage.
+     */
+    public function destroyBadge(Badge $badge)
+    {
+        $badge->delete();
+        return redirect()->route('super-admin.badges.index')->with('success', 'Badge deleted successfully.');
+    }
+
+    /**
      * Show the form for creating a new branch admin.
      */
     public function createBranchAdmin()
     {
         $banks = Bank::where('is_active', true)->get();
         $branches = Branch::where('is_active', true)->get();
-        return view('super-admin.branch-admins.create', compact('banks', 'branches'));
+        $badges = Badge::where('is_active', true)->get();
+        return view('super-admin.branch-admins.create', compact('banks', 'branches', 'badges'));
     }
 
     /**
@@ -303,16 +519,27 @@ class SuperAdminController extends Controller
      */
     public function storeBranchAdmin(Request $request)
     {
+        $request->merge([
+            'badge_ids' => collect($request->input('badge_ids', []))
+                ->filter(fn($id) => $id !== null && $id !== '')
+                ->values()
+                ->all(),
+        ]);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
             'phone' => 'required|string|max:20',
             'password' => 'required|string|min:6|confirmed',
             'branch_id' => 'required|exists:branches,id',
+            'badge_ids' => 'nullable|array|max:3',
+            'badge_ids.*' => 'nullable|distinct|exists:badges,id',
         ]);
 
         // Get the bank_id from the selected branch
         $branch = Branch::findOrFail($validated['branch_id']);
+
+        $badgeIds = $validated['badge_ids'] ?? [];
 
         User::create([
             'name' => $validated['name'],
@@ -322,6 +549,8 @@ class SuperAdminController extends Controller
             'role' => 'branch_admin',
             'bank_id' => $branch->bank_id,
             'branch_id' => $validated['branch_id'],
+            'badge_id' => $badgeIds[0] ?? null,
+            'badge_ids' => $badgeIds ?: null,
             'is_access' => null,
             'access_mes' => null,
         ]);
@@ -336,11 +565,19 @@ class SuperAdminController extends Controller
     {
         $filterQuery = User::where('role', 'branch_admin');
 
+        if ($request->filled('badge_id')) {
+            if ($request->input('badge_id') === 'has_badge') {
+                $filterQuery->whereNotNull('badge_ids');
+            } else {
+                $filterQuery->whereJsonContains('badge_ids', $request->input('badge_id'));
+            }
+        }
+
         if ($request->has('is_access')) {
             if ($request->input('is_access') === '0') {
                 $filterQuery->where(function ($query) {
                     $query->where('is_access', false)
-                          ->orWhereNull('is_access');
+                        ->orWhereNull('is_access');
                 });
             } elseif ($request->input('is_access') === '1') {
                 $filterQuery->where('is_access', true);
@@ -367,13 +604,13 @@ class SuperAdminController extends Controller
             $search = trim($request->input('search'));
             $filterQuery->where(function ($query) use ($search) {
                 $query->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%")
-                      ->orWhere('phone', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
             });
         }
 
         $branchAdmins = (clone $filterQuery)
-            ->with('branch', 'bank')
+            ->with('branch', 'bank', 'badge')
             ->paginate(10)
             ->appends($request->query());
 
@@ -382,15 +619,16 @@ class SuperAdminController extends Controller
             'access_granted' => (clone $filterQuery)->where('is_access', true)->count(),
             'no_access' => (clone $filterQuery)->where(function ($query) {
                 $query->where('is_access', false)
-                      ->orWhereNull('is_access');
+                    ->orWhereNull('is_access');
             })->count(),
             'inactive' => (clone $filterQuery)->where('is_active', false)->count(),
         ];
 
         $banks = Bank::where('is_active', true)->orderBy('name')->get();
         $districts = District::orderBy('name')->get();
+        $badges = Badge::where('is_active', true)->orderBy('name')->get();
 
-        return view('super-admin.branch-admins.index', compact('branchAdmins', 'stats', 'banks', 'districts'));
+        return view('super-admin.branch-admins.index', compact('branchAdmins', 'stats', 'banks', 'districts', 'badges'));
     }
 
     /**
@@ -400,7 +638,24 @@ class SuperAdminController extends Controller
     {
         $banks = Bank::where('is_active', true)->get();
         $branches = Branch::where('is_active', true)->get();
-        return view('super-admin.branch-admins.edit', compact('user', 'banks', 'branches'));
+        $badges = Badge::where('is_active', true)->get();
+        return view('super-admin.branch-admins.edit', compact('user', 'banks', 'branches', 'badges'));
+    }
+
+    /**
+     * Get available admin roles that super admin may create.
+     *
+     * @return array<string, string>
+     */
+    protected function adminRoleOptions(): array
+    {
+        return [
+            'admin' => 'Admin',
+            'operations_head' => 'Operations Head',
+            'marketing_head' => 'Marketing Head',
+            'hr_head' => 'HR Head',
+            'compliance_officer' => 'Compliance Officer',
+        ];
     }
 
     /**
@@ -419,8 +674,12 @@ class SuperAdminController extends Controller
             'officerDocument',
             'contactDivision',
             'contactDistrict',
+            'contactUpazila',
+            'contactThana',
             'permanentDivision',
             'permanentDistrict',
+            'permanentUpazila',
+            'permanentThana',
         ]);
 
         if (! $user->view) {
@@ -458,12 +717,21 @@ class SuperAdminController extends Controller
      */
     public function updateBranchAdmin(Request $request, User $user)
     {
+        $request->merge([
+            'badge_ids' => collect($request->input('badge_ids', []))
+                ->filter(fn($id) => $id !== null && $id !== '')
+                ->values()
+                ->all(),
+        ]);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'phone' => 'required|string|max:20',
             'password' => 'nullable|string|min:6|confirmed',
             'bank_id' => 'required|exists:banks,id',
+            'badge_ids' => 'nullable|array|max:3',
+            'badge_ids.*' => 'nullable|distinct|exists:badges,id',
             'is_active' => 'nullable',
             'picture' => 'nullable|file|mimes:jpeg,jpg,png,gif,svg,pdf|max:5120',
             'nid' => 'nullable|file|mimes:jpeg,jpg,png,gif,svg,pdf|max:5120',
@@ -476,6 +744,8 @@ class SuperAdminController extends Controller
         $user->phone = $validated['phone'];
         $user->branch_id = $request->input('branch_id', $user->branch_id);
         $user->bank_id = $validated['bank_id'];
+        $user->badge_ids = $validated['badge_ids'] ?? null;
+        $user->badge_id = $validated['badge_ids'][0] ?? null;
         $user->is_active = $request->boolean('is_active');
 
         // Only update password if provided
@@ -509,6 +779,159 @@ class SuperAdminController extends Controller
         $user->save();
 
         return redirect()->route('super-admin.branch-admins.index')->with('success', 'Branch Admin updated successfully.');
+    }
+
+    /**
+     * Display a listing of all admin users and their assigned permissions.
+     */
+    public function permissionsIndex(Request $request)
+    {
+        $permissions = $this->availableFeaturePermissions();
+
+        foreach ($permissions as $permission) {
+            Permission::findOrCreate($permission, 'web');
+        }
+
+        $admins = User::whereNotIn('role', ['super_admin', 'branch_admin', 'customer'])
+            ->with(['bank', 'branch', 'permissions'])
+            ->paginate(10);
+
+        return view('super-admin.permissions.index', compact('admins', 'permissions'));
+    }
+
+    /**
+     * Show the form for editing a user's feature permissions.
+     */
+    public function permissionsEdit(User $user)
+    {
+        if ($user->isSuperAdmin() || $user->isCustomer()) {
+            abort(404);
+        }
+
+        $permissions = $this->availableFeaturePermissions();
+
+        foreach ($permissions as $permission) {
+            Permission::findOrCreate($permission, 'web');
+        }
+
+        return view('super-admin.permissions.edit', compact('user', 'permissions'));
+    }
+
+    /**
+     * Update the specified user's feature permissions.
+     */
+    public function permissionsUpdate(Request $request, User $user)
+    {
+        if ($user->isSuperAdmin() || $user->isCustomer()) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'permissions' => 'nullable|array',
+            'permissions.*' => [
+                'string',
+                Rule::in($this->availableFeaturePermissions()),
+            ],
+        ]);
+
+        $user->syncPermissions($validated['permissions'] ?? []);
+
+        return redirect()->route('super-admin.permissions.index')->with('success', 'Permissions updated successfully.');
+    }
+
+    /**
+     * Get the feature permission names that can be assigned by the super admin.
+     *
+     * @return array<int, string>
+     */
+    protected function availableFeaturePermissions(): array
+    {
+        return [
+            'banks.view',
+            'banks.create',
+            'banks.edit',
+            'banks.delete',
+            'banks.manage',
+
+            'branches.view',
+            'branches.create',
+            'branches.edit',
+            'branches.delete',
+            'branches.manage',
+
+            'branch-admins.view',
+            'branch-admins.create',
+            'branch-admins.edit',
+            'branch-admins.delete',
+            'branch-admins.manage',
+
+            'admins.view',
+            'admins.create',
+            'admins.edit',
+            'admins.delete',
+            'admins.manage',
+
+            'permissions.view',
+            'permissions.manage',
+
+            'loan-categories.view',
+            'loan-categories.create',
+            'loan-categories.edit',
+            'loan-categories.delete',
+            'loan-categories.manage',
+
+            'service-categories.view',
+            'service-categories.create',
+            'service-categories.edit',
+            'service-categories.delete',
+            'service-categories.manage',
+
+            'service-types.view',
+            'service-types.create',
+            'service-types.edit',
+            'service-types.delete',
+            'service-types.manage',
+
+            'payment-methods.view',
+            'payment-methods.create',
+            'payment-methods.edit',
+            'payment-methods.delete',
+            'payment-methods.manage',
+
+            'lead-packages.view',
+            'lead-packages.create',
+            'lead-packages.edit',
+            'lead-packages.delete',
+            'lead-packages.manage',
+
+            'package-orders.view',
+            'package-orders.manage',
+
+            'badges.view',
+            'badges.create',
+            'badges.edit',
+            'badges.delete',
+            'badges.manage',
+
+            'customer-messages.view',
+            'customer-messages.manage',
+
+            'customers.view',
+            'customers.manage',
+
+            'applications.view',
+            'applications.manage',
+
+            'ratings.view',
+            'ratings.manage',
+
+            'sitesettings.view',
+            'sitesettings.create',
+            'sitesettings.edit',
+            'sitesettings.delete',
+            'sitesettings.manage',
+
+        ];
     }
 
     /**
@@ -574,7 +997,22 @@ class SuperAdminController extends Controller
             abort(404);
         }
 
-        $user->load(['bank', 'branch', 'contactDivision', 'contactDistrict', 'permanentDivision', 'permanentDistrict', 'customerDocument', 'customerFinancial']);
+        $user->load([
+            'bank',
+            'branch',
+            'contactDivision',
+            'contactDistrict',
+            'contactUpazila',
+            'contactThana',
+            'permanentDivision',
+            'permanentDistrict',
+            'permanentUpazila',
+            'permanentThana',
+            'customerDocument',
+            'customerFinancial.loans.bank',
+            'customerFinancial.loans.serviceCategory',
+            'customerFinancial.loans.serviceType',
+        ]);
 
         return view('super-admin.customers.show', ['customer' => $user]);
     }
@@ -626,18 +1064,20 @@ class SuperAdminController extends Controller
         $customerDocument = $user->customerDocument ?? new CustomerDocument();
         $updated = false;
 
-        foreach ([
-            'picture',
-            'nid',
-            'office_id',
-            'visiting_card',
-            'pay_slip',
-            'bank_statements',
-            'trade_license',
-            'tin_certificate',
-            'lend_document',
-            'other_document',
-        ] as $field) {
+        foreach (
+            [
+                'picture',
+                'nid',
+                'office_id',
+                'visiting_card',
+                'pay_slip',
+                'bank_statements',
+                'trade_license',
+                'tin_certificate',
+                'lend_document',
+                'other_document',
+            ] as $field
+        ) {
             if ($request->hasFile($field)) {
                 $updated = true;
 
@@ -679,25 +1119,25 @@ class SuperAdminController extends Controller
             if ($searchTarget === 'customer') {
                 $ratingsQuery->whereHas('customer', function ($query) use ($like) {
                     $query->where('name', 'like', $like)
-                          ->orWhere('email', 'like', $like)
-                          ->orWhere('phone', 'like', $like);
+                        ->orWhere('email', 'like', $like)
+                        ->orWhere('phone', 'like', $like);
                 });
             } elseif ($searchTarget === 'branch_admin') {
                 $ratingsQuery->whereHas('branchAdmin', function ($query) use ($like) {
                     $query->where('name', 'like', $like)
-                          ->orWhere('email', 'like', $like)
-                          ->orWhere('phone', 'like', $like);
+                        ->orWhere('email', 'like', $like)
+                        ->orWhere('phone', 'like', $like);
                 });
             } else {
                 $ratingsQuery->where(function ($query) use ($like) {
                     $query->whereHas('customer', function ($query) use ($like) {
                         $query->where('name', 'like', $like)
-                              ->orWhere('email', 'like', $like)
-                              ->orWhere('phone', 'like', $like);
+                            ->orWhere('email', 'like', $like)
+                            ->orWhere('phone', 'like', $like);
                     })->orWhereHas('branchAdmin', function ($query) use ($like) {
                         $query->where('name', 'like', $like)
-                              ->orWhere('email', 'like', $like)
-                              ->orWhere('phone', 'like', $like);
+                            ->orWhere('email', 'like', $like)
+                            ->orWhere('phone', 'like', $like);
                     });
                 });
             }
@@ -724,12 +1164,12 @@ class SuperAdminController extends Controller
             $ratingsQuery->where(function ($query) use ($like) {
                 $query->whereHas('officer', function ($query) use ($like) {
                     $query->where('name', 'like', $like)
-                          ->orWhere('email', 'like', $like)
-                          ->orWhere('phone', 'like', $like);
+                        ->orWhere('email', 'like', $like)
+                        ->orWhere('phone', 'like', $like);
                 })->orWhereHas('customer', function ($query) use ($like) {
                     $query->where('name', 'like', $like)
-                          ->orWhere('email', 'like', $like)
-                          ->orWhere('phone', 'like', $like);
+                        ->orWhere('email', 'like', $like)
+                        ->orWhere('phone', 'like', $like);
                 });
             });
         }
@@ -959,5 +1399,91 @@ class SuperAdminController extends Controller
 
         return redirect()->route('super-admin.loans.index')
             ->with('success', 'Loan deleted successfully.');
+    }
+
+    /**
+     * Display a listing of all thanas.
+     */
+    public function listThanas(Request $request)
+    {
+        $search = trim((string) $request->input('search', ''));
+        $districtFilter = $request->input('district');
+
+        $query = Thana::with('district');
+
+        if ($search !== '') {
+            $query->where('thanas.name', 'like', "%{$search}%");
+        }
+
+        if ($districtFilter) {
+            $query->where('district_id', $districtFilter);
+        }
+
+        $thanas = $query->join('districts', 'thanas.district_id', '=', 'districts.id')
+            ->select('thanas.*')
+            ->orderBy('districts.name')
+            ->orderBy('thanas.name')
+            ->paginate(20);
+
+        $districts = District::orderBy('name')->get();
+
+        return view('super-admin.thanas.index', compact('thanas', 'districts', 'search', 'districtFilter'));
+    }
+
+    /**
+     * Show the form for creating a new thana.
+     */
+    public function createThana()
+    {
+        $districts = District::orderBy('name')->get();
+        return view('super-admin.thanas.create', compact('districts'));
+    }
+
+    /**
+     * Store a newly created thana in storage.
+     */
+    public function storeThana(Request $request)
+    {
+        $validated = $request->validate([
+            'district_id' => 'required|exists:districts,id',
+            'name' => 'required|string|max:255|unique:thanas,name',
+        ]);
+
+        Thana::create($validated);
+
+        return redirect()->route('super-admin.thanas.index')->with('success', 'Thana created successfully.');
+    }
+
+    /**
+     * Show the form for editing a thana.
+     */
+    public function editThana(Thana $thana)
+    {
+        $districts = District::orderBy('name')->get();
+        return view('super-admin.thanas.edit', compact('thana', 'districts'));
+    }
+
+    /**
+     * Update the specified thana in storage.
+     */
+    public function updateThana(Request $request, Thana $thana)
+    {
+        $validated = $request->validate([
+            'district_id' => 'required|exists:districts,id',
+            'name' => 'required|string|max:255|unique:thanas,name,' . $thana->id,
+        ]);
+
+        $thana->update($validated);
+
+        return redirect()->route('super-admin.thanas.index')->with('success', 'Thana updated successfully.');
+    }
+
+    /**
+     * Remove the specified thana from storage.
+     */
+    public function destroyThana(Thana $thana)
+    {
+        $thana->delete();
+        return redirect()->route('super-admin.thanas.index')->with('success', 'Thana deleted successfully.');
     }
 }
