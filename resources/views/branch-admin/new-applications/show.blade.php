@@ -99,7 +99,13 @@
                             @if ($customerRatingCount)
                                 <div class="mt-2 text-warning">
                                     @for ($i = 1; $i <= 5; $i++)
-                                        <i class="bi {{ $i <= $customerAverageStars ? 'bi-star-fill' : 'bi-star' }}"></i>
+                                        @if ($customerAverageRating >= $i)
+                                            <i class="bi bi-star-fill"></i>
+                                        @elseif ($customerAverageRating > $i - 1)
+                                            <i class="bi bi-star-half"></i>
+                                        @else
+                                            <i class="bi bi-star"></i>
+                                        @endif
                                     @endfor
                                     <small class="text-muted ms-2">{{ number_format($customerAverageRating, 1) }} average from {{ $customerRatingCount }} rating{{ $customerRatingCount > 1 ? 's' : '' }}</small>
                                 </div>
@@ -133,14 +139,74 @@
                                     <small class="text-muted d-block">Date of Birth</small>
                                     <strong>{{ optional($customer->dob)->format('d M, Y') ?? 'N/A' }}</strong>
                                 </div>
-                                <div class="col-12 mb-3">
-                                    <small class="text-muted d-block">Contact Address</small>
-                                    <p class="mb-0">{{ optional($customer->contactDivision)->name ?? '' }}{{ optional($customer->contactDistrict)->name ? ' - ' . $customer->contactDistrict->name : '' }}{{ $customer->contact_address ? ' - ' . $customer->contact_address : '' }}</p>
-                                </div>
-                                <div class="col-12 mb-3">
-                                    <small class="text-muted d-block">Permanent Address</small>
-                                    <p class="mb-0">{{ optional($customer->permanentDivision)->name ?? '' }}{{ optional($customer->permanentDistrict)->name ? ' - ' . $customer->permanentDistrict->name : '' }}{{ $customer->permanent_address ? ' - ' . $customer->permanent_address : '' }}</p>
-                                </div>
+                                @if($customer->contact_address || $customer->contactDivision || $customer->contactDistrict || $customer->contactUpazila || $customer->contactThana)
+                                    <div class="col-12 mb-3">
+                                        <small class="text-muted d-block">Contact Address</small>
+                                        <p class="mb-0">
+                                            @if($customer->contactDivision?->name)
+                                                <strong>{{ $customer->contactDivision->name }}</strong>
+                                            @endif
+                                            @if($customer->contactDivision?->name && $customer->contactDistrict?->name)
+                                                , 
+                                            @endif
+                                            @if($customer->contactDistrict?->name)
+                                                <strong>{{ $customer->contactDistrict->name }}</strong>
+                                                ,
+                                            @endif
+                                            @if($customer->contactDistrict?->name && $customer->contactUpazila?->name)
+                                                , 
+                                            @endif
+                                            @if($customer->contactUpazila?->name)
+                                                <strong>{{ $customer->contactUpazila->name }}</strong>
+                                            @endif
+                                            @if($customer->contactUpazila?->name && $customer->contactThana?->name)
+                                                , 
+                                            @endif
+                                            @if($customer->contactThana?->name)
+                                                <strong>{{ $customer->contactThana->name }}</strong>
+                                            @endif
+                                            @if($customer->contact_address && ($customer->contactDivision?->name || $customer->contactDistrict?->name || $customer->contactUpazila?->name || $customer->contactThana?->name))
+                                                , {{ $customer->contact_address }}
+                                            @elseif($customer->contact_address)
+                                                {{ $customer->contact_address }}
+                                            @endif
+                                        </p>
+                                    </div>
+                                @endif
+                                @if($customer->permanent_address || $customer->permanentDivision || $customer->permanentDistrict || $customer->permanentUpazila || $customer->permanentThana)
+                                    <div class="col-12 mb-3">
+                                        <small class="text-muted d-block">Permanent Address</small>
+                                        <p class="mb-0">
+                                            @if($customer->permanentDivision?->name)
+                                                <strong>{{ $customer->permanentDivision->name }}</strong>
+                                            @endif
+                                            @if($customer->permanentDivision?->name && $customer->permanentDistrict?->name)
+                                                , 
+                                            @endif
+                                            @if($customer->permanentDistrict?->name)
+                                                <strong>{{ $customer->permanentDistrict->name }}</strong>
+                                                ,
+                                            @endif
+                                            @if($customer->permanentDistrict?->name && $customer->permanentUpazila?->name)
+                                                , 
+                                            @endif
+                                            @if($customer->permanentUpazila?->name)
+                                                <strong>{{ $customer->permanentUpazila->name }}</strong>
+                                            @endif
+                                            @if($customer->permanentUpazila?->name && $customer->permanentThana?->name)
+                                                , 
+                                            @endif
+                                            @if($customer->permanentThana?->name)
+                                                <strong>{{ $customer->permanentThana->name }}</strong>
+                                            @endif
+                                            @if($customer->permanent_address && ($customer->permanentDivision?->name || $customer->permanentDistrict?->name || $customer->permanentUpazila?->name || $customer->permanentThana?->name))
+                                                , {{ $customer->permanent_address }}
+                                            @elseif($customer->permanent_address)
+                                                {{ $customer->permanent_address }}
+                                            @endif
+                                        </p>
+                                    </div>
+                                @endif
                                 <div class="col-md-6 mb-3">
                                     <small class="text-muted d-block">Education</small>
                                     <strong>{{ optional($customer)->education ?? 'N/A' }}</strong>
@@ -179,6 +245,10 @@
                                     <small class="text-muted d-block">Salary by Bank</small>
                                     <strong>৳{{ number_format(optional($customerFin)->salary_by_bank ?? 0, 2) }}</strong>
                                 </div>
+                                    <div class="col-md-6 mb-3">
+                                        <small class="text-muted d-block">Salary Bank</small>
+                                        <strong>{{ optional($customerFin)->bank ? optional($customerFin->bank)->name : 'N/A' }}</strong>
+                                    </div>  
                                 <div class="col-md-6 mb-3">
                                     <small class="text-muted d-block">Salary by Hand</small>
                                     <strong>৳{{ number_format(optional($customerFin)->salary_by_hand ?? 0, 2) }}</strong>
@@ -187,10 +257,47 @@
                                     <small class="text-muted d-block">Monthly Bank Transaction</small>
                                     <strong>৳{{ number_format(optional($customerFin)->monthly_bank_transaction ?? 0, 2) }}</strong>
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <small class="text-muted d-block">Existing Loans / Credit Cards</small>
-                                    <strong>{{ optional($customerFin)->existing_loans_credit_cards ?? 'N/A' }}</strong>
-                                </div>
+                                
+                                @if (! optional($customerFin)->has_loan)
+                                    <div class="col-12 mb-3">
+                                        <p class="text-muted mb-0">The user has no past loan history.</p>
+                                    </div>
+                                @endif
+
+                                @if(optional($customerFin)->has_loan && optional($customerFin)->loans && optional($customerFin)->loans->isNotEmpty())
+                                    <div class="col-12 mb-3">
+                                        <hr />
+                                        <h6 class="mb-3">Loan Details</h6>
+                                        @foreach(optional($customerFin)->loans as $loan)
+                                            <div class="card mb-3">
+                                                <div class="card-body p-3">
+                                                    <div class="row g-2">
+                                                        <div class="col-md-4">
+                                                            <small class="text-muted d-block">Loan Bank</small>
+                                                            <strong>{{ optional($loan->bank)->name ?? 'N/A' }}</strong>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <small class="text-muted d-block">Loan Category</small>
+                                                            <strong>{{ optional($loan->serviceCategory)->name ?? 'N/A' }}</strong>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <small class="text-muted d-block">Loan Type</small>
+                                                            <strong>{{ optional($loan->serviceType)->name ?? 'N/A' }}</strong>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <small class="text-muted d-block">Loan Amount</small>
+                                                            <strong>৳{{ number_format($loan->loan_amount ?? 0, 2) }}</strong>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <small class="text-muted d-block">Tenure Months</small>
+                                                            <strong>{{ $loan->tenure_months !== null ? $loan->tenure_months : 'N/A' }}</strong>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -216,7 +323,7 @@
                     </div>
 
                     @php
-                        $ratingFormOpen = ! $existingRating || old('rating') !== null || old('comment') !== null || $errors->has('rating') || $errors->has('comment');
+                        $ratingFormOpen = ! $existingRating || old('information_accuracy') !== null || old('behavior') !== null || old('response_time') !== null || old('credit_score') !== null || old('comment') !== null || $errors->has('information_accuracy') || $errors->has('behavior') || $errors->has('response_time') || $errors->has('credit_score') || $errors->has('comment');
                     @endphp
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-header bg-light">
@@ -224,36 +331,143 @@
                         </div>
                         <div class="card-body">
                             @if ($existingRating)
-                                <div class="mb-3">
-                                    <div class="d-flex align-items-center gap-2 mb-2">
-                                        <strong>Your rating:</strong>
-                                        <span class="text-warning">
-                                            @for ($i = 1; $i <= 5; $i++)
-                                                <i class="bi {{ $i <= $existingRating->rating ? 'bi-star-fill' : 'bi-star' }}"></i>
-                                            @endfor
-                                        </span>
+                                <div class="p-3 bg-light rounded-3 border mb-3">
+                                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-3 border-bottom">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="fw-semibold text-secondary">Overall Rating:</span>
+                                            <span class="text-warning fs-5 d-inline-flex gap-1">
+                                                @php $r = $existingRating->rating; @endphp
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    @if ($r >= $i)
+                                                        <i class="bi bi-star-fill"></i>
+                                                    @elseif ($r > $i - 1)
+                                                        <i class="bi bi-star-half"></i>
+                                                    @else
+                                                        <i class="bi bi-star text-muted opacity-25"></i>
+                                                    @endif
+                                                @endfor
+                                            </span>
+                                            <span class="fw-bold text-dark fs-6">{{ number_format($existingRating->rating, 1) }} / 5</span>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-primary shadow-sm" id="toggle-rating-edit">
+                                            <i class="bi bi-pencil me-1"></i>Edit Rating
+                                        </button>
+                                    </div>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6 col-md-3">
+                                            <div class="p-2 bg-white rounded border h-100">
+                                                <div class="text-secondary small mb-1">Info Accuracy</div>
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <span class="fw-bold text-dark">{{ $existingRating->information_accuracy ?? '-' }}/5</span>
+                                                    <span class="text-warning small">
+                                                        @for ($i = 1; $i <= 5; $i++)
+                                                            <i class="bi {{ $i <= $existingRating->information_accuracy ? 'bi-star-fill' : 'bi-star text-muted opacity-25' }}"></i>
+                                                        @endfor
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="p-2 bg-white rounded border h-100">
+                                                <div class="text-secondary small mb-1">Behavior</div>
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <span class="fw-bold text-dark">{{ $existingRating->behavior ?? '-' }}/5</span>
+                                                    <span class="text-warning small">
+                                                        @for ($i = 1; $i <= 5; $i++)
+                                                            <i class="bi {{ $i <= $existingRating->behavior ? 'bi-star-fill' : 'bi-star text-muted opacity-25' }}"></i>
+                                                        @endfor
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="p-2 bg-white rounded border h-100">
+                                                <div class="text-secondary small mb-1">Response Time</div>
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <span class="fw-bold text-dark">{{ $existingRating->response_time ?? '-' }}/5</span>
+                                                    <span class="text-warning small">
+                                                        @for ($i = 1; $i <= 5; $i++)
+                                                            <i class="bi {{ $i <= $existingRating->response_time ? 'bi-star-fill' : 'bi-star text-muted opacity-25' }}"></i>
+                                                        @endfor
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="p-2 bg-white rounded border h-100">
+                                                <div class="text-secondary small mb-1">Credit Score</div>
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <span class="fw-bold text-dark">{{ $existingRating->credit_score ?? '-' }}/5</span>
+                                                    <span class="text-warning small">
+                                                        @for ($i = 1; $i <= 5; $i++)
+                                                            <i class="bi {{ $i <= $existingRating->credit_score ? 'bi-star-fill' : 'bi-star text-muted opacity-25' }}"></i>
+                                                        @endfor
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     @if ($existingRating->comment)
-                                        <p class="mb-3"><strong>Comment:</strong> {{ $existingRating->comment }}</p>
+                                        <div class="p-2 bg-white rounded border">
+                                            <span class="fw-semibold text-secondary small me-1">Comment:</span>
+                                            <span class="text-dark">{{ $existingRating->comment }}</span>
+                                        </div>
                                     @endif
                                 </div>
-                                <button type="button" class="btn btn-outline-primary btn-sm" id="toggle-rating-edit">Edit Rating</button>
                             @endif
 
                             <div id="rating-edit-form" class="{{ $ratingFormOpen ? '' : 'd-none' }} mt-3">
                                 <form method="POST" action="{{ route('branch-admin.new-applications.customer-rating.store', $newApplication) }}">
                                     @csrf
-                                    <div class="mb-3">
-                                        <label for="rating" class="form-label">Rating</label>
-                                        <select name="rating" id="rating" class="form-select @error('rating') is-invalid @enderror" required>
-                                            <option value="">Select rating</option>
-                                            @for ($i = 1; $i <= 5; $i++)
-                                                <option value="{{ $i }}" {{ old('rating', optional($existingRating)->rating) == $i ? 'selected' : '' }}>{{ $i }}</option>
-                                            @endfor
-                                        </select>
-                                        @error('rating')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <label for="information_accuracy" class="form-label">Information Accuracy</label>
+                                            <select name="information_accuracy" id="information_accuracy" class="form-select @error('information_accuracy') is-invalid @enderror" required>
+                                                <option value="">Select rating</option>
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    <option value="{{ $i }}" {{ old('information_accuracy', optional($existingRating)->information_accuracy) == $i ? 'selected' : '' }}>{{ $i }}</option>
+                                                @endfor
+                                            </select>
+                                            @error('information_accuracy')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="behavior" class="form-label">Behavior</label>
+                                            <select name="behavior" id="behavior" class="form-select @error('behavior') is-invalid @enderror" required>
+                                                <option value="">Select rating</option>
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    <option value="{{ $i }}" {{ old('behavior', optional($existingRating)->behavior) == $i ? 'selected' : '' }}>{{ $i }}</option>
+                                                @endfor
+                                            </select>
+                                            @error('behavior')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="response_time" class="form-label">Response Time</label>
+                                            <select name="response_time" id="response_time" class="form-select @error('response_time') is-invalid @enderror" required>
+                                                <option value="">Select rating</option>
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    <option value="{{ $i }}" {{ old('response_time', optional($existingRating)->response_time) == $i ? 'selected' : '' }}>{{ $i }}</option>
+                                                @endfor
+                                            </select>
+                                            @error('response_time')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label for="credit_score" class="form-label">Credit Score</label>
+                                            <select name="credit_score" id="credit_score" class="form-select @error('credit_score') is-invalid @enderror" required>
+                                                <option value="">Select rating</option>
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    <option value="{{ $i }}" {{ old('credit_score', optional($existingRating)->credit_score) == $i ? 'selected' : '' }}>{{ $i }}</option>
+                                                @endfor
+                                            </select>
+                                            @error('credit_score')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
                                     </div>
                                     <div class="mb-3">
                                         <label for="comment" class="form-label">Comment</label>
@@ -282,7 +496,7 @@
                                     toggleButton.addEventListener('click', function () {
                                         ratingForm.classList.toggle('d-none');
                                         if (!ratingForm.classList.contains('d-none')) {
-                                            var ratingField = document.getElementById('rating');
+                                            var ratingField = document.getElementById('information_accuracy');
                                             if (ratingField) {
                                                 ratingField.focus();
                                             }
