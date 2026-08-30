@@ -6,11 +6,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Badge;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
+
+    /**
+     * Guard name for Spatie permissions.
+     *
+     * @var string
+     */
+    protected $guard_name = 'web';
 
     /**
      * The attributes that are mass assignable.
@@ -29,9 +38,14 @@ class User extends Authenticatable
         'dob',
         'c_division_id',
         'c_district_id',
+        'c_upazila_id',
+        'c_thana_id',
         'p_division_id',
         'p_district_id',
+        'p_upazila_id',
+        'p_thana_id',
         'contact_address',
+        'reference',
         'permanent_address',
         'education',
         'profession',
@@ -40,6 +54,7 @@ class User extends Authenticatable
         'date_of_joining',
         'total_working_experience',
         'lead_balance',
+        'package_expiry_date',
         'customer_document_id',
         'customer_financial_id',
         'bank_official_id',
@@ -50,6 +65,8 @@ class User extends Authenticatable
         'terms_accepted_at',
         'is_access',
         'access_mes',
+        'badge_id',
+        'badge_ids',
     ];
 
     /**
@@ -76,7 +93,10 @@ class User extends Authenticatable
         'view' => 'boolean',
         'accepted_terms' => 'boolean',
         'terms_accepted_at' => 'datetime',
+        'package_expiry_date' => 'datetime',
         'is_access' => 'boolean',
+        'badge_id' => 'integer',
+        'badge_ids' => 'array',
     ];
 
     /**
@@ -112,6 +132,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the contact upazila for the user.
+     */
+    public function contactUpazila()
+    {
+        return $this->belongsTo(Upazila::class, 'c_upazila_id');
+    }
+
+    /**
+     * Get the contact thana for the user.
+     */
+    public function contactThana()
+    {
+        return $this->belongsTo(Thana::class, 'c_thana_id');
+    }
+
+    /**
      * Get the permanent division for the user.
      */
     public function permanentDivision()
@@ -125,6 +161,22 @@ class User extends Authenticatable
     public function permanentDistrict()
     {
         return $this->belongsTo(District::class, 'p_district_id');
+    }
+
+    /**
+     * Get the permanent upazila for the user.
+     */
+    public function permanentUpazila()
+    {
+        return $this->belongsTo(Upazila::class, 'p_upazila_id');
+    }
+
+    /**
+     * Get the permanent thana for the user.
+     */
+    public function permanentThana()
+    {
+        return $this->belongsTo(Thana::class, 'p_thana_id');
     }
 
     /**
@@ -152,11 +204,71 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is admin.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Check if user is operations head.
+     */
+    public function isOperationsHead(): bool
+    {
+        return $this->role === 'operations_head';
+    }
+
+    /**
+     * Check if user is marketing head.
+     */
+    public function isMarketingHead(): bool
+    {
+        return $this->role === 'marketing_head';
+    }
+
+    /**
+     * Check if user is HR head.
+     */
+    public function isHrHead(): bool
+    {
+        return $this->role === 'hr_head';
+    }
+
+    /**
+     * Check if user is compliance officer.
+     */
+    public function isComplianceOfficer(): bool
+    {
+        return $this->role === 'compliance_officer';
+    }
+
+    /**
      * Check if user is customer.
      */
     public function isCustomer(): bool
     {
         return trim(strtolower($this->role ?? '')) === 'customer';
+    }
+
+    public function badge()
+    {
+        return $this->belongsTo(Badge::class);
+    }
+
+    public function getBadgesAttribute()
+    {
+        $badgeIds = $this->badge_ids ?? [];
+
+        if (empty($badgeIds)) {
+            if ($this->badge_id) {
+                return collect([$this->badge]);
+            }
+
+            return collect();
+        }
+
+        return Badge::whereIn('id', $badgeIds)->get();
     }
 
     public function leadAccesses()
