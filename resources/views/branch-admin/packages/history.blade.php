@@ -1,4 +1,4 @@
-﻿@extends('layouts.branch-admin')
+@extends('layouts.branch-admin')
 
 @section('content')
     <div class="container-fluid py-4">
@@ -57,6 +57,7 @@
                                     <th>Price</th>
                                     <th>Status</th>
                                     <th>Requested</th>
+                                    <th>Expired</th>
                                     <th>Updated By</th>
                                 </tr>
                             </thead>
@@ -76,6 +77,9 @@
                                             @endif
                                         </td>
                                         <td>{{ $order->created_at->format('d M, Y') }}</td>
+                                        <td>
+                                            {{ $order->expired_at ? $order->expired_at->format('d M, Y') : '-' }}
+                                        </td>
                                         <td>{{ $order->updated_by ? App\Models\User::find($order->updated_by)->name : '-' }}
                                         </td>
                                     </tr>

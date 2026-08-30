@@ -7,6 +7,7 @@ use App\Models\LeadPackage;
 use App\Models\User;
 use App\Models\Bank;
 use App\Models\Branch;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class PackageOrderController extends Controller
@@ -14,47 +15,7 @@ class PackageOrderController extends Controller
     // Super-admin: view orders
     public function index(Request $request)
     {
-        $query = PackageOrder::with(['user', 'leadPackage']);
-
-        // Filter by package
-        if ($request->filled('package_id')) {
-            $query->where('lead_package_id', $request->package_id);
-        }
-
-        // Filter by bank (via user)
-        if ($request->filled('bank_id')) {
-            $bankId = $request->bank_id;
-            $query->whereHas('user', function ($q) use ($bankId) {
-                $q->where('bank_id', $bankId);
-            });
-        }
-
-        // Filter by branch (via user)
-        if ($request->filled('branch_id')) {
-            $branchId = $request->branch_id;
-            $query->whereHas('user', function ($q) use ($branchId) {
-                $q->where('branch_id', $branchId);
-            });
-        }
-
-        // Filter by officer
-        if ($request->filled('officer_id')) {
-            $query->where('user_id', $request->officer_id);
-        }
-
-        // Filter by status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        // Date range filter (order date)
-        if ($request->filled('from_date')) {
-            $query->whereDate('created_at', '>=', $request->from_date);
-        }
-
-        if ($request->filled('to_date')) {
-            $query->whereDate('created_at', '<=', $request->to_date);
-        }
+        $query = $this->buildOrderFilterQuery($request);
 
         // show pending orders first, then newest orders
         $orders = $query->orderByRaw("status = 'pending' DESC")->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
@@ -79,6 +40,33 @@ class PackageOrderController extends Controller
         return view('super-admin.package-orders.index', compact('orders', 'packages', 'users', 'banks', 'searchCandidates'));
     }
 
+    // Super-admin: print filtered orders as report
+    public function print(Request $request)
+    {
+        $orders = $this->buildOrderFilterQuery($request)
+            ->orderByRaw("status = 'pending' DESC")
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $selectedOfficer = null;
+        if ($request->filled('officer_id')) {
+            $selectedOfficer = User::find($request->officer_id);
+        }
+
+        $filterSummary = [
+            'search' => $request->input('search'),
+            'officer' => optional($selectedOfficer)->name,
+            'bank' => $request->filled('bank_id') ? optional(Bank::find($request->bank_id))->name : null,
+            'branch' => $request->filled('branch_id') ? optional(Branch::find($request->branch_id))->name : null,
+            'package' => $request->filled('package_id') ? optional(LeadPackage::find($request->package_id))->name : null,
+            'status' => $request->filled('status') ? ucfirst($request->status) : null,
+            'from_date' => $request->input('from_date'),
+            'to_date' => $request->input('to_date'),
+        ];
+
+        return view('super-admin.package-orders.print', compact('orders', 'filterSummary'));
+    }
+
     // Super-admin: approve order
     public function approve(PackageOrder $order)
     {
@@ -89,15 +77,25 @@ class PackageOrderController extends Controller
         $order->status = 'approved';
         $order->updated_by = auth()->id();
         $order->approved_at = now();
-        // clear any previous rejection timestamp
-        if (property_exists($order, 'rejected_at') || array_key_exists('rejected_at', $order->getAttributes())) {
-            $order->rejected_at = null;
-        }
-        $order->save();
+        $order->rejected_at = null;
 
         // add leads to user's balance
         $user = $order->user;
         $user->lead_balance = ($user->lead_balance ?? 0) + $order->number_of_leads;
+        
+        $duration = (int) ($order->leadPackage->duration ?? 0);
+        if ($duration > 0) {
+            $newExpiry = now()->addDays($duration);
+            $currentExpiry = $user->package_expiry_date ? \Carbon\Carbon::parse($user->package_expiry_date) : null;
+
+            if (!$currentExpiry || $newExpiry->gt($currentExpiry)) {
+                $user->package_expiry_date = $newExpiry;
+            }
+
+            $order->expired_at = $newExpiry;
+        }
+        
+        $order->save();
         $user->save();
 
         return redirect()->route('super-admin.package-orders.index')
@@ -115,10 +113,7 @@ class PackageOrderController extends Controller
         // record which admin rejected the order
         $order->updated_by = auth()->id();
         $order->approved_at = null;
-        // record rejection time if column exists
-        if (property_exists($order, 'rejected_at') || array_key_exists('rejected_at', $order->getAttributes())) {
-            $order->rejected_at = now();
-        }
+        $order->rejected_at = now();
         $order->save();
 
         return redirect()->route('super-admin.package-orders.index')
@@ -245,6 +240,7 @@ class PackageOrderController extends Controller
         ]);
 
         $package = LeadPackage::findOrFail($validated['lead_package_id']);
+        $duration = (int) ($package->duration ?? 0);
 
         $order = PackageOrder::create([
             'user_id' => $user->id,
@@ -254,13 +250,72 @@ class PackageOrderController extends Controller
             'status' => 'approved',
             'updated_by' => auth()->id(),
             'approved_at' => now(),
+            'expired_at' => $duration > 0 ? now()->addDays($duration) : null,
         ]);
 
         // Credit leads to user's balance
         $user->lead_balance = ($user->lead_balance ?? 0) + $package->number_of_leads;
+        
+        $duration = (int) ($package->duration ?? 0);
+        if ($duration > 0) {
+            $newExpiry = now()->addDays($duration);
+            $currentExpiry = $user->package_expiry_date ? \Carbon\Carbon::parse($user->package_expiry_date) : null;
+
+            if (!$currentExpiry || $newExpiry->gt($currentExpiry)) {
+                $user->package_expiry_date = $newExpiry;
+            }
+        }
+        
         $user->save();
 
         return redirect()->route('super-admin.package-orders.officer-purchases')
             ->with('success', 'Gift package assigned and leads credited to officer.');
+    }
+
+    private function buildOrderFilterQuery(Request $request): Builder
+    {
+        $query = PackageOrder::with(['user.bank', 'user.branch', 'leadPackage']);
+
+        // Filter by package
+        if ($request->filled('package_id')) {
+            $query->where('lead_package_id', $request->package_id);
+        }
+
+        // Filter by bank (via user)
+        if ($request->filled('bank_id')) {
+            $bankId = $request->bank_id;
+            $query->whereHas('user', function ($q) use ($bankId) {
+                $q->where('bank_id', $bankId);
+            });
+        }
+
+        // Filter by branch (via user)
+        if ($request->filled('branch_id')) {
+            $branchId = $request->branch_id;
+            $query->whereHas('user', function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId);
+            });
+        }
+
+        // Filter by officer
+        if ($request->filled('officer_id')) {
+            $query->where('user_id', $request->officer_id);
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Date range filter (order date)
+        if ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->to_date);
+        }
+
+        return $query;
     }
 }

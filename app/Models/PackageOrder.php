@@ -21,6 +21,8 @@ class PackageOrder extends Model
         'status',
         'updated_by',
         'approved_at',
+        'expired_at',
+        'rejected_at',
         'payment_method',
         'payment_method_id',
         'txn_number',
@@ -28,6 +30,12 @@ class PackageOrder extends Model
         'account_no',
         'phone',
         'screenshot',
+    ];
+
+    protected $casts = [
+        'approved_at' => 'datetime',
+        'expired_at' => 'datetime',
+        'rejected_at' => 'datetime',
     ];
 
     public function paymentMethod()

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\District;
+use App\Models\Thana;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -19,8 +21,8 @@ class Branch extends Model
         'name',
         'code',
         'address',
-        'city',
-        'state',
+        'districts_id',
+        'thana_id',
         'phone',
         'email',
         'is_active',
@@ -68,5 +70,21 @@ class Branch extends Model
     public function loans()
     {
         return $this->hasMany(Loan::class);
+    }
+
+    /**
+     * Get the district for the branch.
+     */
+    public function district()
+    {
+        return $this->belongsTo(District::class, 'districts_id');
+    }
+
+    /**
+     * Get the thana for the branch.
+     */
+    public function thana()
+    {
+        return $this->belongsTo(Thana::class);
     }
 }

@@ -40,8 +40,8 @@
                             </div>
 
                             <div class="mb-3" id="txn-field">
-                                <label class="form-label">Transaction Number</label>
-                                <input type="text" name="txn_number" class="form-control" autocomplete="off">
+                                <label class="form-label">Transaction Number <span class="text-danger">*</span></label>
+                                <input type="text" name="txn_number" class="form-control" autocomplete="off" required>
                                 @error('txn_number')
                                     <div class="text-danger small">{{ $message }}</div>
                                 @enderror
@@ -49,7 +49,7 @@
 
                             <div class="mb-3">
                                 <label class="form-label">Phone</label>
-                                <input type="text" name="phone" class="form-control" required>
+                                <input type="text" name="phone" class="form-control" pattern="01[0-9]{9}" title="Phone number must start with 01 and have 11 digits in total" required value="{{ old('phone') }}">
                                 @error('phone')
                                     <div class="text-danger small">{{ $message }}</div>
                                 @enderror

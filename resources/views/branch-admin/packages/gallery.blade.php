@@ -96,6 +96,7 @@
                                     </h5>
 
                                     <p class="mb-1 package-leads">Leads: <strong>{{ $package->number_of_leads }}</strong>
+                                        | Duration: <span class="badge bg-secondary rounded-pill">{{ $package->duration }} Days</span>
                                     </p>
                                     <p class="text-muted small mb-3">{{ Str::limit($package->description, 100) }}</p>
                                 </div>
@@ -125,6 +126,7 @@
                                     </h5>
 
                                     <p class="mb-1 package-leads">Leads: <strong>{{ $package->number_of_leads }}</strong>
+                                        | Duration: <span class="badge bg-secondary rounded-pill">{{ $package->duration }} Days</span>
                                     </p>
                                     <p class="mb-2"><small
                                             class="text-warning">{{ Str::limit($package->description, 100) }} </small></p>
