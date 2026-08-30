@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'bank.admin' => \App\Http\Middleware\BankAdminMiddleware::class,
             'branch.admin' => \App\Http\Middleware\BranchAdminMiddleware::class,
             'customer' => \App\Http\Middleware\CustomerMiddleware::class,
+            'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
+            'role' => \Spatie\Permission\Middlewares\RoleMiddleware::class,
+            'feature.permission' => \App\Http\Middleware\FeaturePermissionMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
