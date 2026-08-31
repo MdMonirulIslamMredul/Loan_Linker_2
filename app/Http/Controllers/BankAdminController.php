@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Branch;
+use App\Models\District;
+use App\Models\Thana;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,7 +30,9 @@ class BankAdminController extends Controller
      */
     public function createBranch()
     {
-        return view('bank-admin.branches.create');
+        $districts = District::orderBy('name')->get();
+        $thanas = Thana::orderBy('name')->get();
+        return view('bank-admin.branches.create', compact('districts', 'thanas'));
     }
 
     /**
@@ -38,10 +42,10 @@ class BankAdminController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:50|unique:branches',
+            'code' => 'nullable|string|max:50',
             'address' => 'nullable|string',
-            'city' => 'nullable|string|max:100',
-            'state' => 'nullable|string|max:100',
+            'districts_id' => 'nullable|integer|exists:districts,id',
+            'thana_id' => 'nullable|integer|exists:thanas,id',
             'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email',
         ]);
@@ -115,7 +119,9 @@ class BankAdminController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        return view('bank-admin.branches.edit', compact('branch'));
+        $districts = District::orderBy('name')->get();
+        $thanas = Thana::orderBy('name')->get();
+        return view('bank-admin.branches.edit', compact('branch', 'districts', 'thanas'));
     }
 
     /**
@@ -130,10 +136,10 @@ class BankAdminController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:50|unique:branches,code,' . $branch->id,
+            'code' => 'nullable|string|max:50',
             'address' => 'nullable|string',
-            'city' => 'nullable|string|max:100',
-            'state' => 'nullable|string|max:100',
+            'districts_id' => 'nullable|integer|exists:districts,id',
+            'thana_id' => 'nullable|integer|exists:thanas,id',
             'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email',
             'is_active' => 'boolean',

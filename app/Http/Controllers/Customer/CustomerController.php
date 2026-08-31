@@ -14,11 +14,14 @@ use App\Models\CustomerDocument;
 use App\Models\CustomerFinancial;
 use App\Models\Division;
 use App\Models\District;
+use App\Models\Upazila;
+use App\Models\Thana;
 use App\Models\LeadAccess;
 use App\Models\LoanApplication;
 use App\Models\NewLoanApplication;
 use App\Models\ServiceCategory;
 use App\Models\ServiceType;
+use App\Models\CustomerFinancialLoan;
 use App\Models\User;
 
 class CustomerController extends Controller
@@ -108,9 +111,30 @@ class CustomerController extends Controller
             })
             ->toArray();
 
+        $upazilas = Upazila::orderBy('name')
+            ->get()
+            ->groupBy('district_id')
+            ->map(function ($group) {
+                return $group->pluck('name', 'id')->toArray();
+            })
+            ->toArray();
+
+        $thanas = Thana::orderBy('name')
+            ->get()
+            ->groupBy('district_id')
+            ->map(function ($group) {
+                return $group->pluck('name', 'id')->toArray();
+            })
+            ->toArray();
+
+        $upazilaToDistrict = Upazila::pluck('district_id', 'id')->toArray();
+
         return [
             'divisions' => $divisions,
             'districts' => $districts,
+            'upazilas' => $upazilas,
+            'thanas' => $thanas,
+            'upazilaToDistrict' => $upazilaToDistrict,
         ];
     }
 
@@ -124,6 +148,17 @@ class CustomerController extends Controller
         if (!$user || !$user->isCustomer()) {
             abort(403, 'Unauthorized.');
         }
+
+        $user->load([
+            'contactDivision',
+            'contactDistrict',
+            'contactUpazila',
+            'contactThana',
+            'permanentDivision',
+            'permanentDistrict',
+            'permanentUpazila',
+            'permanentThana',
+        ]);
 
         return view('customer.profile', compact('user'));
     }
@@ -145,6 +180,9 @@ class CustomerController extends Controller
             'user' => $user,
             'divisions' => $locationData['divisions'],
             'districts' => $locationData['districts'],
+            'upazilas' => $locationData['upazilas'],
+            'thanas' => $locationData['thanas'],
+            'upazilaToDistrict' => $locationData['upazilaToDistrict'],
         ]);
     }
 
@@ -335,9 +373,13 @@ class CustomerController extends Controller
         }
 
         $validated = $request->validate([
-            'rating' => 'required|integer|min:1|max:5',
+            'professionalism' => 'required|integer|min:1|max:5',
+            'behavior' => 'required|integer|min:1|max:5',
+            'response_time' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string|max:2000',
         ]);
+
+        $rating = round(($validated['professionalism'] + $validated['behavior'] + $validated['response_time']) / 3, 1);
 
         BankOfficerRating::updateOrCreate(
             [
@@ -346,7 +388,10 @@ class CustomerController extends Controller
                 'new_loan_application_id' => $newApplication->id,
             ],
             [
-                'rating' => $validated['rating'],
+                'rating' => $rating,
+                'professionalism' => $validated['professionalism'],
+                'behavior' => $validated['behavior'],
+                'response_time' => $validated['response_time'],
                 'comment' => $validated['comment'] ?? null,
             ]
         );
@@ -488,6 +533,7 @@ class CustomerController extends Controller
         $locationData = $this->getLocationData();
         $divisions = $locationData['divisions'];
         $districts = $locationData['districts'];
+        $thanas = $locationData['thanas'];
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -496,9 +542,11 @@ class CustomerController extends Controller
             'dob' => ['nullable', 'date'],
             'c_division_id' => ['required', 'integer', Rule::in(array_keys($divisions))],
             'c_district_id' => ['required', 'integer'],
+            'c_thana_id' => ['required', 'integer'],
             'contact_address' => ['nullable', 'string', 'max:1000'],
             'p_division_id' => ['required', 'integer', Rule::in(array_keys($divisions))],
             'p_district_id' => ['required', 'integer'],
+            'p_thana_id' => ['required', 'integer'],
             'permanent_address' => ['nullable', 'string', 'max:1000'],
             'education' => ['nullable', 'string', 'max:255'],
             'profession' => ['nullable', 'string', 'max:255'],
@@ -514,6 +562,14 @@ class CustomerController extends Controller
 
         if (! isset($districts[$data['p_division_id']][$data['p_district_id']])) {
             return back()->withErrors(['p_district_id' => 'The selected permanent district does not belong to the selected division.'])->withInput();
+        }
+
+        if (! isset($thanas[$data['c_district_id']][$data['c_thana_id']])) {
+            return back()->withErrors(['c_thana_id' => 'The selected contact thana does not belong to the selected district.'])->withInput();
+        }
+
+        if (! isset($thanas[$data['p_district_id']][$data['p_thana_id']])) {
+            return back()->withErrors(['p_thana_id' => 'The selected permanent thana does not belong to the selected district.'])->withInput();
         }
 
         $user->fill($data);
@@ -630,8 +686,11 @@ class CustomerController extends Controller
         }
 
         $customerFinancial = $user->customerFinancial;
+        $banks = Bank::where('is_active', true)->get();
+        $serviceCategories = ServiceCategory::where('is_active', true)->get();
+        $serviceTypes = ServiceType::where('is_active', true)->get();
 
-        return view('customer.financial', compact('customerFinancial'));
+        return view('customer.financial', compact('customerFinancial', 'banks', 'serviceCategories', 'serviceTypes'));
     }
 
     public function storeFinancial(Request $request)
@@ -642,20 +701,199 @@ class CustomerController extends Controller
             abort(403, 'Unauthorized.');
         }
 
-        $data = $request->validate([
+        $validator = Validator::make($request->all(), [
+            'salary_bank_id' => ['nullable', 'exists:banks,id'],
             'salary_by_bank' => ['nullable', 'numeric'],
             'salary_by_hand' => ['nullable', 'numeric'],
             'monthly_bank_transaction' => ['nullable', 'numeric'],
+            'has_loan' => ['nullable', 'boolean'],
             'existing_loans_credit_cards' => ['nullable', 'string', 'max:2000'],
         ]);
+
+        $data = $validator->validate();
 
         $customerFinancial = $user->customerFinancial ?? new CustomerFinancial();
         $customerFinancial->fill($data);
         $customerFinancial->save();
 
+        if (empty($data['has_loan'])) {
+            $customerFinancial->loans()->delete();
+        }
+
         $user->customer_financial_id = $customerFinancial->id;
         $user->save();
 
-        return redirect()->route('customer.profile')->with('success', 'Financial information saved successfully.');
+        return redirect()->route('customer.financial')->with('success', 'Financial information saved successfully.');
+    }
+
+    public function updateHasLoan(Request $request)
+    {
+        $user = auth()->user();
+
+        if (!$user || !$user->isCustomer()) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'has_loan' => ['required', 'boolean'],
+        ]);
+
+        $data = $validator->validate();
+
+        $customerFinancial = $user->customerFinancial ?? new CustomerFinancial();
+        $customerFinancial->has_loan = $data['has_loan'];
+        $customerFinancial->save();
+
+        if (empty($data['has_loan'])) {
+            $customerFinancial->loans()->delete();
+        }
+
+        $user->customer_financial_id = $customerFinancial->id;
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'has_loan' => (bool) $customerFinancial->has_loan,
+        ]);
+    }
+
+    public function createFinancialLoan()
+    {
+        $user = auth()->user();
+
+        if (!$user || !$user->isCustomer()) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $customerFinancial = $user->customerFinancial;
+        $banks = Bank::where('is_active', true)->get();
+        $serviceCategories = ServiceCategory::where('is_active', true)->get();
+        $serviceTypes = ServiceType::where('is_active', true)->get();
+
+        return view('customer.financial-loan-form', compact('customerFinancial', 'banks', 'serviceCategories', 'serviceTypes'));
+    }
+
+    public function storeFinancialLoan(Request $request)
+    {
+        $user = auth()->user();
+
+        if (!$user || !$user->isCustomer()) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'service_category_id' => ['required', 'exists:service_categories,id'],
+            'service_type_id' => ['required', 'exists:service_types,id'],
+            'bank_id' => ['nullable', 'exists:banks,id'],
+            'loan_amount' => ['required', 'numeric', 'min:0'],
+            'tenure_months' => ['nullable', 'integer', 'min:1'],
+        ]);
+
+        $validator->after(function ($validator) use ($request) {
+            if ((int) $request->input('service_category_id') !== 1 && empty($request->input('tenure_months'))) {
+                $validator->errors()->add('tenure_months', 'The tenure months field is required for non-credit-card loans.');
+            }
+        });
+
+        $data = $validator->validate();
+
+        $customerFinancial = $user->customerFinancial;
+
+        if (!$customerFinancial) {
+            $customerFinancial = new CustomerFinancial();
+            $customerFinancial->has_loan = true;
+            $customerFinancial->save();
+
+            $user->customer_financial_id = $customerFinancial->id;
+            $user->save();
+        } else {
+            $customerFinancial->has_loan = true;
+            $customerFinancial->save();
+        }
+
+        $customerFinancial->loans()->create([
+            'service_category_id' => $data['service_category_id'],
+            'service_type_id' => $data['service_type_id'],
+            'bank_id' => $data['bank_id'] ?? null,
+            'loan_amount' => $data['loan_amount'],
+            'tenure_months' => $data['tenure_months'] ?? null,
+        ]);
+
+        return redirect()->route('customer.financial')->with('success', 'Loan information added successfully.');
+    }
+
+    public function editFinancialLoan(CustomerFinancialLoan $loan)
+    {
+        $user = auth()->user();
+
+        if (!$user || !$user->isCustomer()) {
+            abort(403, 'Unauthorized.');
+        }
+
+        if ($loan->customer_financial_id !== ($user->customerFinancial?->id ?? null)) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $banks = Bank::where('is_active', true)->get();
+        $serviceCategories = ServiceCategory::where('is_active', true)->get();
+        $serviceTypes = ServiceType::where('is_active', true)->get();
+
+        return view('customer.financial-loan-form', compact('loan', 'banks', 'serviceCategories', 'serviceTypes'));
+    }
+
+    public function updateFinancialLoan(Request $request, CustomerFinancialLoan $loan)
+    {
+        $user = auth()->user();
+
+        if (!$user || !$user->isCustomer()) {
+            abort(403, 'Unauthorized.');
+        }
+
+        if ($loan->customer_financial_id !== ($user->customerFinancial?->id ?? null)) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'service_category_id' => ['required', 'exists:service_categories,id'],
+            'service_type_id' => ['required', 'exists:service_types,id'],
+            'bank_id' => ['nullable', 'exists:banks,id'],
+            'loan_amount' => ['required', 'numeric', 'min:0'],
+            'tenure_months' => ['nullable', 'integer', 'min:1'],
+        ]);
+
+        $validator->after(function ($validator) use ($request) {
+            if ((int) $request->input('service_category_id') !== 1 && empty($request->input('tenure_months'))) {
+                $validator->errors()->add('tenure_months', 'The tenure months field is required for non-credit-card loans.');
+            }
+        });
+
+        $data = $validator->validate();
+
+        $loan->update([
+            'service_category_id' => $data['service_category_id'],
+            'service_type_id' => $data['service_type_id'],
+            'bank_id' => $data['bank_id'] ?? null,
+            'loan_amount' => $data['loan_amount'],
+            'tenure_months' => $data['tenure_months'] ?? null,
+        ]);
+
+        return redirect()->route('customer.financial')->with('success', 'Loan information updated successfully.');
+    }
+
+    public function destroyFinancialLoan(CustomerFinancialLoan $loan)
+    {
+        $user = auth()->user();
+
+        if (!$user || !$user->isCustomer()) {
+            abort(403, 'Unauthorized.');
+        }
+
+        if ($loan->customer_financial_id !== ($user->customerFinancial?->id ?? null)) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $loan->delete();
+
+        return redirect()->route('customer.financial')->with('success', 'Loan removed successfully.');
     }
 }

@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Bank;
 use App\Models\BankOfficial;
+use App\Models\Branch;
 use App\Models\Division;
 use App\Models\District;
+use App\Models\Thana;
+use App\Models\Upazila;
 use App\Models\LeadAccess;
 use App\Models\Loan;
 use App\Models\LoanCategory;
@@ -96,9 +99,30 @@ class BranchAdminController extends Controller
             })
             ->toArray();
 
+        $upazilas = Upazila::orderBy('name')
+            ->get()
+            ->groupBy('district_id')
+            ->map(function ($group) {
+                return $group->pluck('name', 'id')->toArray();
+            })
+            ->toArray();
+
+        $thanas = Thana::orderBy('name')
+            ->get()
+            ->groupBy('district_id')
+            ->map(function ($group) {
+                return $group->pluck('name', 'id')->toArray();
+            })
+            ->toArray();
+
+        $upazilaToDistrict = Upazila::pluck('district_id', 'id')->toArray();
+
         return [
             'divisions' => $divisions,
             'districts' => $districts,
+            'upazilas' => $upazilas,
+            'thanas' => $thanas,
+            'upazilaToDistrict' => $upazilaToDistrict,
         ];
     }
 
@@ -107,7 +131,17 @@ class BranchAdminController extends Controller
      */
     public function profile()
     {
-        $user = Auth::user();
+        $user = Auth::user()->load([
+            'contactDivision',
+            'contactDistrict',
+            'contactUpazila',
+            'contactThana',
+            'permanentDivision',
+            'permanentDistrict',
+            'permanentUpazila',
+            'permanentThana',
+        ]);
+
         return view('branch-admin.profile', compact('user'));
     }
 
@@ -126,6 +160,9 @@ class BranchAdminController extends Controller
             'branches' => $branches,
             'divisions' => $locationData['divisions'],
             'districts' => $locationData['districts'],
+            'upazilas' => $locationData['upazilas'],
+            'thanas' => $locationData['thanas'],
+            'upazilaToDistrict' => $locationData['upazilaToDistrict'],
             'banks' => $banks,  
         ]);
     }
@@ -140,6 +177,8 @@ class BranchAdminController extends Controller
         $locationData = $this->getLocationData();
         $divisions = $locationData['divisions'];
         $districts = $locationData['districts'];
+        $upazilas = $locationData['upazilas'];
+        $thanas = $locationData['thanas'];
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -151,9 +190,13 @@ class BranchAdminController extends Controller
             'bank_id' => 'nullable|integer|exists:banks,id',
             'c_division_id' => ['required', 'integer', Rule::in(array_keys($divisions))],
             'c_district_id' => ['required', 'integer'],
+            'c_upazila_id' => ['nullable', 'integer'],
+            'c_thana_id' => ['required', 'integer'],
             'contact_address' => 'nullable|string|max:1000',
             'p_division_id' => ['required', 'integer', Rule::in(array_keys($divisions))],
             'p_district_id' => ['required', 'integer'],
+            'p_upazila_id' => ['nullable', 'integer'],
+            'p_thana_id' => ['required', 'integer'],
             'permanent_address' => 'nullable|string|max:1000',
             'education' => 'nullable|string|max:255',
             'profession' => 'nullable|string|max:255',
@@ -169,6 +212,11 @@ class BranchAdminController extends Controller
 
         if (! isset($districts[$validated['p_division_id']][$validated['p_district_id']])) {
             return back()->withErrors(['p_district_id' => 'The selected permanent district does not belong to the selected division.'])->withInput();
+        }
+
+
+        if (! isset($thanas[$validated['p_district_id']][$validated['p_thana_id']])) {
+            return back()->withErrors(['p_thana_id' => 'The selected permanent thana does not belong to the selected district.'])->withInput();
         }
 
         $user->fill($validated);
@@ -216,7 +264,17 @@ class BranchAdminController extends Controller
         $bankOfficial = $user->bankOfficial;
         $banks = Bank::orderBy('name')->get();
 
-        return view('branch-admin.bank-official', compact('bankOfficial', 'banks'));
+        $selectedBankName = old('bank_name', $bankOfficial->bank_name ?? optional(auth()->user()->bank)->name ?? '');
+        $selectedBank = $banks->firstWhere('name', $selectedBankName);
+
+        $branches = $selectedBank
+            ? Branch::where('bank_id', $selectedBank->id)
+                ->where('is_active', 1)
+                ->orderBy('name')
+                ->get()
+            : collect();
+
+        return view('branch-admin.bank-official', compact('bankOfficial', 'banks', 'branches', 'selectedBankName'));
     }
 
     /**
@@ -228,7 +286,7 @@ class BranchAdminController extends Controller
 
         $validated = $request->validate([
             'bank_name' => 'required|string|max:255|exists:banks,name',
-            'branch_name' => 'required|string|max:255',
+            'branch_name' => 'nullable|string|max:255',
             'designation' => 'required|string|max:255',
             'department' => 'required|string|max:255',
             'office_id_number' => 'required|string|max:255',
