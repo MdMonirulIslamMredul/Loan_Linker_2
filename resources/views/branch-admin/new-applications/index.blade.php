@@ -95,6 +95,16 @@
                     </div>
 
                     <div class="col-md-3">
+                        <label for="thana_id" class="form-label">Thana</label>
+                        <select name="thana_id" id="thana_id" class="form-select">
+                            <option value="">Any Thana</option>
+                            @foreach ($thanas as $thana)
+                                <option value="{{ $thana->id }}" data-district-id="{{ $thana->district_id }}" {{ request('thana_id') == $thana->id ? 'selected' : '' }}>{{ $thana->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
                         <label for="from_date" class="form-label">From Date</label>
                         <input type="date" name="from_date" id="from_date" class="form-control" value="{{ request('from_date') }}">
                     </div>
@@ -130,7 +140,7 @@
                                     <th>Tenure</th>
                                     <th>Category</th>
                                     <th>Type</th>
-                                    <th>District</th>
+                                    <th>District , Thana</th>
                                     {{-- <th>Banks</th> --}}
                                     {{-- <th>Status</th> --}}
                                     <th>Requested</th>
@@ -159,7 +169,15 @@
                                         <td class="text-capitalize">{{ str_replace('_', ' ', $application->service_type) }}</td> --}}
                                         <td class="text-capitalize">{{ optional($application->serviceCategory)->name ?? 'N/A' }}</td>
                                         <td class="text-capitalize">{{ optional($application->serviceType)->name ?? 'N/A' }}</td>
-                                        <td class="text-capitalize">{{ optional($application->customer->contactDistrict)->name ?? 'N/A' }}</td>
+                                        <td class="text-capitalize">
+                                            <strong>{{ optional($application->customer->contactDistrict)->name ?? 'N/A' }}</strong>
+                                            @if(optional($application->customer->contactUpazila)->name)
+                                                , {{ optional($application->customer->contactUpazila)->name }}
+                                            @endif
+                                            @if(optional($application->customer->contactThana)->name)
+                                                , {{ optional($application->customer->contactThana)->name }}
+                                            @endif
+                                        </td>
                                         {{-- <td>
                                             @php
                                                 $bankNames = collect($application->bank_ids)->filter()->map(function ($bankId) use ($banks) {
@@ -257,11 +275,14 @@
             document.addEventListener('DOMContentLoaded', function () {
                 const categorySelect = document.getElementById('service_category_id');
                 const typeSelect = document.getElementById('service_type_id');
-                const typeOptions = Array.from(typeSelect.options);
-                let activeUnlockForm = null;
+                const typeOptions = typeSelect ? Array.from(typeSelect.options) : [];
+                const districtSelect = document.getElementById('district_id');
+                const thanaSelect = document.getElementById('thana_id');
+                const thanaOptions = thanaSelect ? Array.from(thanaSelect.options) : [];
                 const unlockModalElement = document.getElementById('unlockConfirmModal');
                 const unlockButtons = document.querySelectorAll('.unlock-confirm-btn');
                 const confirmYesButton = document.getElementById('unlockConfirmYes');
+                let activeUnlockForm = null;
                 let unlockModal = null;
 
                 if (typeof bootstrap !== 'undefined' && unlockModalElement) {
@@ -294,6 +315,34 @@
                 if (categorySelect && typeSelect) {
                     categorySelect.addEventListener('change', filterTypes);
                     filterTypes();
+                }
+
+                function filterThanas() {
+                    const selectedDistrict = districtSelect.value;
+
+                    thanaOptions.forEach(function (option) {
+                        if (!option.value) {
+                            option.style.display = '';
+                            return;
+                        }
+
+                        const optionDistrict = option.dataset.districtId || '';
+                        const shouldShow = !selectedDistrict || String(optionDistrict) === String(selectedDistrict);
+                        option.style.display = shouldShow ? '' : 'none';
+                    });
+
+                    if (selectedDistrict) {
+                        const currentValue = thanaSelect.value;
+                        const currentOption = thanaSelect.querySelector('option[value="' + currentValue + '"]');
+                        if (currentValue && currentOption && currentOption.style.display === 'none') {
+                            thanaSelect.value = '';
+                        }
+                    }
+                }
+
+                if (districtSelect && thanaSelect) {
+                    districtSelect.addEventListener('change', filterThanas);
+                    filterThanas();
                 }
 
                 unlockButtons.forEach(function (button) {
