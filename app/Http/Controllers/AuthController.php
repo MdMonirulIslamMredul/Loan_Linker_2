@@ -39,14 +39,20 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             // Redirect based on user role
-            if ($user->isSuperAdmin()) {
-                return redirect()->intended('/super-admin/dashboard');
+            if ($user->isSuperAdmin() ||
+                $user->isAdmin() ||
+                $user->isOperationsHead() ||
+                $user->isMarketingHead() ||
+                $user->isHrHead() ||
+                $user->isComplianceOfficer()
+            ) {
+                return redirect('/super-admin/dashboard');
             } elseif ($user->isBankAdmin()) {
-                return redirect()->intended('/bank-admin/dashboard');
+                return redirect('/bank-admin/dashboard');
             } elseif ($user->isBranchAdmin()) {
-                return redirect()->intended('/branch-admin/dashboard');
+                return redirect('/branch-admin/dashboard');
             } elseif (method_exists($user, 'isCustomer') && $user->isCustomer()) {
-                return redirect()->intended('/customer/dashboard');
+                return redirect('/customer/dashboard');
             }
         }
 

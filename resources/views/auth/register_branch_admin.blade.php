@@ -473,7 +473,7 @@
                             <div class="form-check mb-3">
                                 <input class="form-check-input @error('accepted_terms') is-invalid @enderror" type="checkbox" id="accepted_terms" name="accepted_terms" {{ old('accepted_terms') ? 'checked' : '' }}>
                                 <label class="form-check-label" for="accepted_terms">
-                                    I accept the <a href="{{ route('pages.terms') }}" target="_blank" class="text-warning">Terms & Conditions</a>.
+                                    I accept the <a href="{{ route('pages.terms') }}" target="_blank" class="text-warning">Terms & Conditions</a> and <a href="{{ route('pages.bank_officer_code') }}" target="_blank" class="text-warning">Bank Officer Code of Conduct</a>.
                                 </label>
                                 @error('accepted_terms')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
