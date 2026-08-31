@@ -44,22 +44,22 @@
                             <div class="form-row">
                                 <div class="field">
                                     <label for="first">First Name *</label>
-                                    <input id="first" name="first" type="text">
+                                    <input id="first" name="first" type="text" value="{{ old('first') }}">
                                 </div>
                                 <div class="field">
                                     <label for="last">Last Name</label>
-                                    <input id="last" name="last" type="text">
+                                    <input id="last" name="last" type="text" value="{{ old('last') }}">
                                 </div>
                             </div>
 
                             <div class="form-row">
                                 <div class="field">
                                     <label for="mobile">Mobile No *</label>
-                                    <input id="mobile" name="mobile" type="text">
+                                    <input id="mobile" name="mobile" type="text" pattern="01[0-9]{9}" title="Phone number must start with 01 and have 11 digits in total" required value="{{ old('mobile') }}">
                                 </div>
                                 <div class="field">
                                     <label for="email">Email ID *</label>
-                                    <input id="email" name="email" type="email">
+                                    <input id="email" name="email" type="email" pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$" title="Please enter a valid email address (e.g., ending with .com)" required value="{{ old('email') }}">
                                 </div>
                             </div>
 
