@@ -129,7 +129,14 @@
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <small class="text-muted d-block">Phone</small>
-                                    <strong>{{ optional($customer)->phone ?? 'N/A' }}</strong>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <strong>{{ optional($customer)->phone ?? 'N/A' }}</strong>
+                                        @if(optional($customer)->phone)
+                                            <a href="tel:{{ optional($customer)->phone }}" class="btn btn-sm btn-outline-success">
+                                                <i class="bi bi-telephone-fill me-1"></i>Call
+                                            </a>
+                                        @endif
+                                    </div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <small class="text-muted d-block">NID Number</small>

@@ -71,7 +71,7 @@
                                     <th>Tenure</th>
                                     <th>Category</th>
                                     <th>Type</th>
-                                    <th>District</th>
+                                    <th>Location</th>
                                     <th>Banks</th>
                                     {{-- <th>Status</th> --}}
                                     <th>Requested</th>
@@ -88,7 +88,17 @@
                                         <td>{{ $application->tenure_months }} mo</td>
                                         <td class="text-capitalize">{{ optional($application->serviceCategory)->name ?? 'N/A' }}</td>
                                         <td class="text-capitalize">{{ optional($application->serviceType)->name ?? 'N/A' }}</td>
-                                        <td class="text-capitalize">{{ optional($application->customer->contactDistrict)->name ?? 'N/A' }}</td>
+                                         <td class="text-capitalize">
+                                            <strong>{{ optional($application->customer->contactDistrict)->name ?? 'N/A' }}</strong>
+                                            @if(optional($application->customer->contactUpazila)->name)
+                                                , {{ optional($application->customer->contactUpazila)->name }}
+                                            @endif
+                                            @if(optional($application->customer->contactThana)->name)
+                                                , {{ optional($application->customer->contactThana)->name }}
+                                            @endif
+                                        </td>
+
+
                                         <td>
                                             @php
                                                 $bankNames = collect($application->bank_ids)->filter()->map(function ($bankId) use ($banks) {
