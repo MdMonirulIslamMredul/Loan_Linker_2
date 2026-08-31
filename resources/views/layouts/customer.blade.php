@@ -77,18 +77,149 @@
         }
 
         .sidebar-toggle-btn {
-            position: fixed;
-            top: 3rem;
-            left: 1rem;
-            z-index: 1055;
-            width: 44px;
-            height: 44px;
+            width: 38px;
+            height: 38px;
             padding: 0;
-            border-radius: 50%;
+            border-radius: 0.5rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+            border: none;
+            background: transparent;
+            color: #1f2937;
+            font-size: 1.35rem;
+            transition: background 0.2s ease;
+        }
+
+        .sidebar-toggle-btn:hover,
+        .sidebar-toggle-btn:focus {
+            background: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
+            outline: none;
+        }
+
+        /* ── Mobile Navbar Collapse ───────────────────────────── */
+        @media (max-width: 991.98px) {
+            #navbarNav {
+                background: #ffffff;
+                border-top: 1px solid #e5e9f0;
+                border-radius: 0 0 1rem 1rem;
+                box-shadow: 0 12px 32px rgba(13, 71, 161, 0.10);
+                padding: 0 0 1rem 0;
+                margin-top: 0.25rem;
+                animation: slideDown 0.22s ease;
+            }
+
+            @keyframes slideDown {
+                from {
+                    opacity: 0;
+                    transform: translateY(-8px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            /* User profile card */
+            .mobile-user-card {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                padding: 1rem 1.25rem;
+                background: linear-gradient(135deg, #0d6efd11 0%, #6366f108 100%);
+                border-bottom: 1px solid #e5e9f0;
+                margin-bottom: 0.5rem;
+            }
+
+            .mobile-user-card .user-meta h6 {
+                margin: 0;
+                font-size: 0.92rem;
+                font-weight: 700;
+                color: #1f2937;
+                line-height: 1.3;
+            }
+
+            .mobile-user-card .user-meta span {
+                font-size: 0.75rem;
+                color: #6b7280;
+            }
+
+            /* Nav links */
+            #navbarNav .navbar-nav .nav-link {
+                padding: 0.6rem 1.25rem;
+                font-weight: 500;
+                color: #374151;
+                border-radius: 0.5rem;
+                margin: 0 0.5rem;
+                transition: background 0.18s ease, color 0.18s ease;
+                display: flex;
+                align-items: center;
+                gap: 0.6rem;
+                justify-content: center;
+            }
+
+            #navbarNav .navbar-nav .nav-link:hover {
+                background: #f0f5ff;
+                color: #0d6efd;
+            }
+
+            #navbarNav .navbar-nav .nav-link.active {
+                background: #0d6efd;
+                color: #fff;
+            }
+
+            /* Section divider */
+            .mobile-nav-divider {
+                height: 1px;
+                background: #e5e9f0;
+                margin: 0.4rem 1.25rem;
+            }
+
+            /* CTA button */
+            .mobile-cta-btn {
+                display: block;
+                margin: 0.75rem 1rem 0.25rem;
+                padding: 0.7rem 1rem;
+                background: linear-gradient(135deg, #0d6efd, #6366f1);
+                color: #fff !important;
+                font-weight: 600;
+                border-radius: 0.6rem;
+                text-align: center;
+                text-decoration: none;
+                font-size: 0.92rem;
+                transition: opacity 0.2s ease, transform 0.2s ease;
+                box-shadow: 0 4px 14px rgba(13, 110, 253, 0.3);
+            }
+
+            .mobile-cta-btn:hover {
+                opacity: 0.92;
+                transform: translateY(-1px);
+            }
+
+            /* Dropdown in mobile */
+            #navbarNav .dropdown-menu {
+                border: none;
+                box-shadow: none;
+                background: #f8fafc;
+                border-radius: 0.5rem;
+                padding: 0.25rem 0;
+                margin: 0 0.5rem;
+            }
+
+            #navbarNav .dropdown-item {
+                padding: 0.55rem 1.25rem;
+                font-size: 0.875rem;
+                color: #374151;
+                border-radius: 0.4rem;
+                transition: background 0.15s;
+            }
+
+            #navbarNav .dropdown-item:hover {
+                background: #e8f0fe;
+                color: #0d6efd;
+            }
         }
 
         /* Compact pagination for customer pages */
@@ -137,6 +268,9 @@
     </style>
 
     @stack('styles')
+    @if (isset($logoSettings) && $logoSettings->favicon)
+    <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . $logoSettings->favicon) }}">
+    @endif
 </head>
 
 <body>
@@ -150,6 +284,12 @@
     <header class="bg-white shadow-sm sticky-top">
         <nav class="navbar navbar-expand-lg navbar-light bg-white">
             <div class="container">
+                {{-- Mobile sidebar toggle: shown only on small screens, left of brand --}}
+                <button class="sidebar-toggle-btn d-lg-none me-2" type="button"
+                    data-bs-toggle="offcanvas" data-bs-target="#customerSidebar"
+                    aria-controls="customerSidebar" aria-label="Open customer menu">
+                    <i class="bi bi-list"></i>
+                </button>
                 <a class="navbar-brand d-flex align-items-center" href="/">
                     @if ($logoSettings->header_logo)
                     <img src="{{ asset('storage/' . $logoSettings->header_logo) }}"
@@ -163,61 +303,134 @@
                     <span class="fs-4 fw-bold">{{ $logoSettings->site_name }}</span>
                 </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
+                <button class="navbar-toggler border-0 p-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    @auth
+                    @php
+                    $navUser = auth()->user();
+                    $navAvatar = match ($navUser->role) {
+                        'customer' => $navUser->customerDocument?->picture ?? null,
+                        'branch_admin', 'bank_admin' => $navUser->officerDocument?->picture ?? null,
+                        default => null
+                    } ?? $navUser->profile_photo ?? $navUser->avatar ?? $navUser->image ?? null;
+                    if ($navAvatar && !preg_match('/^(https?:)?\/\//i', $navAvatar)) {
+                    $navAvatar = asset('storage/' . ltrim(preg_replace('#^(public/|storage/)#i', '', $navAvatar), '/'));
+                    }
+                    @endphp
+                    @if ($navAvatar)
+                    <img src="{{ $navAvatar }}" alt="{{ $navUser->name }}"
+                        class="rounded-circle border border-2 border-primary"
+                        style="width: 36px; height: 36px; object-fit: cover;">
+                    @else
+                    <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary text-white"
+                        style="width: 36px; height: 36px; font-size: 1.1rem;">
+                        <i class="bi bi-person-fill"></i>
+                    </span>
+                    @endif
+                    @else
+                    <i class="bi bi-list fs-2"></i>
+                    @endauth
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto align-items-lg-center">
-                        <li class="nav-item">
-                            <a class="nav-link fw-medium" href="/">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link fw-medium" href="{{ route('about') }}">About Us</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link fw-medium" href="{{ route('services') }}">Services</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link fw-medium" href="{{ route('loan-categories.index') }}">Loans</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link fw-medium" href="{{ route('contact') }}">Contact Us</a>
-                        </li>
 
-                       
+                    @auth
+                    @php
+                    $user = auth()->user();
+                    $role = $user->role;
+                    $avatar = match ($role) {
+                        'customer' => $user->customerDocument?->picture ?? null,
+                        'branch_admin', 'bank_admin' => $user->officerDocument?->picture ?? null,
+                        default => null
+                    } ?? $user->profile_photo ?? $user->avatar ?? $user->image ?? null;
+                    if ($avatar && !preg_match('/^(https?:)?\/\//i', $avatar)) {
+                    $avatar = asset('storage/' . ltrim(preg_replace('#^(public/|storage/)#i', '', $avatar), '/'));
+                    }
+                    @endphp
+
+                    {{-- Mobile user profile card (hidden on desktop) --}}
+                    <!-- <div class="mobile-user-card d-lg-none">
+                        @if ($avatar)
+                            <img src="{{ $avatar }}" alt="{{ $user->name }}"
+                                class="rounded-circle border border-2 border-primary flex-shrink-0"
+                                style="width: 46px; height: 46px; object-fit: cover;">
+                        @else
+                            <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary text-white flex-shrink-0"
+                                style="width: 46px; height: 46px; font-size: 1.3rem;">
+                                <i class="bi bi-person-fill"></i>
+                            </span>
+                        @endif
+                        <div class="user-meta">
+                            <h6>{{ $user->name }}</h6>
+                            <span>{{ $user->email }}</span>
+                        </div>
+                    </div> -->
+                    @endauth
+
+                    <ul class="navbar-nav ms-auto align-items-center">
+
+                        {{-- Main nav links --}}
+                        <li class="nav-item">
+                            <a class="nav-link fw-medium {{ request()->is('/') ? 'active' : '' }}" href="/">
+                                <i class="bi bi-house d-lg-none"></i> Home
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-medium" href="{{ route('about') }}">
+                                <i class="bi bi-info-circle d-lg-none"></i> About Us
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-medium" href="{{ route('services') }}">
+                                <i class="bi bi-grid d-lg-none"></i> Services
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-medium" href="{{ route('loan-categories.index') }}">
+                                <i class="bi bi-bank d-lg-none"></i> Loans
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-medium" href="{{ route('contact') }}">
+                                <i class="bi bi-envelope d-lg-none"></i> Contact Us
+                            </a>
+                        </li>
 
                         @auth
+                        {{-- Divider (mobile only) --}}
+                        <li class="d-lg-none w-100">
+                            <div class="mobile-nav-divider"></div>
+                        </li>
+
                         <li class="nav-item">
-                            @php
-                                $user = auth()->user();
-                                $role = $user->role;
-                                if ($role === 'customer') {
-                                    $avatar = $user->customerDocument?->picture ?? $user->profile_photo ?? $user->avatar ?? $user->image ?? null;
-                                } else {
-                                    $avatar = $user->profile_photo ?? $user->avatar ?? $user->image ?? null;
-                                }
-                                if ($avatar && !preg_match('/^(https?:)?\/\//i', $avatar)) {
-                                    $avatar = asset('storage/' . ltrim(preg_replace('#^(public/|storage/)#i', '', $avatar), '/'));
-                                }
-                            @endphp
                             @if ($role === 'customer')
-                            <a class="nav-link fw-medium" href="{{ url('customer/dashboard') }}">Dashboard</a>
-                            @elseif ($role === 'super_admin')
-                            <a class="nav-link fw-medium" href="{{ route('super-admin.dashboard') }}">Dashboard</a>
+                            <a class="nav-link fw-medium" href="{{ url('customer/dashboard') }}">
+                                <i class="bi bi-speedometer2 d-lg-none"></i> Dashboard
+                            </a>
+                            @elseif (in_array($role, ['super_admin', 'admin', 'operations_head', 'marketing_head', 'hr_head', 'compliance_officer']))
+                            <a class="nav-link fw-medium" href="{{ route('super-admin.dashboard') }}">
+                                <i class="bi bi-speedometer2 d-lg-none"></i> Dashboard
+                            </a>
                             @elseif ($role === 'branch_admin')
-                            <a class="nav-link fw-medium" href="{{ route('branch-admin.dashboard') }}">Dashboard</a>
+                            <a class="nav-link fw-medium" href="{{ route('branch-admin.dashboard') }}">
+                                <i class="bi bi-speedometer2 d-lg-none"></i> Dashboard
+                            </a>
                             @elseif ($role === 'bank_admin')
-                            <a class="nav-link fw-medium" href="{{ route('bank-admin.dashboard') }}">Dashboard</a>
+                            <a class="nav-link fw-medium" href="{{ route('bank-admin.dashboard') }}">
+                                <i class="bi bi-speedometer2 d-lg-none"></i> Dashboard
+                            </a>
                             @else
-                            <a class="nav-link fw-medium" href="{{ url('/') }}">Dashboard</a>
+                            <a class="nav-link fw-medium" href="{{ url('/') }}">
+                                <i class="bi bi-speedometer2 d-lg-none"></i> Dashboard
+                            </a>
                             @endif
                         </li>
+
                         <li class="nav-item dropdown ms-lg-3">
-                            <a class="nav-link d-flex align-items-center gap-2 dropdown-toggle" href="#" id="customerNavDropdown"
-                                role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link d-flex align-items-center gap-2 dropdown-toggle" href="#"
+                                id="customerNavDropdown" role="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
                                 @if ($avatar)
-                                <img src="{{ $avatar }}" alt="{{ auth()->user()->name }}"
+                                <img src="{{ $avatar }}" alt="{{ $user->name }}"
                                     class="rounded-circle" style="width: 34px; height: 34px; object-fit: cover;">
                                 @else
                                 <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white"
@@ -225,33 +438,56 @@
                                     <i class="bi bi-person-fill"></i>
                                 </span>
                                 @endif
-                                <span>{{ auth()->user()->name ?? 'Account' }}</span>
+                                <span>{{ $user->name ?? 'Account' }}</span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="customerNavDropdown">
-                                <li><a class="dropdown-item" href="{{ route('customer.profile') }}">My Profile</a></li>
-                                <li><a class="dropdown-item" href="{{ route('customer.profile.password.edit') }}">Change Password</a></li>
+                                @if (in_array($role, ['super_admin', 'admin', 'operations_head', 'marketing_head', 'hr_head', 'compliance_officer']))
+                                    <li><a class="dropdown-item" href="{{ route('super-admin.profile.password.edit') }}"><i class="bi bi-shield-lock me-2 text-primary"></i>Change Password</a></li>
+                                @elseif ($role === 'branch_admin')
+                                    <li><a class="dropdown-item" href="{{ route('branch-admin.profile') }}"><i class="bi bi-person me-2 text-primary"></i>My Profile</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('branch-admin.profile.edit') }}"><i class="bi bi-pencil-square me-2 text-primary"></i>Edit Profile</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('branch-admin.profile.password.edit') }}"><i class="bi bi-shield-lock me-2 text-primary"></i>Change Password</a></li>
+                                @elseif ($role === 'customer')
+                                    <li><a class="dropdown-item" href="{{ route('customer.profile') }}"><i class="bi bi-person me-2 text-primary"></i>My Profile</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('customer.profile.edit') }}"><i class="bi bi-pencil-square me-2 text-primary"></i>Edit Profile</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('customer.profile.password.edit') }}"><i class="bi bi-shield-lock me-2 text-primary"></i>Change Password</a></li>
+                                @endif
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
                                 <li>
-                                    <button class="dropdown-item text-danger" type="submit" form="logout-form">Logout</button>
+                                    <button class="dropdown-item text-danger" type="submit" form="logout-form">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                    </button>
                                 </li>
                             </ul>
                         </li>
+
                         @else
                         <li class="nav-item">
-                            <a class="nav-link fw-medium" href="{{ route('login') }}">Login</a>
+                            <a class="nav-link fw-medium" href="{{ route('login') }}">
+                                <i class="bi bi-box-arrow-in-right d-lg-none"></i> Login
+                            </a>
                         </li>
                         <li class="nav-item ms-lg-2">
                             <a href="{{ route('login') }}" class="btn btn-primary">Get Started</a>
                         </li>
                         @endauth
 
-                            <li class="nav-item ms-lg-2">
-                                <a href="{{ route('customer.new_application.create') }}"  class="btn btn-primary"> Apply For Loan </a>
-                            </li>
-                        
+                        {{-- Apply For Loan CTA --}}
+                        <li class="nav-item ms-lg-2 d-lg-block d-none">
+                            <a href="{{ route('customer.new_application.create') }}" class="btn btn-primary">Apply For Loan</a>
+                        </li>
+
                     </ul>
+
+                    {{-- Mobile CTA full-width button --}}
+                    <div class="d-lg-none">
+                        <a href="{{ route('customer.new_application.create') }}" class="mobile-cta-btn">
+                            <i class="bi bi-file-earmark-plus me-2"></i>Apply For Loan
+                        </a>
+                    </div>
+
                 </div>
             </div>
         </nav>
@@ -316,9 +552,6 @@
         </div>
 
         <div class="d-lg-flex flex-grow-1">
-            <button class="btn btn-primary sidebar-toggle-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#customerSidebar" aria-controls="customerSidebar" aria-label="Open customer menu">
-                <i class="bi bi-list"></i>
-            </button>
             <aside
                 class="sidebar d-none d-lg-flex flex-column border-end p-4 overflow-auto card rounded-3 shadow-sm">
 
@@ -505,6 +738,158 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Floating EMI Calculator Button -->
+    @if(!request()->routeIs('chat.*'))
+    <a href="#" id="floatingEmiButton" class="floating-emi-btn" title="EMI Calculator">
+        <img src="{{ asset('images/emi-calculator-icon.png') }}" alt="EMI Calculator" class="emi-btn-image">
+    </a>
+    @endif
+
+    <style>
+        /* Floating EMI Button Styles */
+        .floating-emi-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 2.5px solid rgba(255, 215, 0, 0.6);
+            backdrop-filter: blur(12px);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            z-index: 999;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .floating-emi-btn:hover {
+            transform: scale(1.1);
+            background: rgba(0, 0, 0, 0.35);
+            border-color: rgba(255, 215, 0, 0.8);
+            box-shadow: 0 12px 32px rgba(255, 215, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        .floating-emi-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Tooltip */
+        .floating-emi-btn::after {
+            content: 'EMI Calculator';
+            position: absolute;
+            bottom: 85px;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            font-weight: 500;
+        }
+
+        .floating-emi-btn:hover::after {
+            opacity: 1;
+        }
+
+        /* Mobile View */
+        @media (max-width: 768px) {
+            .floating-emi-btn {
+                bottom: 20px;
+                right: 20px;
+                width: 65px;
+                height: 65px;
+                font-size: 24px;
+            }
+
+            .floating-emi-btn::after {
+                font-size: 11px;
+                padding: 6px 10px;
+                bottom: 80px;
+            }
+        }
+
+        /* Hide on very small screens if needed */
+        @media (max-width: 480px) {
+            .floating-emi-btn {
+                bottom: 15px;
+                right: 15px;
+                width: 60px;
+                height: 60px;
+                font-size: 20px;
+            }
+        }
+
+        /* Animation on page load */
+        @keyframes slideInFromBottom {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .floating-emi-btn {
+            animation: slideInFromBottom 0.5s ease-out;
+        }
+
+        /* EMI Button Image Styling */
+        .emi-btn-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const floatingBtn = document.getElementById('floatingEmiButton');
+
+            if (floatingBtn) {
+                floatingBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    // Check if calculator section exists on current page
+                    const calculatorSection = document.getElementById('calculator');
+
+                    if (calculatorSection) {
+                        // Smooth scroll to the EMI calculator section
+                        calculatorSection.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+
+                        // Optional: Focus on the first input for better UX
+                        setTimeout(() => {
+                            const firstInput = calculatorSection.querySelector('input[type="number"]');
+                            if (firstInput) {
+                                firstInput.focus();
+                            }
+                        }, 500);
+                    } else {
+                        // If not on home page, navigate to home with hash
+                        window.location.href = '{{ url("/") }}#calculator';
+                    }
+                });
+            }
+        });
+    </script>
+
     @stack('scripts')
 </body>
 

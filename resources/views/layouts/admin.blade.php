@@ -546,10 +546,18 @@
                 <div class="menu-section-title">Customer Applications</div>
 
                 @if ($hasPermission('customers.view') || $hasPermission('customers.manage'))
+                    @php
+                        $pendingCustomers = \App\Models\User::where('role', 'customer')->where('view', 0)->count();
+                    @endphp
                     <a href="{{ route('super-admin.customers.index') }}"
                         class="menu-item {{ request()->routeIs('super-admin.customers.index') ? 'active' : '' }}">
                         <i class="bi bi-people-fill"></i>
-                        <span>Customer List</span>
+                        <span>
+                            Customer List
+                            @if ($pendingCustomers)
+                                <span class="badge bg-danger ms-2">{{ $pendingCustomers }}</span>
+                            @endif
+                        </span>
                     </a>
                 @endif
 

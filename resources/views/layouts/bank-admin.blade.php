@@ -107,6 +107,9 @@
         }
     </style>
     @stack('styles')
+    @if (isset($logoSettings) && $logoSettings->favicon)
+    <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . $logoSettings->favicon) }}">
+    @endif
 </head>
 
 <body class="bg-light">

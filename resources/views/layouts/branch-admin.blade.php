@@ -31,9 +31,17 @@
 
         .sidebar-user-badge {
             display: flex;
-            align-items: center;
+            flex-direction: column;
             gap: 0.9rem;
             margin-top: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .sidebar-user-badge-top {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
         }
 
         .sidebar-user-avatar {
@@ -48,6 +56,33 @@
 
         .sidebar-user-avatar .bi {
             font-size: 1.2rem;
+        }
+
+        .sidebar-user-badge-pill {
+            display: inline-flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            color: #ffffff;
+            font-size: 0.85rem;
+            font-weight: 600;
+            backdrop-filter: blur(6px);
+            min-height: 52px;
+        }
+
+        .sidebar-user-badge-pill img {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            object-fit: contain;
+            background: #ffffff;
+            padding: 1px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
         }
 
         .sidebar-menu {
@@ -109,6 +144,14 @@
             display: none;
         }
 
+        .dashboard-title {
+            font-size: 1.25rem;
+            max-width: 280px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -124,6 +167,15 @@
 
             .sidebar-toggle {
                 display: inline-block;
+            }
+
+            .dashboard-title {
+                font-size: 0.85rem;
+                max-width: 95px;
+                white-space: normal;
+                overflow: visible;
+                text-overflow: clip;
+                line-height: 1.2;
             }
         }
 
@@ -169,12 +221,15 @@
             font-size: 1rem;
         }
 
-        .table-responsive + .mt-4 .pagination,
+        .table-responsive+.mt-4 .pagination,
         .mt-4 .pagination {
             justify-content: flex-end;
         }
     </style>
     @stack('styles')
+    @if (isset($logoSettings) && $logoSettings->favicon)
+    <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . $logoSettings->favicon) }}">
+    @endif
 </head>
 
 <body class="bg-light">
@@ -183,17 +238,29 @@
         <div class="sidebar-header">
             <h5 class="mb-0"><i class="bi bi-shop me-2"></i>Bank Officer</h5>
             <div class="sidebar-user-badge">
-                @if(auth()->user()->officerDocument?->picture)
+                <div class="sidebar-user-badge-top">
+                    @if(auth()->user()->officerDocument?->picture)
                     <img src="{{ asset('storage/' . auth()->user()->officerDocument->picture) }}" alt="Officer picture" class="sidebar-user-avatar">
-                @else
+                    @else
                     <span class="sidebar-user-avatar d-flex align-items-center justify-content-center text-muted">
                         <i class="bi bi-person-fill"></i>
                     </span>
-                @endif
-                <div>
-                    <p class="mb-1 fw-semibold text-white">{{ auth()->user()->name }}</p>
-                    <small class="d-block text-white-50">User ID: <span class="fw-semibold">#{{ auth()->user()->id }}</span></small>
+                    @endif
+                    <div>
+                        <p class="mb-1 fw-semibold text-white">{{ auth()->user()->name }}</p>
+                        <small class="d-block text-white-50">User ID: <span class="fw-semibold">#{{ auth()->user()->id }}</span></small>
+                    </div>
                 </div>
+
+                @if(auth()->user()->badges->isNotEmpty())
+                <div class="sidebar-user-badge-pill">
+                    @foreach(auth()->user()->badges as $badge)
+                    @if($badge->logo)
+                    <img src="{{ asset($badge->logo) }}" alt="Badge logo" />
+                    @endif
+                    @endforeach
+                </div>
+                @endif
             </div>
         </div>
 
@@ -205,20 +272,20 @@
                 <span>Dashboard</span>
             </a>
 
-         
+
 
             <a href="/branch-admin/profile" class="menu-item {{ request()->routeIs('branch-admin.profile') ? 'active' : '' }}">
                 <i class="bi bi-person"></i>
                 <span>Profile</span>
             </a>
 
-                
+
 
             {{-- <div class="menu-section-title">Loans Management</div>
             <a href="{{ route('branch-admin.loans.index') }}"
-                class="menu-item {{ request()->routeIs('branch-admin.loans.index') ? 'active' : '' }}">
-                <i class="bi bi-list-ul"></i>
-                <span>Manage Loans</span>
+            class="menu-item {{ request()->routeIs('branch-admin.loans.index') ? 'active' : '' }}">
+            <i class="bi bi-list-ul"></i>
+            <span>Manage Loans</span>
             </a>
             <a href="{{ route('branch-admin.loans.create') }}"
                 class="menu-item {{ request()->routeIs('branch-admin.loans.create') ? 'active' : '' }}">
@@ -229,80 +296,80 @@
             @if(auth()->user()->is_access)
 
 
-               <a href="{{ route('chat.index') }}"
+            <a href="{{ route('chat.index') }}"
                 class="menu-item {{ request()->routeIs('chat.*') ? 'active' : '' }}">
                 <i class="bi bi-chat-dots"></i>
                 <span>Chat</span>
                 @php
-                    $unreadChatCount = \App\Models\Message::where('is_seen', false)
-                        ->where('sender_id', '!=', auth()->id())
-                        ->whereHas('conversation', function ($query) {
-                            $query->where('user_one_id', auth()->id())
-                                  ->orWhere('user_two_id', auth()->id());
-                        })->count();
+                $unreadChatCount = \App\Models\Message::where('is_seen', false)
+                ->where('sender_id', '!=', auth()->id())
+                ->whereHas('conversation', function ($query) {
+                $query->where('user_one_id', auth()->id())
+                ->orWhere('user_two_id', auth()->id());
+                })->count();
                 @endphp
                 @if($unreadChatCount > 0)
-                    <span class="badge bg-danger ms-auto rounded-pill">{{ $unreadChatCount }}</span>
+                <span class="badge bg-danger ms-auto rounded-pill">{{ $unreadChatCount }}</span>
                 @endif
             </a>
 
 
 
-                <div class="menu-section-title">Applications</div>
+            <div class="menu-section-title">Applications</div>
 
-                @php
-                    $pendingNewRequestsQuery = \App\Models\NewLoanApplication::where('status', 'active')
-                        ->whereHas('customer', function ($customerQuery) {
-                            $customerQuery->where('is_active', 1);
-                        });
+            @php
+            $pendingNewRequestsQuery = \App\Models\NewLoanApplication::where('status', 'active')
+            ->whereHas('customer', function ($customerQuery) {
+            $customerQuery->where('is_active', 1);
+            });
 
-                    if (! auth()->user()->isSuperAdmin() && ! auth()->user()->isBankAdmin()) {
-                        $unlockedNewLoanIds = \App\Models\LeadAccess::where('officer_id', auth()->id())
-                            ->whereNotNull('newloan_id')
-                            ->pluck('newloan_id');
+            if (! auth()->user()->isSuperAdmin() && ! auth()->user()->isBankAdmin()) {
+            $unlockedNewLoanIds = \App\Models\LeadAccess::where('officer_id', auth()->id())
+            ->whereNotNull('newloan_id')
+            ->pluck('newloan_id');
 
-                        $pendingNewRequestsQuery->whereNotIn('id', $unlockedNewLoanIds);
-                    }
+            $pendingNewRequestsQuery->whereNotIn('id', $unlockedNewLoanIds);
+            }
 
-                    $pendingNewRequests = $pendingNewRequestsQuery->count();
-                @endphp
+            $pendingNewRequests = $pendingNewRequestsQuery->count();
+            @endphp
 
-                {{-- <a href="{{ route('branch-admin.applications.index') }}"
-                    class="menu-item {{ request()->routeIs('branch-admin.applications.index') ? 'active' : '' }}">
-                    <i class="bi bi-file-text"></i>
-                    <span>All Loan Applications</span>
-                </a> --}}
-                <a href="{{ route('branch-admin.new-applications.index') }}"
-                    class="menu-item {{ request()->routeIs('branch-admin.new-applications.index') ? 'active' : '' }}">
-                    <i class="bi bi-file-earmark-plus"></i>
-                    <span>New Loan Requests</span>
-                    @if ($pendingNewRequests)
-                        <span class="badge bg-danger ms-2">{{ $pendingNewRequests }}</span>
-                    @endif
-                </a>
-                <a href="{{ route('branch-admin.new-applications.unlocked') }}"
-                    class="menu-item {{ request()->routeIs('branch-admin.new-applications.unlocked') ? 'active' : '' }}">
-                    <i class="bi bi-unlock"></i>
-                    <span>Unlocked Requests</span>
-                </a>
+            {{-- <a href="{{ route('branch-admin.applications.index') }}"
+            class="menu-item {{ request()->routeIs('branch-admin.applications.index') ? 'active' : '' }}">
+            <i class="bi bi-file-text"></i>
+            <span>All Loan Applications</span>
+            </a> --}}
+            <a href="{{ route('branch-admin.new-applications.index') }}"
+                class="menu-item {{ request()->routeIs('branch-admin.new-applications.index') ? 'active' : '' }}">
+                <i class="bi bi-file-earmark-plus"></i>
+                <span>New Loan Requests</span>
+                @if ($pendingNewRequests)
+                <span class="badge bg-danger ms-2">{{ $pendingNewRequests }}</span>
+                @endif
+            </a>
+            <a href="{{ route('branch-admin.new-applications.unlocked') }}"
+                class="menu-item {{ request()->routeIs('branch-admin.new-applications.unlocked') ? 'active' : '' }}">
+                <i class="bi bi-unlock"></i>
+                <span>Unlocked Requests</span>
+            </a>
 
-                 <a href="{{ route('branch-admin.ratings.history') }}"
-                    class="menu-item {{ request()->routeIs('branch-admin.ratings.history') ? 'active' : '' }}">
-                    <i class="bi bi-star"></i>
-                    <span>Ratings History</span>
-                </a>
+            <a href="{{ route('branch-admin.ratings.history') }}"
+                class="menu-item {{ request()->routeIs('branch-admin.ratings.history') ? 'active' : '' }}">
+                <i class="bi bi-star"></i>
+                <span>Ratings History</span>
+            </a>
 
-                <div class="menu-section-title">Packages</div>
-                <a href="{{ route('branch-admin.packages.gallery') }}"
-                    class="menu-item {{ request()->routeIs('branch-admin.packages.gallery') ? 'active' : '' }}">
-                    <i class="bi bi-box-seam"></i>
-                    <span>Lead Packages</span>
-                </a>
-                <a href="{{ route('branch-admin.packages.history') }}"
-                    class="menu-item {{ request()->routeIs('branch-admin.packages.history') ? 'active' : '' }}">
-                    <i class="bi bi-clock-history"></i>
-                    <span>Purchase History</span>
-                </a>
+            <div class="menu-section-title">Packages</div>
+            <a href="{{ route('branch-admin.packages.gallery') }}"
+                class="menu-item {{ request()->routeIs('branch-admin.packages.gallery') ? 'active' : '' }}">
+                <i class="bi bi-box-seam"></i>
+                <span>Lead Packages</span>
+            </a>
+            <a href="{{ route('branch-admin.packages.history') }}"
+                class="menu-item {{ request()->routeIs('branch-admin.packages.history') ? 'active' : '' }}">
+                <i class="bi bi-clock-history"></i>
+                <span>Purchase History</span>
+            </a>
             @endif
         </div>
     </div>
@@ -313,19 +380,44 @@
         <nav class="navbar top-navbar">
             <div class="container-fluid">
                 <div class="d-flex align-items-center">
-                    <button class="btn btn-link sidebar-toggle me-3" id="sidebarToggle">
+                    <button class="btn btn-link sidebar-toggle me-3 p-0 text-decoration-none" id="sidebarToggle">
                         <i class="bi bi-list fs-4 text-dark"></i>
                     </button>
-                    <h5 class="mb-0">@yield('dashboard-title', 'Dashboard')</h5>
+
+                    <a href="{{ url('/') }}" class="d-flex align-items-center text-decoration-none me-3 pe-3 border-end">
+                        @if (isset($logoSettings) && $logoSettings->header_logo)
+                        <img src="{{ asset('storage/' . $logoSettings->header_logo) }}"
+                            alt="{{ $logoSettings->site_name }}" style="max-height: 32px;" class="me-2">
+                        @else
+                        <div class="bg-primary rounded d-flex align-items-center justify-content-center me-2"
+                            style="width: 32px; height: 32px;">
+                            <span class="text-white fw-bold small">LL</span>
+                        </div>
+                        @endif
+                        <span class="fs-5 fw-bold text-dark d-none d-md-block">{{ $logoSettings->site_name ?? 'Loan Linker' }}</span>
+                    </a>
+
+                    <h5 class="mb-0 text-muted dashboard-title">@yield('dashboard-title', 'Dashboard')</h5>
                 </div>
                 <div class="d-flex align-items-center">
 
                     <div class="dropdown">
-                        <a href="#" class="d-flex align-items-center text-decoration-none" id="userMenuLink"
+                        @php
+                        $user = auth()->user();
+                        $avatar = $user->officerDocument?->picture ?? $user->profile_photo ?? $user->avatar ?? $user->image ?? null;
+                        if ($avatar && !preg_match('/^(https?:)?\/\//i', $avatar)) {
+                        $avatar = asset('storage/' . ltrim(preg_replace('#^(public/|storage/)#i', '', $avatar), '/'));
+                        }
+                        @endphp
+                        <a href="#" class="d-flex align-items-center text-decoration-none text-dark" id="userMenuLink"
                             data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-person-circle fs-4 me-2"></i>
-                            <span class="d-none d-sm-inline">{{ auth()->user()->name }}</span>
-                            <i class="bi bi-chevron-down ms-2 d-none d-sm-inline"></i>
+                            @if($avatar)
+                            <img src="{{ $avatar }}" alt="{{ $user->name }}" class="rounded-circle border border-primary border-opacity-25 me-2" style="width: 34px; height: 34px; object-fit: cover;">
+                            @else
+                            <i class="bi bi-person-circle fs-3 text-primary me-2"></i>
+                            @endif
+                            <span class="d-none d-sm-inline fw-medium">{{ $user->name }}</span>
+                            <i class="bi bi-chevron-down ms-2 d-none d-sm-inline small text-muted"></i>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuLink">
                             <li><a class="dropdown-item" href="{{ route('branch-admin.profile') }}"><i
@@ -352,17 +444,17 @@
         <!-- Page Content -->
         <div class="container-fluid py-4">
             @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
             @endif
 
             @if (session('error'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
             @endif
 
             @yield('content')
