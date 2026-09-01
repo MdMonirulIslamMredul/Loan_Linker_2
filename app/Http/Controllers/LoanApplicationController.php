@@ -11,6 +11,7 @@ use App\Models\Branch;
 use App\Models\LoanCategory;
 use App\Models\ServiceCategory;
 use App\Models\District;
+use App\Models\Thana;
 use App\Models\CustomerRating;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -211,7 +212,7 @@ class LoanApplicationController extends Controller
 
     public function branchNewApplications(Request $request)
     {
-        $query = NewLoanApplication::with(['customer.contactDistrict'])
+        $query = NewLoanApplication::with(['customer.contactDistrict', 'customer.contactUpazila', 'customer.contactThana'])
             ->whereHas('customer', function ($customerQuery) {
                 $customerQuery->where('is_active', true);
             })
@@ -250,6 +251,13 @@ class LoanApplicationController extends Controller
             });
         }
 
+        if ($request->filled('thana_id')) {
+            $thanaId = (int) $request->thana_id;
+            $query->whereHas('customer', function ($customerQuery) use ($thanaId) {
+                $customerQuery->where('c_thana_id', $thanaId);
+            });
+        }
+
         if ($request->filled('from_date')) {
             $query->whereDate('created_at', '>=', $request->from_date);
         }
@@ -263,8 +271,9 @@ class LoanApplicationController extends Controller
         $banks = Bank::orderBy('name')->get();
         $serviceCategories = ServiceCategory::with('serviceTypes')->where('is_active', true)->orderBy('name')->get();
         $districts = District::orderBy('name')->get();
+        $thanas = Thana::orderBy('name')->get();
 
-        return view('branch-admin.new-applications.index', compact('applications', 'banks', 'serviceCategories', 'districts'));
+        return view('branch-admin.new-applications.index', compact('applications', 'banks', 'serviceCategories', 'districts', 'thanas'));
     }
 
     public function branchUnlockedNewApplications(Request $request)
@@ -514,9 +523,14 @@ class LoanApplicationController extends Controller
         }
 
         $validated = $request->validate([
-            'rating' => 'required|integer|min:1|max:5',
+            'information_accuracy' => 'required|integer|min:1|max:5',
+            'behavior' => 'required|integer|min:1|max:5',
+            'response_time' => 'required|integer|min:1|max:5',
+            'credit_score' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string|max:2000',
         ]);
+
+        $rating = round(($validated['information_accuracy'] + $validated['behavior'] + $validated['response_time'] + $validated['credit_score']) / 4, 1);
 
         CustomerRating::updateOrCreate(
             [
@@ -525,7 +539,11 @@ class LoanApplicationController extends Controller
             ],
             [
                 'customer_id' => $newApplication->customer_id,
-                'rating' => $validated['rating'],
+                'rating' => $rating,
+                'information_accuracy' => $validated['information_accuracy'],
+                'behavior' => $validated['behavior'],
+                'response_time' => $validated['response_time'],
+                'credit_score' => $validated['credit_score'],
                 'comment' => $validated['comment'] ?? null,
             ]
         );

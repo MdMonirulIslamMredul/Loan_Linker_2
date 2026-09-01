@@ -28,23 +28,48 @@
                     $officerStats = $officerRatingStats[$officer->id] ?? null;
                 @endphp
                 <div class="card shadow-sm border-0 mb-5">
-                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
-                        <div>
-                            <h5 class="mb-0"><i class="bi bi-person-badge-fill me-2"></i>Officer: {{ $officer->name ?? 'Unknown Officer' }}</h5>
-                            @if ($officerStats)
-                                <small class="text-warning d-block mb-1">
-                                    @for ($i = 1; $i <= 5; $i++)
-                                        <i class="bi {{ $i <= $officerStats['stars'] ? 'bi-star-fill' : 'bi-star' }}"></i>
-                                    @endfor
-                                    <span class="text-white-50 ms-2">{{ number_format($officerStats['avg'], 1) }} average from {{ $officerStats['count'] }} rating{{ $officerStats['count'] > 1 ? 's' : '' }}</span>
-                                </small>
-                            @else
-                                <small class="text-white-50 d-block mb-1">No rating available for this officer</small>
-                            @endif
-                            <a href="{{ route('customer.application.officer_ratings', ['newApplication' => $newApplication, 'officer' => $officer]) }}" class="btn btn-sm btn-outline-light">View all ratings for this officer</a>
+                    <div class="card-header bg-primary text-white py-3">
+                        <div class="row align-items-center gx-3 gy-3">
+                            <div class="col-12 col-xl-5">
+                                <h5 class="mb-2 mb-xl-0"><i class="bi bi-person-badge-fill me-2"></i>Officer: {{ $officer->name ?? 'Unknown Officer' }}</h5>
+                                @if ($officerStats)
+                                    @php $avg = $officerStats['avg']; @endphp
+                                    <small class="text-warning d-block mb-1">
+                                        @for ($i = 1; $i <= 5; $i++)
+                                            @if ($avg >= $i)
+                                                <i class="bi bi-star-fill"></i>
+                                            @elseif ($avg > $i - 1)
+                                                <i class="bi bi-star-half"></i>
+                                            @else
+                                                <i class="bi bi-star"></i>
+                                            @endif
+                                        @endfor
+                                        <span class="text-white-50 ms-2">{{ number_format($avg, 1) }} average from {{ $officerStats['count'] }} rating{{ $officerStats['count'] > 1 ? 's' : '' }}</span>
+                                    </small>
+                                @else
+                                    <small class="text-white-50 d-block mb-1">No rating available for this officer</small>
+                                @endif
+                                <a href="{{ route('customer.application.officer_ratings', ['newApplication' => $newApplication, 'officer' => $officer]) }}" class="btn btn-sm btn-outline-light mt-2 mt-xl-0">View all ratings for this officer</a>
+                            </div>
+
+                            <div class="col-12 col-xl-4">
+                                @if($officer->badges->isNotEmpty())
+                                    <div class="badge-officer d-flex justify-content-center align-items-center gap-3 bg-white rounded-pill shadow-sm px-3 py-2 mx-auto" style="max-width: 100%;">
+                                        @foreach($officer->badges->take(3) as $badge)
+                                            @if($badge->logo)
+                                                <img src="{{ asset($badge->logo) }}" alt="{{ $badge->name }}" class="rounded-circle" style="width: 100px; height: 100px; object-fit: contain;" />
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div class="col-12 col-xl-3 text-xl-end">
+                                <span class="badge bg-white text-primary py-2 px-3 d-inline-block">Unlocked: {{ $access->purchased_at ? $access->purchased_at->format('M d, Y') : $access->created_at->format('M d, Y') }}</span>
+                            </div>
                         </div>
-                        <span class="badge bg-white text-primary">Unlocked: {{ $access->purchased_at ? $access->purchased_at->format('M d, Y') : $access->created_at->format('M d, Y') }}</span>
                     </div>
+                </div>
                     <div class="card-body p-4">
                         <div class="row g-4">
                             <!-- Left Column: Personal & Professional -->
@@ -119,9 +144,9 @@
                         </div>
                     </div>
                     @php
-                        $ratingFormOpen = ! $existingOfficerRating || old('rating') !== null || old('comment') !== null || $errors->has('rating') || $errors->has('comment');
+                        $ratingFormOpen = ! $existingOfficerRating || old('professionalism') !== null || old('comment') !== null || $errors->has('professionalism') || $errors->has('behavior') || $errors->has('response_time') || $errors->has('comment');
                     @endphp
-                    <div class="card border-0 shadow-sm mb-4">
+                    <div class="card border-0 shadow-sm mb-4" id="rating-section">
                         <div class="card-header bg-light">
                             <h5 class="mb-0"><i class="bi bi-star-fill me-2"></i>Rate this Officer</h5>
                         </div>
@@ -129,12 +154,46 @@
                             @if ($existingOfficerRating)
                                 <div class="mb-3">
                                     <div class="d-flex align-items-center gap-2 mb-2">
-                                        <strong>Your rating:</strong>
+                                        <strong>Overall Rating:</strong>
                                         <span class="text-warning">
+                                            @php $r = $existingOfficerRating->rating; @endphp
                                             @for ($i = 1; $i <= 5; $i++)
-                                                <i class="bi {{ $i <= $existingOfficerRating->rating ? 'bi-star-fill' : 'bi-star' }}"></i>
+                                                @if ($r >= $i)
+                                                    <i class="bi bi-star-fill"></i>
+                                                @elseif ($r > $i - 1)
+                                                    <i class="bi bi-star-half"></i>
+                                                @else
+                                                    <i class="bi bi-star"></i>
+                                                @endif
                                             @endfor
                                         </span>
+                                        <span class="ms-1">{{ number_format($r, 1) }}/5</span>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-4">
+                                            <span class="text-muted small">Professionalism:</span>
+                                            <span class="text-warning ms-1">
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    <i class="bi {{ $i <= $existingOfficerRating->professionalism ? 'bi-star-fill' : 'bi-star' }}" style="font-size: 0.8rem;"></i>
+                                                @endfor
+                                            </span>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <span class="text-muted small">Behavior:</span>
+                                            <span class="text-warning ms-1">
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    <i class="bi {{ $i <= $existingOfficerRating->behavior ? 'bi-star-fill' : 'bi-star' }}" style="font-size: 0.8rem;"></i>
+                                                @endfor
+                                            </span>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <span class="text-muted small">Response Time:</span>
+                                            <span class="text-warning ms-1">
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    <i class="bi {{ $i <= $existingOfficerRating->response_time ? 'bi-star-fill' : 'bi-star' }}" style="font-size: 0.8rem;"></i>
+                                                @endfor
+                                            </span>
+                                        </div>
                                     </div>
                                     @if ($existingOfficerRating->comment)
                                         <p class="mb-3"><strong>Comment:</strong> {{ $existingOfficerRating->comment }}</p>
@@ -146,17 +205,37 @@
                             <div id="officer-rating-edit-form-{{ $officer->id }}" class="{{ $ratingFormOpen ? '' : 'd-none' }} mt-3">
                                 <form method="POST" action="{{ route('customer.application.bank_officer_rating.store', ['newApplication' => $newApplication, 'officer' => $officer]) }}">
                                     @csrf
-                                    <div class="mb-3">
-                                        <label for="rating_{{ $officer->id }}" class="form-label">Rating</label>
-                                        <select name="rating" id="rating_{{ $officer->id }}" class="form-select @error('rating') is-invalid @enderror" required>
-                                            <option value="">Select rating</option>
-                                            @for ($i = 1; $i <= 5; $i++)
-                                                <option value="{{ $i }}" {{ old('rating', optional($existingOfficerRating)->rating) == $i ? 'selected' : '' }}>{{ $i }}</option>
-                                            @endfor
-                                        </select>
-                                        @error('rating')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <label for="professionalism_{{ $officer->id }}" class="form-label">Professionalism <span class="text-danger">*</span></label>
+                                            <select name="professionalism" id="professionalism_{{ $officer->id }}" class="form-select @error('professionalism') is-invalid @enderror" required>
+                                                <option value="">Select</option>
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    <option value="{{ $i }}" {{ old('professionalism', optional($existingOfficerRating)->professionalism) == $i ? 'selected' : '' }}>{{ $i }}</option>
+                                                @endfor
+                                            </select>
+                                            @error('professionalism')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="behavior_{{ $officer->id }}" class="form-label">Behavior <span class="text-danger">*</span></label>
+                                            <select name="behavior" id="behavior_{{ $officer->id }}" class="form-select @error('behavior') is-invalid @enderror" required>
+                                                <option value="">Select</option>
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    <option value="{{ $i }}" {{ old('behavior', optional($existingOfficerRating)->behavior) == $i ? 'selected' : '' }}>{{ $i }}</option>
+                                                @endfor
+                                            </select>
+                                            @error('behavior')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="response_time_{{ $officer->id }}" class="form-label">Response Time <span class="text-danger">*</span></label>
+                                            <select name="response_time" id="response_time_{{ $officer->id }}" class="form-select @error('response_time') is-invalid @enderror" required>
+                                                <option value="">Select</option>
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    <option value="{{ $i }}" {{ old('response_time', optional($existingOfficerRating)->response_time) == $i ? 'selected' : '' }}>{{ $i }}</option>
+                                                @endfor
+                                            </select>
+                                            @error('response_time')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                        </div>
                                     </div>
                                     <div class="mb-3">
                                         <label for="comment_{{ $officer->id }}" class="form-label">Comment</label>
@@ -185,7 +264,7 @@
                                     toggleButton.addEventListener('click', function () {
                                         ratingForm.classList.toggle('d-none');
                                         if (!ratingForm.classList.contains('d-none')) {
-                                            var ratingField = document.getElementById('rating_{{ $officer->id }}');
+                                            var ratingField = document.getElementById('professionalism_{{ $officer->id }}');
                                             if (ratingField) {
                                                 ratingField.focus();
                                             }
