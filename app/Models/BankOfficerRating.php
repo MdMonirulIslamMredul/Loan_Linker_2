@@ -16,11 +16,14 @@ class BankOfficerRating extends Model
         'officer_id',
         'new_loan_application_id',
         'rating',
+        'professionalism',
+        'behavior',
+        'response_time',
         'comment',
     ];
 
     protected $casts = [
-        'rating' => 'integer',
+        'rating' => 'float',
     ];
 
     public function customer()
