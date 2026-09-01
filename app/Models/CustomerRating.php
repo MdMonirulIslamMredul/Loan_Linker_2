@@ -16,11 +16,15 @@ class CustomerRating extends Model
         'branch_admin_id',
         'new_loan_application_id',
         'rating',
+        'information_accuracy',
+        'behavior',
+        'response_time',
+        'credit_score',
         'comment',
     ];
 
     protected $casts = [
-        'rating' => 'integer',
+        'rating' => 'float',
     ];
 
     public function customer()
