@@ -9,7 +9,8 @@
             <form action="{{ route('super-admin.ratings.bank-officer') }}" method="GET" class="row g-3 align-items-end">
                 <div class="col-md-6">
                     <label for="search" class="form-label">Search</label>
-                    <input type="text" id="search" name="search" value="{{ old('search', $search) }}" class="form-control" placeholder="Search by officer or customer name, email or phone">
+                    <input type="text" id="search" name="search" value="{{ old('search', $search) }}" class="form-control"
+                        placeholder="Search by officer or customer name, email or phone">
                 </div>
                 <div class="col-md-3">
                     <button type="submit" class="btn btn-primary w-100">Search</button>
@@ -17,7 +18,8 @@
                 <div class="col-12 mt-2">
                     <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
                         <div class="text-muted small">Total ratings: <strong>{{ $ratingCount }}</strong></div>
-                        <div class="text-muted small">Average rating: <strong>{{ $averageRating ? number_format($averageRating, 1) : 'N/A' }}</strong></div>
+                        <div class="text-muted small">Average rating:
+                            <strong>{{ $averageRating ? number_format($averageRating, 1) : 'N/A' }}</strong></div>
                     </div>
                 </div>
             </form>
@@ -36,9 +38,10 @@
                     <table class="table table-hover mb-0 align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th>Officer</th>
+                                <th>Officer Name</th>
                                 <th>Given By</th>
-                                <th>Rating</th>
+                                <th>Overall Rating</th>
+                                <th>Details</th>
                                 <th>Comment</th>
                                 <th>Request</th>
                                 <th>Date</th>
@@ -49,18 +52,20 @@
                                 <tr>
                                     <td>
                                         @if ($rating->officer)
-                                            <a href="{{ route('super-admin.ratings.user.details', ['type' => 'bank_officer', 'user' => $rating->officer->id]) }}" class="btn btn-outline-success">
+                                            <a href="{{ route('super-admin.ratings.user.details', ['type' => 'bank_officer', 'user' => $rating->officer->id]) }}"
+                                                class="btn btn-outline-success">
                                                 <strong>{{ $rating->officer->name }}</strong>
                                             </a>
                                             <div class="small text-muted">{{ $rating->officer->email ?? 'No email' }}</div>
-                                            
+
                                         @else
                                             <span class="text-muted">Unknown</span>
                                         @endif
                                     </td>
                                     <td>
                                         @if ($rating->customer)
-                                            <a href="{{ route('super-admin.ratings.user.details', ['type' => 'customer', 'user' => $rating->customer->id]) }}" class="btn btn-outline-primary">
+                                            <a href="{{ route('super-admin.ratings.user.details', ['type' => 'customer', 'user' => $rating->customer->id]) }}"
+                                                class="btn btn-outline-primary">
                                                 <strong>{{ $rating->customer->name }}</strong>
                                             </a>
                                             <div class="small text-muted">{{ $rating->customer->email ?? 'No email' }}</div>
@@ -69,15 +74,47 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <div class="text-warning">
+                                        <div class="text-warning mb-1 fs-5">
                                             @for ($i = 1; $i <= 5; $i++)
                                                 <i class="bi {{ $i <= $rating->rating ? 'bi-star-fill' : 'bi-star' }}"></i>
                                             @endfor
                                         </div>
-                                        <div class="small text-muted">{{ $rating->rating }}/5</div>
+                                        <div class="text-muted">{{ number_format($rating->rating, 1) }}/5</div>
+                                    </td>
+                                    <td>
+                                        <div class="text-muted" style="font-size: 0.9rem;">
+                                            <div class="d-flex align-items-center mb-1">
+                                                <span style="min-width: 110px;">Professionalism:</span>
+                                                <div class="text-warning">
+                                                    @for ($i = 1; $i <= 5; $i++)
+                                                        <i
+                                                            class="bi {{ $i <= ($rating->professionalism ?? 0) ? 'bi-star-fill' : 'bi-star' }}"></i>
+                                                    @endfor
+                                                </div>
+                                            </div>
+                                            <div class="d-flex align-items-center mb-1">
+                                                <span style="min-width: 110px;">Behavior:</span>
+                                                <div class="text-warning">
+                                                    @for ($i = 1; $i <= 5; $i++)
+                                                        <i
+                                                            class="bi {{ $i <= ($rating->behavior ?? 0) ? 'bi-star-fill' : 'bi-star' }}"></i>
+                                                    @endfor
+                                                </div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <span style="min-width: 110px;">Response Time:</span>
+                                                <div class="text-warning">
+                                                    @for ($i = 1; $i <= 5; $i++)
+                                                        <i
+                                                            class="bi {{ $i <= ($rating->response_time ?? 0) ? 'bi-star-fill' : 'bi-star' }}"></i>
+                                                    @endfor
+                                                </div>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td>{{ $rating->comment ?: 'No comment' }}</td>
-                                    <td>{{ $rating->newLoanApplication?->id ? 'Request #' . $rating->newLoanApplication->id : 'N/A' }}</td>
+                                    <td>{{ $rating->newLoanApplication?->id ? 'Request #' . $rating->newLoanApplication->id : 'N/A' }}
+                                    </td>
                                     <td>{{ $rating->created_at?->format('d M, Y') ?? 'N/A' }}</td>
                                 </tr>
                             @endforeach
