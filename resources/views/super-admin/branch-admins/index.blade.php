@@ -1,7 +1,11 @@
-﻿@extends('layouts.admin')
+@extends('layouts.admin')
 
 @section('title', ' Bank Officers Management')
 @section('dashboard-title', ' Bank Officers Management')
+
+@php
+    $canManageBranchAdmins = auth()->user()->isSuperAdmin() || auth()->user()->hasPermissionTo('branch-admins.manage', 'web');
+@endphp
 
 @section('content')
     <div class="container-fluid py-4">
@@ -81,6 +85,16 @@
                             </select>
                         </div>
                         <div class="col-md-4">
+                            <label class="form-label">Badge</label>
+                            <select name="badge_id" class="form-select">
+                                <option value="" {{ request('badge_id') == '' ? 'selected' : '' }}>All Branch Admins</option>
+                                <option value="has_badge" {{ request('badge_id') === 'has_badge' ? 'selected' : '' }}>All Badges</option>
+                                @foreach($badges as $badge)
+                                    <option value="{{ $badge->id }}" {{ request('badge_id') == $badge->id ? 'selected' : '' }}>{{ $badge->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-4">
                             <label class="form-label">Area / District</label>
                             <select name="district_id" class="form-select">
                                 <option value="">All Districts</option>
@@ -133,9 +147,9 @@
                             <thead class="table-light">
                                 <tr>
                                     <th class="px-4 py-3">ID</th>
+                                    <th class="py-3">Reference</th>
                                     <th class="py-3">Name</th>
-                                    <th class="py-3">Email</th>
-                                    <th class="py-3">Phone</th>
+                                    <th class="py-3">Email & Phone</th>
                                     <th class="py-3">Bank</th>
                                     <th class="py-3">Status</th>
                                     <th class="py-3">Created Date</th>
@@ -147,6 +161,11 @@
                                     <tr>
                                         <td class="px-4">
                                             <span class="badge bg-secondary">#{{ $admin->id }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary">
+                                                <i class="bi bi-person-badge me-1"></i>{{ $admin->reference ?? 'N/A' }}
+                                            </span>
                                         </td>
                                         <td>
                                             <div class="d-flex align-items-center">
@@ -164,22 +183,24 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <small class="text-muted">
+                                           <div class="d-flex flex-column gap-1">
+                                            <small class="text-muted d-flex align-items-center">
                                                 <i class="bi bi-envelope me-1"></i>{{ $admin->email }}
                                             </small>
-                                        </td>
-                                        <td>
-                                            <small class="text-muted">
+                                            <small class="text-muted d-flex align-items-center">
                                                 <i class="bi bi-telephone me-1"></i>{{ $admin->phone }}
                                             </small>
+                                        </div>
+
                                         </td>
+                                       
                                         <td>
                                             <span class="badge bg-warning text-dark">
                                                 <i class="bi bi-shop me-1"></i>{{ $admin->bank->name ?? 'N/A' }}
                                             </span>
                                         </td>
-
                                         
+
                                         <td>
                                             @if ($admin->is_active)
                                                 <span class="badge bg-success">
@@ -201,6 +222,18 @@
                                                 </span>
                                             @endif
 
+                                             @if ($admin->badges->isNotEmpty())
+                                                <div class="d-flex justify-content-center flex-wrap align-items-center rounded-pill bg-light border" style="min-width: 180px; min-height: 56px;">
+                                                    @foreach($admin->badges as $badge)
+                                                        @if($badge->logo)
+                                                            <div class="rounded-circle bg-white d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; padding: 1px; border: 1px solid rgba(0, 0, 0, 0.08);">
+                                                                <img src="{{ asset($badge->logo) }}" alt="Badge logo" style="max-height: 54px; max-width: 54px; object-fit: contain;" />
+                                                            </div>
+                                                        @endif
+                                                    @endforeach
+                                                </div>
+                                            @endif
+
                                         </td>
                                      
                                         <td>
@@ -211,15 +244,17 @@
                                         </td>
                                         <td class="px-4">
 
-                                            <a href="{{ route('super-admin.branch-admins.show', $admin) }}"
-                                                class="btn btn-sm {{ $admin->view ? 'btn-success' : 'btn-outline-primary' }}">
-                                                <i class="bi bi-eye me-1"></i>{{ $admin->view ? 'Viewed' : 'View' }}
-                                            </a> 
+                                        <a href="{{ route('super-admin.branch-admins.show', $admin) }}"
+                                            class="btn btn-sm {{ $admin->view ? 'btn-success' : 'btn-outline-primary' }}">
+                                            <i class="bi bi-eye me-1"></i>{{ $admin->view ? 'Viewed' : 'View' }}
+                                        </a> 
 
-                                            <a href="{{ route('super-admin.branch-admins.edit', $admin) }}"
-                                                class="btn btn-sm btn-primary">
-                                                <i class="bi bi-pencil me-1"></i>Edit
-                                            </a>
+                                        @if ($canManageBranchAdmins)
+                                        <a href="{{ route('super-admin.branch-admins.edit', $admin) }}"
+                                            class="btn btn-sm btn-primary">
+                                            <i class="bi bi-pencil me-1"></i>Edit
+                                        </a>
+                                        @endif
                                         </td>
                                     </tr>
                                 @endforeach
@@ -246,9 +281,11 @@
                         </div>
                         <h5 class="text-muted mb-2">No Branch Admins Found</h5>
                         <p class="text-muted">There are no branch administrators in the system.</p>
+                        @if ($canManageBranchAdmins)
                         <a href="{{ route('super-admin.branch-admins.create') }}" class="btn btn-info mt-3">
                             <i class="bi bi-plus-circle me-2"></i>Create Branch Admin
                         </a>
+                        @endif
                     </div>
                 @endif
             </div>

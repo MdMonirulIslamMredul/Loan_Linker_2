@@ -8,9 +8,14 @@
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="mb-0 fw-bold">All Banks</h2>
+@php
+                $canManageBanks = auth()->user()->isSuperAdmin() || auth()->user()->hasPermissionTo('banks.create', 'web');
+            @endphp
+            @if ($canManageBanks)
             <a href="{{ route('super-admin.banks.create') }}" class="btn btn-primary">
                 <i class="bi bi-plus-circle me-2"></i>Create New Bank
             </a>
+            @endif
         </div>
 
         @if($banks->isEmpty())
@@ -25,7 +30,7 @@
                             <th>Bank Name</th>
 
                             <th>Code</th>
-                            {{-- <th>Branches</th> --}}
+                            <th>Branches</th>
                             <th>Bank Officer</th>
                             <th>Status</th>
                             <th>Created</th>
@@ -45,7 +50,7 @@
                                 </td>
                                 <td class="fw-semibold">{{ $bank->name }}</td>
                                 <td>{{ $bank->code }}</td>
-                                {{-- <td>{{ $bank->branches_count }}</td> --}}
+                                <td>{{ $bank->branches_count }}</td>
                                 <td>{{ $bank->users_count }}</td>
                                 <td>
                                     <span class="badge {{ $bank->is_active ? 'bg-success' : 'bg-danger' }}">
@@ -56,6 +61,7 @@
                                     {{ $bank->created_at->format('Y-m-d') }}
                                 </td>
                                 <td>
+                                    @if ($canManageBanks)
                                     <a href="{{ route('super-admin.banks.edit', $bank) }}" class="btn btn-sm btn-outline-primary me-1">
                                         <i class="bi bi-pencil"></i>
                                     </a>
@@ -69,13 +75,22 @@
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
+                                    @else
+                                    <span class="text-muted small"><i class="bi bi-eye"></i> View Only</span>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
-        @endif
+        
+                <div class="mt-3">
+                    {{ $banks->links('pagination::bootstrap-5') }}
+                </div>
+            @endif
+      
     </div>
+    
 </div>
 @endsection

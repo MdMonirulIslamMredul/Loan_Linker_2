@@ -38,7 +38,7 @@
                 </div>
 
                 <div class="row gx-3">
-                    <div class="mb-3 col-md-6">
+                    <div class="mb-3 col-md-4">
                         <label for="bank_select" class="form-label fw-semibold">Bank</label>
                         <select id="bank_select" name="bank_id" class="form-select">
                             <option value="">Select a bank</option>
@@ -50,7 +50,7 @@
                         </select>
                     </div>
 
-                    <div class="mb-3 col-md-6">
+                    <div class="mb-3 col-md-4">
                         <label for="branch_id" class="form-label fw-semibold">Branch</label>
                         <select name="branch_id" id="branch_id" class="form-select" required>
                             <option value="">Select a branch</option>
@@ -62,6 +62,29 @@
                             @endforeach
                         </select>
                         @error('branch_id')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3 col-md-4">
+                        <label class="form-label fw-semibold">Badges</label>
+                        <div class="row g-3">
+                            @for ($i = 0; $i < 3; $i++)
+                                <div class="col-12">
+                                    <select name="badge_ids[]" id="badge_ids_{{ $i }}" class="form-select">
+                                        <option value="">Select badge {{ $i + 1 }} (optional)</option>
+                                        @foreach ($badges as $badge)
+                                            <option value="{{ $badge->id }}"
+                                                {{ old('badge_ids.' . $i) == $badge->id ? 'selected' : '' }}>
+                                                {{ $badge->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endfor
+                        </div>
+                        <div class="form-text">Select up to 3 distinct badges for this branch admin.</div>
+                        @error('badge_ids')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
                     </div>

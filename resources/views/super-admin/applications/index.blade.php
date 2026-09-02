@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin')
+@extends('layouts.admin')
 
 
 @section('content')
@@ -263,7 +263,7 @@
                                         </td>
                                         <td>
                                             <strong
-                                                class="text-success">à§³{{ number_format($application->loan_amount, 2) }}</strong>
+                                                class="text-success">৳{{ number_format($application->loan_amount, 2) }}</strong>
                                         </td>
                                         <td>
                                             @if ($application->status == 'pending')

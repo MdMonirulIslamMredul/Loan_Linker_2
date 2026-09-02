@@ -19,6 +19,19 @@
                             <h4 class="mb-1">{{ $admin->name }}</h4>
                             <p class="mb-0 text-muted">Branch Officer details and linked documents</p>
                         </div>
+                        @if($admin->badges->isNotEmpty())
+                            <div class="text-center flex-grow-1 mx-3">
+                                <div class="d-flex justify-content-center flex-wrap align-items-center gap-3 rounded-pill bg-light px-3 py-2 border" style="min-width: 180px; min-height: 60px;">
+                                    @foreach($admin->badges as $badge)
+                                        @if($badge->logo)
+                                            <div class="rounded-circle bg-white d-flex align-items-center justify-content-center" style="width: 70px; height: 70px; padding: 1px; border: 1px solid rgba(0, 0, 0, 0.08);">
+                                                <img src="{{ asset($badge->logo) }}" alt="Badge logo" style="max-height: 70px; max-width: 70px; object-fit: contain;" />
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
                         <span class="badge {{ $admin->is_active ? 'bg-success' : 'bg-danger' }}">
                             {{ $admin->is_active ? 'Active' : 'Inactive' }}
                         </span>
@@ -45,10 +58,11 @@
                                 <small class="text-muted d-block">Bank</small>
                                 <strong>{{ $admin->bank->name ?? 'N/A' }}</strong>
                             </div>
-                            <div class="col-md-6 mb-3">
+                         
+                            {{-- <div class="col-md-6 mb-3">
                                 <small class="text-muted d-block">Branch</small>
                                 <strong>{{ $admin->branch->name ?? 'N/A' }}</strong>
-                            </div>
+                            </div> --}}
                             <div class="col-md-6 mb-3">
                                 <small class="text-muted d-block">Access Status</small>
                                 <strong>{{ $admin->is_access === true ? 'Allowed' : ($admin->is_access === false ? 'Not Allowed' : 'Pending') }}</strong>
@@ -64,6 +78,18 @@
                             <div class="col-md-6 mb-3">
                                 <small class="text-muted d-block">Officer Document ID</small>
                                 <strong>{{ $admin->officer_document_id ?? 'N/A' }}</strong>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <small class="text-muted d-block">Reference</small>
+                                <strong>{{ $admin->reference ?? 'N/A' }}</strong>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <small class="text-muted d-block">Last Updated</small>
+                                <strong>{{ $admin->updated_at->format('d M, Y') }}</strong>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <small class="text-muted d-block">Created At</small>
+                                <strong>{{ $admin->created_at->format('d M, Y') }}</strong>
                             </div>
                         </div>
                     </div>
@@ -115,7 +141,7 @@
                                 <div class="col-12 mb-3">
                                     <small class="text-muted d-block">Contact Address</small>
                                     <p class="mb-0">
-                                        @if($admin->contactDivision?->name)
+                                                @if($admin->contactDivision?->name)
                                             <strong>{{ $admin->contactDivision->name }}</strong>
                                         @endif
                                         @if($admin->contactDivision?->name && $admin->contactDistrict?->name)
@@ -123,8 +149,23 @@
                                         @endif
                                         @if($admin->contactDistrict?->name)
                                             <strong>{{ $admin->contactDistrict->name }}</strong>
+                                            ,
                                         @endif
-                                        @if($admin->contact_address && ($admin->contactDivision?->name || $admin->contactDistrict?->name))
+                                        @if($admin->contactDistrict?->name && $admin->contactUpazila?->name)
+                                            , 
+                                        @endif
+                                        @if($admin->contactUpazila?->name)
+                                            <strong>{{ $admin->contactUpazila->name }}</strong>
+                                            ,
+                                        @endif
+                                        @if($admin->contactUpazila?->name && $admin->contactThana?->name)
+                                             
+                                        @endif
+                                        @if($admin->contactThana?->name)
+                                            <strong>{{ $admin->contactThana->name }}</strong>
+                                            
+                                        @endif
+                                        @if($admin->contact_address && ($admin->contactDivision?->name || $admin->contactDistrict?->name || $admin->contactUpazila?->name || $admin->contactThana?->name))
                                             , {{ $admin->contact_address }}
                                         @elseif($admin->contact_address)
                                             {{ $admin->contact_address }}
@@ -144,8 +185,21 @@
                                         @endif
                                         @if($admin->permanentDistrict?->name)
                                             <strong>{{ $admin->permanentDistrict->name }}</strong>
+                                            ,
                                         @endif
-                                        @if($admin->permanent_address && ($admin->permanentDivision?->name || $admin->permanentDistrict?->name))
+                                        @if($admin->permanentDistrict?->name && $admin->permanentUpazila?->name)
+                                            , 
+                                        @endif
+                                        @if($admin->permanentUpazila?->name)
+                                            <strong>{{ $admin->permanentUpazila->name }}</strong>
+                                        @endif
+                                        @if($admin->permanentUpazila?->name && $admin->permanentThana?->name)
+                                            , 
+                                        @endif
+                                        @if($admin->permanentThana?->name)
+                                            <strong>{{ $admin->permanentThana->name }}</strong>
+                                        @endif
+                                        @if($admin->permanent_address && ($admin->permanentDivision?->name || $admin->permanentDistrict?->name || $admin->permanentUpazila?->name || $admin->permanentThana?->name))
                                             , {{ $admin->permanent_address }}
                                         @elseif($admin->permanent_address)
                                             {{ $admin->permanent_address }}

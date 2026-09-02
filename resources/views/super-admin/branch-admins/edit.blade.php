@@ -59,19 +59,46 @@
                     @enderror
                 </div>
 
-                <div class="mb-3">
-                    <label for="bank_select" class="form-label fw-semibold">
-                        <i class="bi bi-bank me-1"></i>Bank
-                    </label>
-                    <select id="bank_select" name="bank_id" class="form-select">
-                        <option value="">Select a bank</option>
-                        @foreach ($banks as $bank)
-                            <option value="{{ $bank->id }}"
-                                {{ old('bank_id', $user->bank_id) == $bank->id ? 'selected' : '' }}>
-                                {{ $bank->name }}
-                            </option>
-                        @endforeach
-                    </select>
+                <div class="row gx-3">
+                    <div class="mb-3 col-md-6">
+                        <label for="bank_select" class="form-label fw-semibold">
+                            <i class="bi bi-bank me-1"></i>Bank
+                        </label>
+                        <select id="bank_select" name="bank_id" class="form-select">
+                            <option value="">Select a bank</option>
+                            @foreach ($banks as $bank)
+                                <option value="{{ $bank->id }}"
+                                    {{ old('bank_id', $user->bank_id) == $bank->id ? 'selected' : '' }}>
+                                    {{ $bank->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-award me-1"></i>Badges
+                        </label>
+                        <div class="row g-3">
+                            @for ($i = 0; $i < 3; $i++)
+                                <div class="col-12">
+                                    <select name="badge_ids[]" id="badge_ids_{{ $i }}" class="form-select">
+                                        <option value="">Select badge {{ $i + 1 }} (optional)</option>
+                                        @foreach ($badges as $badge)
+                                            <option value="{{ $badge->id }}"
+                                                {{ old('badge_ids.' . $i, $user->badge_ids[$i] ?? '') == $badge->id ? 'selected' : '' }}>
+                                                {{ $badge->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endfor
+                        </div>
+                        <div class="form-text">Select up to 3 distinct badges for this branch admin.</div>
+                        @error('badge_ids')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
                 </div>
 
                 <input type="hidden" name="branch_id" value="{{ old('branch_id', $user->branch_id) }}">

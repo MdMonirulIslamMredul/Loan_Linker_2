@@ -8,9 +8,14 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="mb-0 fw-bold">Badges</h2>
+@php
+                $canManageBadges = auth()->user()->isSuperAdmin() || auth()->user()->hasPermissionTo('badges.manage', 'web') || auth()->user()->hasPermissionTo('badges.create', 'web');
+            @endphp
+            @if ($canManageBadges)
                 <a href="{{ route('super-admin.badges.create') }}" class="btn btn-primary">
                     <i class="bi bi-plus-circle me-2"></i>Create Badge
                 </a>
+            @endif
             </div>
 
             @if($badges->isEmpty())
@@ -50,6 +55,7 @@
                                     </td>
                                     <td class="text-muted small">{{ $badge->created_at->format('Y-m-d') }}</td>
                                     <td>
+                                        @if ($canManageBadges)
                                         <a href="{{ route('super-admin.badges.edit', $badge) }}" class="btn btn-sm btn-outline-primary me-1">
                                             <i class="bi bi-pencil"></i>
                                         </a>
@@ -60,6 +66,9 @@
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </form>
+                                        @else
+                                        <span class="text-muted small"><i class="bi bi-eye"></i> View Only</span>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
