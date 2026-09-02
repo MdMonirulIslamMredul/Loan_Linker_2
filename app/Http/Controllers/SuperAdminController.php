@@ -1014,6 +1014,11 @@ class SuperAdminController extends Controller
             'customerFinancial.loans.serviceType',
         ]);
 
+        if (! $user->view) {
+            $user->view = true;
+            $user->save();
+        }
+
         return view('super-admin.customers.show', ['customer' => $user]);
     }
 

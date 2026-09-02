@@ -15,7 +15,19 @@ class SuperAdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || !auth()->user()->isSuperAdmin()) {
+        if (!auth()->check()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $user = auth()->user();
+
+        if (! $user->isSuperAdmin() &&
+            ! $user->isAdmin() &&
+            ! $user->isOperationsHead() &&
+            ! $user->isMarketingHead() &&
+            ! $user->isHrHead() &&
+            ! $user->isComplianceOfficer()
+        ) {
             abort(403, 'Unauthorized action.');
         }
 
