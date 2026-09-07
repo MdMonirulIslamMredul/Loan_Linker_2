@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin')
+@extends('layouts.admin')
 
 @section('title', 'Loan Categories')
 @section('dashboard-title', 'Super Admin - Loan Categories')
@@ -8,9 +8,14 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="mb-0 fw-bold">Loan Categories</h2>
+@php
+                $canManageLoanCategories = auth()->user()->isSuperAdmin() || auth()->user()->hasPermissionTo('loan-categories.manage', 'web');
+            @endphp
+            @if ($canManageLoanCategories)
                 <a href="{{ route('super-admin.loan-categories.create') }}" class="btn btn-primary">
                     <i class="bi bi-plus-circle me-2"></i>Create New Category
                 </a>
+            @endif
             </div>
 
             @if ($categories->isEmpty())
@@ -43,6 +48,7 @@
                                         {{ $category->created_at->format('Y-m-d') }}
                                     </td>
                                     <td>
+                                        @if ($canManageLoanCategories)
                                         <a href="{{ route('super-admin.loan-categories.edit', $category) }}"
                                             class="btn btn-sm btn-outline-primary me-1">
                                             <i class="bi bi-pencil"></i>
@@ -56,6 +62,9 @@
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </form>
+                                        @else
+                                        <span class="text-muted small"><i class="bi bi-eye"></i> View Only</span>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach

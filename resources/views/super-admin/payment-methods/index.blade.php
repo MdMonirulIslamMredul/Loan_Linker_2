@@ -9,9 +9,14 @@
                 <h5 class="mb-0">Payment Methods</h5>
                 <small class="text-muted">Manage payment channels used by branch admins for package purchases.</small>
             </div>
+            @php
+                $canManagePaymentMethods = auth()->user()->isSuperAdmin() || auth()->user()->hasPermissionTo('payment-methods.manage', 'web');
+            @endphp
+            @if ($canManagePaymentMethods)
             <a href="{{ route('super-admin.payment-methods.create') }}" class="btn btn-primary">
                 <i class="bi bi-plus-circle me-1"></i> Add Payment Method
             </a>
+            @endif
         </div>
         <div class="card-body">
             @if ($paymentMethods->count())
@@ -39,12 +44,16 @@
                                         @endif
                                     </td>
                                     <td class="text-end">
+                                        @if ($canManagePaymentMethods)
                                         <a href="{{ route('super-admin.payment-methods.edit', $method) }}" class="btn btn-sm btn-outline-primary me-1">Edit</a>
                                         <form action="{{ route('super-admin.payment-methods.destroy', $method) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this payment method?')">Delete</button>
                                         </form>
+                                        @else
+                                        <span class="text-muted small"><i class="bi bi-eye"></i> View Only</span>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach

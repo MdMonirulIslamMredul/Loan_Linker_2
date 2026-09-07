@@ -1,4 +1,4 @@
-﻿<!-- Lead Packages index -->
+<!-- Lead Packages index -->
 @extends('layouts.admin')
 
 @section('title', 'Manage Lead Packages')
@@ -7,9 +7,14 @@
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="mb-0"><i class="bi bi-box-seam me-2"></i>All Lead Packages</h4>
+        @php
+            $canManageLeadPackages = auth()->user()->isSuperAdmin() || auth()->user()->hasPermissionTo('lead-packages.manage', 'web') || auth()->user()->hasPermissionTo('lead-packages.create', 'web');
+        @endphp
+        @if ($canManageLeadPackages)
         <a href="{{ route('super-admin.lead-packages.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-circle me-1"></i> Add Package
         </a>
+        @endif
     </div>
 
     <div class="row mb-3">
@@ -84,6 +89,7 @@
                                         <small class="text-muted">{{ $package->created_at->format('M d, Y') }}</small>
                                     </td>
                                     <td class="text-end pe-4">
+                                        @if ($canManageLeadPackages)
                                         <div class="btn-group" role="group">
                                             <a href="{{ route('super-admin.lead-packages.edit', $package) }}"
                                                 class="btn btn-sm btn-outline-primary">
@@ -99,6 +105,9 @@
                                                 </button>
                                             </form>
                                         </div>
+                                        @else
+                                        <span class="text-muted small"><i class="bi bi-eye"></i> View Only</span>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach

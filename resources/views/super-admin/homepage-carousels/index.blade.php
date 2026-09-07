@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin')
+@extends('layouts.admin')
 
 @section('title', 'Manage Homepage Carousel')
 @section('dashboard-title', 'Manage Homepage Carousel')
@@ -6,9 +6,14 @@
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="mb-0"><i class="bi bi-images me-2"></i>Homepage Carousel Items</h4>
+        @php
+            $canManageSiteSettings = auth()->user()->isSuperAdmin() || auth()->user()->hasPermissionTo('sitesettings.manage', 'web');
+        @endphp
+        @if ($canManageSiteSettings)
         <a href="{{ route('super-admin.homepage-carousels.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-circle me-1"></i> Add Carousel Item
         </a>
+        @endif
     </div>
 
     @if (session('success'))
@@ -81,6 +86,7 @@
                                         @endif
                                     </td>
                                     <td class="text-end pe-4">
+                                        @if ($canManageSiteSettings)
                                         <div class="btn-group" role="group">
                                             <a href="{{ route('super-admin.homepage-carousels.edit', $carousel) }}"
                                                 class="btn btn-sm btn-outline-primary">
@@ -96,6 +102,9 @@
                                                 </button>
                                             </form>
                                         </div>
+                                        @else
+                                        <span class="text-muted small"><i class="bi bi-eye"></i> View Only</span>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
