@@ -47,18 +47,28 @@
                                 <small class="text-muted d-block">Phone</small>
                                 <strong>{{ $customer->phone }}</strong>
                             </div>
+                             <div class="col-md-6 mb-3">
+                                <small class="text-muted d-block">Reference</small>
+                                <strong>{{ $customer->reference ?? 'N/A' }}</strong>
+                            </div>
                             <div class="col-md-6 mb-3">
                                 <small class="text-muted d-block">Registered At</small>
                                 <strong>{{ $customer->created_at->format('d M, Y') }}</strong>
                             </div>
                             <div class="col-md-6 mb-3">
+                                <small class="text-muted d-block">Last Updated</small>
+                                <strong>{{ $customer->updated_at->format('d M, Y') }}</strong>
+                            </div>
+                           
+
+                            {{-- <div class="col-md-6 mb-3">
                                 <small class="text-muted d-block">Bank</small>
                                 <strong>{{ $customer->bank->name ?? 'N/A' }}</strong>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <small class="text-muted d-block">Branch</small>
                                 <strong>{{ $customer->branch->name ?? 'N/A' }}</strong>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                 </div>
@@ -117,7 +127,7 @@
                                     <strong>{{ $customer->total_working_experience }}</strong>
                                 </div>
                             @endif
-                            @if($customer->contact_address || $customer->contactDivision || $customer->contactDistrict)
+                            @if($customer->contact_address || $customer->contactDivision || $customer->contactDistrict || $customer->contactUpazila || $customer->contactThana)
                                 <div class="col-12 mb-3">
                                     <small class="text-muted d-block">Contact Address</small>
                                     <p class="mb-0">
@@ -129,8 +139,21 @@
                                         @endif
                                         @if($customer->contactDistrict?->name)
                                             <strong>{{ $customer->contactDistrict->name }}</strong>
+                                            ,
                                         @endif
-                                        @if($customer->contact_address && ($customer->contactDivision?->name || $customer->contactDistrict?->name))
+                                        @if($customer->contactDistrict?->name && $customer->contactUpazila?->name)
+                                            , 
+                                        @endif
+                                        @if($customer->contactUpazila?->name)
+                                            <strong>{{ $customer->contactUpazila->name }}</strong>
+                                        @endif
+                                        @if($customer->contactUpazila?->name && $customer->contactThana?->name)
+                                            , 
+                                        @endif
+                                        @if($customer->contactThana?->name)
+                                            <strong>{{ $customer->contactThana->name }}</strong>
+                                        @endif
+                                        @if($customer->contact_address && ($customer->contactDivision?->name || $customer->contactDistrict?->name || $customer->contactUpazila?->name || $customer->contactThana?->name))
                                             , {{ $customer->contact_address }}
                                         @elseif($customer->contact_address)
                                             {{ $customer->contact_address }}
@@ -138,7 +161,7 @@
                                     </p>
                                 </div>
                             @endif
-                            @if($customer->permanent_address || $customer->permanentDivision || $customer->permanentDistrict)
+                            @if($customer->permanent_address || $customer->permanentDivision || $customer->permanentDistrict || $customer->permanentUpazila || $customer->permanentThana)
                                 <div class="col-12 mb-3">
                                     <small class="text-muted d-block">Permanent Address</small>
                                     <p class="mb-0">
@@ -150,8 +173,21 @@
                                         @endif
                                         @if($customer->permanentDistrict?->name)
                                             <strong>{{ $customer->permanentDistrict->name }}</strong>
+                                            ,
                                         @endif
-                                        @if($customer->permanent_address && ($customer->permanentDivision?->name || $customer->permanentDistrict?->name))
+                                        @if($customer->permanentDistrict?->name && $customer->permanentUpazila?->name)
+                                            , 
+                                        @endif
+                                        @if($customer->permanentUpazila?->name)
+                                            <strong>{{ $customer->permanentUpazila->name }}</strong>
+                                        @endif
+                                        @if($customer->permanentUpazila?->name && $customer->permanentThana?->name)
+                                            , 
+                                        @endif
+                                        @if($customer->permanentThana?->name)
+                                            <strong>{{ $customer->permanentThana->name }}</strong>
+                                        @endif
+                                        @if($customer->permanent_address && ($customer->permanentDivision?->name || $customer->permanentDistrict?->name || $customer->permanentUpazila?->name || $customer->permanentThana?->name))
                                             , {{ $customer->permanent_address }}
                                         @elseif($customer->permanent_address)
                                             {{ $customer->permanent_address }}
@@ -175,6 +211,10 @@
                                     <strong>{{ number_format($customer->customerFinancial->salary_by_bank, 2) }}</strong>
                                 </div>
                                 <div class="col-md-6 mb-3">
+                                    <small class="text-muted d-block">Salary Bank</small>
+                                    <strong>{{ optional($customer->customerFinancial->bank)->name ?? 'N/A' }}</strong>
+                                </div>
+                                <div class="col-md-6 mb-3">
                                     <small class="text-muted d-block">Salary by Hand</small>
                                     <strong>{{ number_format($customer->customerFinancial->salary_by_hand, 2) }}</strong>
                                 </div>
@@ -182,10 +222,47 @@
                                     <small class="text-muted d-block">Monthly Bank Transaction</small>
                                     <strong>{{ number_format($customer->customerFinancial->monthly_bank_transaction, 2) }}</strong>
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <small class="text-muted d-block">Existing Loans / Credit Cards</small>
-                                    <strong>{{ $customer->customerFinancial->existing_loans_credit_cards ?? 'N/A' }}</strong>
-                                </div>
+                                 
+                                @if (! $customer->customerFinancial->has_loan)
+                                    <div class="col-12 mb-3">
+                                        <p class="text-muted mb-0">The user has no past loan history.</p>
+                                    </div>
+                                @endif
+
+                                @if($customer->customerFinancial->has_loan && $customer->customerFinancial->loans->isNotEmpty())
+                                    <div class="col-12 mb-3">
+                                        <hr />
+                                        <h6 class="mb-3">Loan Details</h6>
+                                        @foreach($customer->customerFinancial->loans as $loan)
+                                            <div class="card mb-3">
+                                                <div class="card-body p-3">
+                                                    <div class="row g-2">
+                                                        <div class="col-md-4">
+                                                            <small class="text-muted d-block">Loan Bank</small>
+                                                            <strong>{{ optional($loan->bank)->name ?? 'N/A' }}</strong>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <small class="text-muted d-block">Category</small>
+                                                            <strong>{{ optional($loan->serviceCategory)->name ?? 'N/A' }}</strong>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <small class="text-muted d-block">Type</small>
+                                                            <strong>{{ optional($loan->serviceType)->name ?? 'N/A' }}</strong>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <small class="text-muted d-block">Amount</small>
+                                                            <strong>{{ number_format($loan->loan_amount, 2) }}</strong>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <small class="text-muted d-block">Tenure Months</small>
+                                                            <strong>{{ $loan->tenure_months !== null ? $loan->tenure_months : 'N/A' }}</strong>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
                         @else
                             <p class="text-muted mb-0">No financial information available for this customer.</p>

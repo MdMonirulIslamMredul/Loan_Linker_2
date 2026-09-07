@@ -34,7 +34,8 @@
                 <form method="GET" action="{{ route('super-admin.customers.index') }}" class="row g-3">
                     <div class="col-md-4">
                         <label for="search" class="form-label">Search</label>
-                        <input type="text" name="search" id="search" class="form-control" placeholder="Name, email, or phone" value="{{ request('search') }}">
+                        <input type="text" name="search" id="search" class="form-control"
+                            placeholder="Name, email, or phone" value="{{ request('search') }}">
                     </div>
                     <div class="col-md-3">
                         <label for="c_district_id" class="form-label">District</label>
@@ -47,11 +48,13 @@
                     </div>
                     <div class="col-md-2">
                         <label for="from_date" class="form-label">From Date</label>
-                        <input type="date" name="from_date" id="from_date" class="form-control" value="{{ request('from_date') }}">
+                        <input type="date" name="from_date" id="from_date" class="form-control"
+                            value="{{ request('from_date') }}">
                     </div>
                     <div class="col-md-2">
                         <label for="to_date" class="form-label">To Date</label>
-                        <input type="date" name="to_date" id="to_date" class="form-control" value="{{ request('to_date') }}">
+                        <input type="date" name="to_date" id="to_date" class="form-control"
+                            value="{{ request('to_date') }}">
                     </div>
                     <div class="col-md-1 d-flex align-items-end">
                         <button type="submit" class="btn btn-primary w-100">
@@ -66,7 +69,7 @@
                 </form>
             </div>
         </div>
-{{-- 
+        {{--
         <div class="row g-4 mb-4">
             <div class="col-md-4">
                 <div class="card border-0 shadow-sm h-100">
@@ -127,14 +130,13 @@
                                             </span>
                                         </td>
 
-                                        
+
                                         <td>
-                                            
+
                                             <div class="d-flex align-items-center">
                                                 @if(optional($c->customerDocument)->picture)
                                                     <img src="{{ asset('storage/' . optional($c->customerDocument)->picture) }}"
-                                                        alt="{{ $c->name }}"
-                                                        class="rounded-circle me-2"
+                                                        alt="{{ $c->name }}" class="rounded-circle me-2"
                                                         style="width: 40px; height: 40px; object-fit: cover;">
                                                 @else
                                                     <div class="bg-success bg-opacity-10 rounded-circle p-2 me-2">
@@ -144,17 +146,15 @@
                                                 <strong>{{ $c->name }}</strong>
                                             </div>
                                         </td>
-                                        <td><small class="text-muted"><i
-                                                    class="bi bi-envelope me-1"></i>{{ $c->email }}</small></td>
-                                        <td><small class="text-muted"><i
-                                                    class="bi bi-telephone me-1"></i>{{ $c->phone }}</small></td>
+                                        <td><small class="text-muted"><i class="bi bi-envelope me-1"></i>{{ $c->email }}</small>
+                                        </td>
+                                        <td><small class="text-muted"><i class="bi bi-telephone me-1"></i>{{ $c->phone }}</small>
+                                        </td>
                                         <td>
                                             @if ($c->is_active)
-                                                <span class="badge bg-success"><i
-                                                        class="bi bi-check-circle me-1"></i>Active</span>
+                                                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Active</span>
                                             @else
-                                                <span class="badge bg-danger"><i
-                                                        class="bi bi-x-circle me-1"></i>Inactive</span>
+                                                <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Inactive</span>
                                             @endif
                                         </td>
                                         <td><small class="text-muted"><i
@@ -165,19 +165,21 @@
                                                 $canManageCustomers = auth()->user()->isSuperAdmin() || auth()->user()->hasPermissionTo('customers.manage', 'web');
                                             @endphp
                                             <div class="d-flex gap-2">
-                                                <a href="{{ route('super-admin.customers.show', $c->id) }}" class="btn btn-sm btn-outline-secondary">
-                                                    <i class="bi bi-eye"></i> View and Update Documents
+                                                <a href="{{ route('super-admin.customers.show', $c->id) }}"
+                                                    class="btn btn-sm {{ $c->view ? 'btn-success' : 'btn-outline-secondary' }}">
+                                                    <i
+                                                        class="bi bi-eye me-1"></i>{{ $c->view ? 'Viewed & Update Documents !' : 'View and Update Documents' }}
                                                 </a>
 
                                                 @if ($canManageCustomers)
-                                                <form action="{{ route('super-admin.customers.reset-password', $c->id) }}"
-                                                    method="POST"
-                                                    onsubmit="return confirm('Reset password to default for this customer?');">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-sm btn-outline-primary">
-                                                        <i class="bi bi-key"></i> Reset Password
-                                                    </button>
-                                                </form>
+                                                    <form action="{{ route('super-admin.customers.reset-password', $c->id) }}"
+                                                        method="POST"
+                                                        onsubmit="return confirm('Reset password to default for this customer?');">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                            <i class="bi bi-key"></i> Reset Password
+                                                        </button>
+                                                    </form>
                                                 @endif
                                             </div>
                                         </td>
@@ -190,7 +192,8 @@
                     <div class="card-footer bg-white border-top">
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="text-muted small">Showing {{ $customers->firstItem() }} to
-                                {{ $customers->lastItem() }} of {{ $customers->total() }} customers</div>
+                                {{ $customers->lastItem() }} of {{ $customers->total() }} customers
+                            </div>
                             <div>{{ $customers->links('pagination::bootstrap-5') }}</div>
                         </div>
                     </div>
@@ -207,4 +210,3 @@
         </div>
     </div>
 @endsection
-
