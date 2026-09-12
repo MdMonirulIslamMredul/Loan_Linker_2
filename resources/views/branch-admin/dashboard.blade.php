@@ -15,6 +15,36 @@
 
 
         @if(auth()->user()->is_access)
+        @if ($bankOfficialIncomplete || $officerDocumentsIncomplete)
+        <div class="d-flex flex-column gap-3 mb-3">
+            @if ($bankOfficialIncomplete)
+            <div class="alert alert-warning border-start border-warning border-4 shadow-sm mb-0 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3" role="alert">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-building-exclamation fs-4 text-warning-emphasis"></i>
+                    <div>
+                        <h6 class="alert-heading fw-bold mb-1 text-dark">Bank Official Information Required</h6>
+                        <p class="mb-0 small text-muted">Please complete your bank official information before using the officer dashboard.</p>
+                    </div>
+                </div>
+                <a href="{{ route('branch-admin.bank-official') }}" class="btn btn-warning btn-sm text-nowrap fw-semibold">Complete Bank Information</a>
+            </div>
+            @endif
+
+            @if ($officerDocumentsIncomplete)
+            <div class="alert alert-info border-start border-info border-4 shadow-sm mb-0 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3" role="alert">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-file-earmark-lock fs-4 text-info-emphasis"></i>
+                    <div>
+                        <h6 class="alert-heading fw-bold mb-1 text-dark">Officer Documents Required</h6>
+                        <p class="mb-0 small text-muted">Please upload all required officer documents to complete your account.</p>
+                    </div>
+                </div>
+                <a href="{{ route('branch-admin.officer-document') }}" class="btn btn-info btn-sm text-nowrap fw-semibold text-white">Upload Documents</a>
+            </div>
+            @endif
+        </div>
+        @endif
+
         <div class="row g-2">
             <div class="col-md-3">
                 <a href="{{ route('branch-admin.packages.history') }}" class="text-decoration-none">
