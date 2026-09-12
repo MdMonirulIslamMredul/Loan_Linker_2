@@ -9,6 +9,25 @@
                 <a href="{{ route('customer.new_application.create') }}" class="btn btn-primary">Create New Loan Application</a>
             </div>
 
+            @if ($profileIncomplete)
+                <div class="alert alert-warning border-start border-warning border-4 shadow-sm mb-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3" role="alert">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-warning bg-opacity-25 text-warning-emphasis p-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; min-width: 42px;">
+                            <i class="bi bi-person-exclamation fs-5 text-warning-emphasis"></i>
+                        </div>
+                        <div>
+                            <h6 class="alert-heading fw-bold mb-1 text-dark">Complete Your Profile</h6>
+                            <p class="mb-0 small text-muted">Please complete your profile information to make your account ready for loan processing.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="{{ route('customer.profile.edit') }}" class="btn btn-warning btn-sm text-nowrap fw-semibold">
+                            <i class="bi bi-pencil-square me-1"></i> Complete Profile
+                        </a>
+                    </div>
+                </div>
+            @endif
+
             @if (is_null($user->customer_financial_id) || is_null($user->customer_document_id))
                 <div class="mb-4 d-flex flex-column gap-3">
                     @if (is_null($user->customer_financial_id))
