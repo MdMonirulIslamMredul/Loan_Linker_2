@@ -79,8 +79,14 @@ class BankOfficerRegisterController extends Controller
             'p_thana_id' => ['required', 'integer'],
             'reference' => 'nullable|string|max:255',
             'permanent_address' => 'required|string|max:1000',
+            'education' => 'required|string|max:255',
+            'profession' => 'required|string|max:255',
+            'total_working_experience' => 'required_without:working_experience|nullable|string|max:100',
+            'working_experience' => 'nullable|string|max:100',
             'password' => 'required|string|min:8|confirmed',
             'accepted_terms' => 'accepted',
+        ], [
+            'total_working_experience.required_without' => 'The working experience field is required.',
         ]);
 
         if (! isset($districts[$data['c_division_id']][$data['c_district_id']])) {
@@ -114,6 +120,9 @@ class BankOfficerRegisterController extends Controller
             'p_thana_id' => $data['p_thana_id'],
             'reference' => $data['reference'],
             'permanent_address' => $data['permanent_address'],
+            'education' => $data['education'] ?? null,
+            'profession' => $data['profession'] ?? null,
+            'total_working_experience' => $data['total_working_experience'] ?? $data['working_experience'] ?? null,
             'password' => Hash::make($data['password']),
             'bank_id' => $data['bank_id'],
             'role' => 'branch_admin',

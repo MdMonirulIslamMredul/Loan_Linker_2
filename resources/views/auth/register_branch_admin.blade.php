@@ -425,14 +425,49 @@
                                 });
                             </script>
                             
-                            <!-- <div class="mb-3">-->
-                            <!--    <label class="form-label">Reference Number</label>-->
-                            <!--    <input type="text" name="reference" placeholder="Enter reference number " class="form-control" value="{{ old('reference') }}">-->
-                            <!--    <div class="form-text text-muted">Leave blank if you do not have one.</div>-->
-                            <!--</div>-->
-                            
-                            
-                             <div class="mb-3">
+                            <div class="row gx-3">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Education</label>
+                                    <div class="input-group has-validation">
+                                        <span class="input-group-text"><i class="bi bi-mortarboard-fill"></i></span>
+                                        <input type="text" name="education" value="{{ old('education') }}"
+                                            placeholder="Enter your education"
+                                            class="form-control @error('education') is-invalid @enderror" required>
+                                        @error('education')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Profession</label>
+                                    <div class="input-group has-validation">
+                                        <span class="input-group-text"><i class="bi bi-briefcase-fill"></i></span>
+                                        <input type="text" name="profession" value="{{ old('profession') }}"
+                                            placeholder="Enter your profession"
+                                            class="form-control @error('profession') is-invalid @enderror" required>
+                                        @error('profession')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Working Experience</label>
+                                <div class="input-group has-validation">
+                                    <span class="input-group-text"><i class="bi bi-clock-history"></i></span>
+                                    <input type="text" name="total_working_experience" id="working_experience" value="{{ old('total_working_experience', old('working_experience')) }}"
+                                        placeholder="Enter working experience (e.g. 5 Years)"
+                                        class="form-control @error('total_working_experience') @error('working_experience') is-invalid @enderror @enderror" required>
+                                    @error('total_working_experience')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @elseerror('working_experience')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
                                 <label class="form-label">Reference</label>
                                 <div class="input-group has-validation">
                                     <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
